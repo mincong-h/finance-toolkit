@@ -1,0 +1,71 @@
+# Finance Tools
+# =============
+# Configuration file (example) for Finance Tools.
+#
+
+# Accounts
+# --------
+# Declare accounts here, structure for each account:
+#
+#     $account_id:
+#       company: $company
+#       type:    $account_type
+#       id:      $account_original_id
+#
+# Variables:
+# - account_id: the account id used by Finance Tools, recommended format:
+#   `${user}-${company}-${type}`, where "user" is the first character of the
+#   first-name and the whole last-name, "company" is the abbreviation of the
+#   company name, "type" is the account type.
+# - company: the company name
+# - account_type: the account type
+# - account_original_id: the original id of the account, used by that company.
+#
+accounts:
+  # Sansa Stark - BNP Paribas (Livret A)
+  sstark-BNP-LVA:
+    company: BNP
+    type: LVA
+    id: '****0001'
+
+  # Arya Stark - BNP Paribas (Compte de Chèque)
+  astark-BNP-CHQ:
+    company: BNP
+    type: CHQ
+    id: '****0002'
+
+# Categories
+# ----------
+# Declare categories here. Format: `$mainCategory/$subCategory`. Order is not
+# important, but it is recommended to declare your list in alphabetic order
+# for better readability.
+#
+categories:
+  - food/restaurant
+  - food/supermarket
+  - food/work
+  - gouv/tax
+
+# Auto-Completion
+# ---------------
+# Auto-completion for data enrichment. Finance tools add additional metadata to
+# your transactions: type, category, regularity. Declaring auto-completions
+# makes the enrichment process automatic: when a transaction label matches the
+# declared regular expression, the declared information (type, category,
+# regularity) will be added to the transaction.
+#
+auto-complete:
+  - expr: '.*FLUNCH.*'
+    type: expense
+    cat: food/restaurant
+    regular: True
+    desc: Optional description about this matching pattern. We go to Flunch regularly.
+  - expr: '.*FOUJITA.*'
+    type: expense
+    cat: food/restaurant
+    regular: False
+    desc: Foujita is a nice Japanese restaurant near l'Opéra, we go there sometimes.
+  - expr: '.*FRANPRIX 5584.*'
+    type: expense
+    cat: food/restaurant
+    regular: True
