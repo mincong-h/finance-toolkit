@@ -10,6 +10,7 @@ from src import tx
 from src.tx import BnpAccount, BoursoramaAccount, Summary, Configurator, Configuration, BnpPipeline, BoursoramaPipeline, \
     Account, AccountPipeline
 
+from .utils import get_test_file
 
 # ---------- Top Level Functions ----------
 
@@ -934,18 +935,18 @@ def test_configuration_categories():
         'food/work',
     ])
     # results are unique
-    assert cfg.categories() == {
+    assert cfg.categories() == [
         'food/restaurant',
         'food/supermarket',
         'food/work',
         'gouv/tax',
-    }
+    ]
     # results are filtered
-    assert cfg.categories(lambda c: c.startswith('food')) == {
+    assert cfg.categories(lambda c: c.startswith('food')) == [
         'food/restaurant',
         'food/supermarket',
         'food/work',
-    }
+    ]
 
 
 # ---------- Class: Configurator ----------
@@ -1077,11 +1078,3 @@ def test_configurator_parse_yaml():
         BnpAccount('CHQ', 'astark-BNP-CHQ', '****0002'),
         BnpAccount('LVA', 'sstark-BNP-LVA', '****0001'),
     ]
-
-
-# ---------- Utility Functions ----------
-
-
-def get_test_file(path: str) -> Path:
-    d = os.path.dirname(os.path.abspath(__file__))
-    return Path(d) / path

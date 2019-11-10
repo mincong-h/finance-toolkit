@@ -1,12 +1,29 @@
 #!/usr/bin/env python3
+"""Finance Tools
 
+Usage:
+  tx.py [options] (cat|categories) [<prefix>]
+  tx.py [options] merge
+  tx.py [options] move
+
+Arguments:
+  cat|categories   Print all categories, or categories starting with the given prefix.
+  merge            Merge staging data.
+  move             Import data from $HOME/Downloads directory.
+
+Options:
+  --finance-root FOLDER    Folder where the configuration file is stored (default: $HOME/finances).
+
+"""
+
+import os
 import re
-import sys
 from pathlib import Path
 from typing import List, Tuple, Dict, Set, Pattern
 import yaml
 
 import pandas as pd
+from docopt import docopt
 from pandas import DataFrame, Series
 
 
@@ -115,14 +132,14 @@ class Configuration:
     def as_dict(self) -> Dict[str, Account]:
         return {a.id: a for a in self.accounts}
 
-    def categories(self, cat_filter=lambda x: True) -> Set[str]:
+    def categories(self, cat_filter=lambda x: True) -> List[str]:
         """
         Gets configured categories.
 
         :param cat_filter: optional category filter, default to no-op filter (do nothing)
-        :return: categories without duplicate, order is not guaranteed
+        :return: categories without duplicate, order is guaranteed
         """
-        return set([c for c in filter(cat_filter, self.category_set)])
+        return sorted(c for c in filter(cat_filter, self.category_set))
 
 
 class Configurator:
@@ -604,40 +621,38 @@ def merge(directory: Path, cfg: Configuration):
     print('Merge done')
 
 
-def print_help():
-    print('''\
-Usage:
-
-  tx.py move                   Import data from ~/Download directory.
-  tx.py merge                  Merge staging data.
-  tx.py categories|cat [name]  Print all categories, or categories
-                               starting with the given name as prefix.
-''')
-
-
 def main():
-    cfg_path = Path.home() / 'finance-tools.yml'
-    content = cfg_path.read_text()
-    cfg = Configurator.parse_yaml(content)
+    args = docopt(__doc__)
 
-    if len(sys.argv) > 1:
-        cmd = sys.argv[1]
-        if cmd == 'move':
-            src = Path.home() / 'Downloads'
-            dest = Path.home() / 'github/finance-data'
-            move(src, dest, cfg)
-        elif cmd == 'merge':
-            merge(Path.home() / 'github/finance-data', cfg)
-        elif cmd == 'categories' or cmd == 'cat':
-            prefix = '' if len(sys.argv) < 3 else sys.argv[2]
-            for c in cfg.categories(lambda s: s.startswith(prefix)):
-                print(c)
+    home = Path.home()
+
+    # Handle the finance folder
+    finance_root = args['--finance-root']
+    if not finance_root:
+        # Check the envar
+        env = os.getenv('FINANCE_ROOT')
+        if env:
+            root = Path(env)
         else:
-            print('Unknown action.')
-            print_help()
-            exit(-1)
+            # Use the $HOME/finances folder by default
+            root = home / 'finances'
     else:
-        print_help()
+        # Use the provided folder
+        root = Path(finance_root)
+
+    cfg_path = root / 'finance-tools.yml'
+    cfg = Configurator.parse_yaml(cfg_path.read_text())
+
+    if args['cat'] or args['categories']:
+        prefix = args['<prefix>'] or ''
+        for c in cfg.categories(lambda s: s.startswith(prefix)):
+            print(c)
+    elif args['merge']:
+        merge(root / 'finance-data', cfg)
+    elif args['move']:
+        src = home / 'Downloads'
+        dst = root / 'finance-data'
+        move(src, dst, cfg)
 
 
 if __name__ == '__main__':
