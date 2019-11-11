@@ -69,3 +69,11 @@ auto-complete:
     type: expense
     cat: food/restaurant
     regular: True
+
+# Download Directory
+# ------------------
+# Download directory is the place where finance files are stored at the first
+# place. Usually, this is download directory of your OS or your browser.
+#   - macOS: ~/Downloads
+#
+download-dir: ~/Downloads

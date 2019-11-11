@@ -134,9 +134,120 @@ def test_categories_with_unknown_prefix(capsys):
     assert captured.out == ''
 
 
-def test_merge():
-    pytest.skip('TODO')
+def test_merge(tmpdir, capsys):
+    d = Path(tmpdir.strpath)
+    root_dir = d / 'finance'
+    download_dir = d / 'download'
+
+    root_dir.mkdir()
+    download_dir.mkdir()
+
+    # Given configuration
+    with (root_dir / 'finance-tools.yml').open('w') as f:
+        # language=yml
+        f.write(f'''\
+accounts:
+  userA-BNP-CHQ:
+    company: BNP
+    type: CHQ
+    id: '****0001'
+  userB-BRS-CHQ:
+    company: Boursorama
+    type: CHQ
+    id: '****0002'
+
+categories:
+  - food/restaurant
+
+auto-complete:
+
+download-dir: {download_dir}
+''')
+
+    # And two staging files to be merged
+    (root_dir / '2019-08').mkdir()
+    tx_bnp = root_dir / '2019-08' / '2019-08.userA-BNP-CHQ.csv'
+    tx_brs = root_dir / '2019-08' / '2019-08.userB-BRS-CHQ.csv'
+    tx_bnp.write_text('''\
+Date,bnpMainCategory,bnpSubCategory,Label,Amount,Type,mainCategory,subCategory,IsRegular
+2019-08-01,m,s,myLabel,-10.0,expense,food,restaurant,False
+''')
+    tx_brs.write_text('''\
+dateOp,dateVal,Label,brsMainCategory,brsSubCategory,supplierFound,Amount,Type,mainCategory,subCategory,IsRegular
+2019-08-02,2019-08-02,myLabel,m,s,supplier,-11.0,transfer,,,False
+''')
+
+    # When performing `merge` command to merge these files
+    sys.argv[1:] = ['--finance-root', str(root_dir), 'merge']
+    main()
+
+    # Then the files are merged correctly
+    tx_merged = root_dir / 'total.csv'
+    assert tx_merged.read_text() == '''\
+Date,Account,ShortType,LongType,Label,Amount,Type,Category,SubCategory,IsRegular
+2019-08-01,userA-BNP-CHQ,m,s,myLabel,-10.0,expense,food,restaurant,False
+2019-08-02,userB-BRS-CHQ,m,s,myLabel,-11.0,transfer,,,False
+'''
+    # And a summary is printed to standard output (stdout)
+    captured = capsys.readouterr()
+    assert captured.out == f'''\
+Merge done
+'''
+    assert captured.err == ''
 
 
-def test_move():
-    pytest.skip('TODO')
+def test_move(tmpdir, capsys):
+    d = Path(tmpdir.strpath)
+    root_dir = d / 'finance'
+    download_dir = d / 'download'
+
+    root_dir.mkdir()
+    download_dir.mkdir()
+
+    # Given configuration
+    with (root_dir / 'finance-tools.yml').open('w') as f:
+        # language=yml
+        f.write(f'''\
+accounts:
+  credit-BNP-P15:
+    company: BNP
+    type: CDI  # credit
+    id: '****1234'
+
+categories:
+
+auto-complete:
+
+download-dir: {download_dir}
+''')
+
+    # And a CSV file downloaded from BNP website
+    csv = download_dir / 'E1851234.csv'
+    csv.write_text('''\
+Crédit immobilier;Crédit immobilier;****1234;03/07/2019;;-123 456,78
+05/06/2019;;; AMORTISSEMENT PRET 1234;67,97
+''', encoding='ISO-8859-1')
+
+    # When performing `move` command to copy the file into finance root
+    sys.argv[1:] = ['--finance-root', str(root_dir), 'move']
+    main()
+
+    # Then the data is copied
+    assert (root_dir / '2019-06' / '2019-06.credit-BNP-P15.csv').exists()
+    assert (root_dir / 'balance.credit-BNP-P15.csv').exists()
+    assert csv.exists()
+    # And a summary is printed to standard output (stdout)
+    captured = capsys.readouterr()
+    assert captured.out == f'''\
+$$$ Summary $$$
+---------------
+1 files copied.
+---------------
+Sources:
+- {tmpdir.strpath}/download/E1851234.csv
+Targets:
+- {tmpdir.strpath}/finance/2019-06/2019-06.credit-BNP-P15.csv
+- {tmpdir.strpath}/finance/balance.credit-BNP-P15.csv
+Finished.
+'''
+    assert captured.err == ''

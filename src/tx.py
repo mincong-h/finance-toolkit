@@ -124,10 +124,14 @@ class Configuration:
     def __init__(self,
                  accounts: List[Account],
                  categories: List[str],
-                 autocomplete: List[Tuple]):
+                 autocomplete: List[Tuple],
+                 download_dir: Path,
+                 root_dir: Path):
         self.accounts: List[Account] = accounts
         self.category_set: Set[str] = set(categories)
         self.autocomplete: List[Tuple] = autocomplete
+        self.download_dir: Path = download_dir
+        self.root_dir: Path = root_dir
 
     def as_dict(self) -> Dict[str, Account]:
         return {a.id: a for a in self.accounts}
@@ -191,30 +195,35 @@ class Configurator:
 
     @classmethod
     def load_categories(cls, raw: List[str]) -> List[str]:
-        return raw
+        return [] if raw is None else raw
 
     @classmethod
     def load_autocomplete(cls, raw: List) -> List[Tuple]:
         patterns = []
-        for pattern in raw:
-            columns = (
-                pattern['type'],
-                pattern['cat'].split('/')[0],  # main category
-                pattern['cat'].split('/')[1],  # sub category
-                pattern['regular']
-            )
-            patterns.append((columns, pattern['expr']))
+        if raw is not None:
+            for pattern in raw:
+                columns = (
+                    pattern['type'],
+                    pattern['cat'].split('/')[0],  # main category
+                    pattern['cat'].split('/')[1],  # sub category
+                    pattern['regular']
+                )
+                patterns.append((columns, pattern['expr']))
         return patterns
 
     @classmethod
-    def parse_yaml(cls, content: str) -> Configuration:
-        data = yaml.safe_load(content)
+    def parse_yaml(cls, path: Path) -> Configuration:
+        data = yaml.safe_load(path.read_text())
         accounts = cls.load_accounts(data['accounts'])
         categories = cls.load_categories(data['categories'])
         autocomplete = cls.load_autocomplete(data['auto-complete'])
+        download_dir = Path(data['download-dir'])
+        root_dir = path.parent
         return Configuration(accounts=accounts,
                              categories=categories,
-                             autocomplete=autocomplete)
+                             autocomplete=autocomplete,
+                             download_dir=download_dir,
+                             root_dir=root_dir)
 
 
 class AccountPipeline:
@@ -572,22 +581,22 @@ def merge_balances(paths: List[Path], cfg: Configuration) -> DataFrame:
 # Top Level Commands
 # --------------------
 
-def move(src_dir: Path, dest_dir: Path, cfg: Configuration):
-    paths = [child for child in src_dir.iterdir() if child.is_file()]
-    summary = Summary(src_dir)
+def move(cfg: Configuration):
+    paths = [child for child in cfg.download_dir.iterdir() if child.is_file()]
+    summary = Summary(cfg.download_dir)
     for path in paths:
         for account in cfg.accounts:
             if account.match(path):
                 pipeline = AccountPipeline.create_pipeline(account, cfg)
-                pipeline.integrate(path, dest_dir, summary)
+                pipeline.integrate(path, cfg.root_dir, summary)
     print(summary)
 
 
-def merge(directory: Path, cfg: Configuration):
+def merge(cfg: Configuration):
     bank_transactions = []
     cols = ['Date', 'Account', 'ShortType', 'LongType', 'Label',
             'Amount', 'Type', 'Category', 'SubCategory', 'IsRegular']
-    for path in directory.glob('20[1-9]*/*.csv'):
+    for path in cfg.root_dir.glob('20[1-9]*/*.csv'):
         a = AccountPipeline.parse_account(path, cfg)
         if isinstance(a, BoursoramaAccount):
             df = read_boursorama_tx(path, cfg)
@@ -614,10 +623,10 @@ def merge(directory: Path, cfg: Configuration):
     tx = merge_bank_tx(bank_transactions)
     tx = tx.sort_values(by=['Date', 'Account', 'ShortType',
                             'LongType', 'Label', 'Amount'])
-    tx.to_csv(directory / 'total.csv', columns=cols, index=False)
+    tx.to_csv(cfg.root_dir / 'total.csv', columns=cols, index=False)
     # TODO export results
-    b = merge_balances([p for p in directory.glob('balance.*.csv')], cfg)
-    b.to_csv(directory / 'balance.csv', index=False)
+    b = merge_balances([p for p in cfg.root_dir.glob('balance.*.csv')], cfg)
+    b.to_csv(cfg.root_dir / 'balance.csv', index=False)
     print('Merge done')
 
 
@@ -641,18 +650,16 @@ def main():
         root = Path(finance_root)
 
     cfg_path = root / 'finance-tools.yml'
-    cfg = Configurator.parse_yaml(cfg_path.read_text())
+    cfg = Configurator.parse_yaml(cfg_path)
 
     if args['cat'] or args['categories']:
         prefix = args['<prefix>'] or ''
         for c in cfg.categories(lambda s: s.startswith(prefix)):
             print(c)
     elif args['merge']:
-        merge(root / 'finance-data', cfg)
+        merge(cfg)
     elif args['move']:
-        src = home / 'Downloads'
-        dst = root / 'finance-data'
-        move(src, dst, cfg)
+        move(cfg)
 
 
 if __name__ == '__main__':
