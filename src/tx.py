@@ -217,7 +217,7 @@ class Configurator:
         accounts = cls.load_accounts(data['accounts'])
         categories = cls.load_categories(data['categories'])
         autocomplete = cls.load_autocomplete(data['auto-complete'])
-        download_dir = Path(data['download-dir'])
+        download_dir = Path(data['download-dir']).expanduser()
         root_dir = path.parent
         return Configuration(accounts=accounts,
                              categories=categories,
@@ -641,13 +641,13 @@ def main():
         # Check the envar
         env = os.getenv('FINANCE_ROOT')
         if env:
-            root = Path(env)
+            root = Path(env).expanduser()
         else:
             # Use the $HOME/finances folder by default
             root = home / 'finances'
     else:
         # Use the provided folder
-        root = Path(finance_root)
+        root = Path(finance_root).expanduser()
 
     cfg_path = root / 'finance-tools.yml'
     cfg = Configurator.parse_yaml(cfg_path)
