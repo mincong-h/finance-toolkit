@@ -2,13 +2,9 @@
 import os
 import sys
 from pathlib import Path
-from shutil import copyfile
-from tempfile import TemporaryDirectory
 
 import pytest
 from src.tx import main
-
-from .utils import get_test_file
 
 
 CURRENT_USAGE = """Usage:
@@ -55,17 +51,13 @@ def test_invalid_argument():
     assert str(exc.value) == CURRENT_USAGE
 
 
-def test_config_path_from_envar_cat_without_prefix(capsys):
-    file = get_test_file("../finance-tools.sample.yml")
-    with TemporaryDirectory() as tmp:
-        dst = Path(tmp) / "finance-tools.yml"
-        copyfile(file, dst)
-        sys.argv[1:] = ["cat"]
-        os.environ["FINANCE_ROOT"] = tmp
-        try:
-            main()
-        finally:
-            os.environ.pop("FINANCE_ROOT")
+def test_config_path_from_envar_cat_without_prefix(capsys, sample):
+    sys.argv[1:] = ["cat"]
+    os.environ["FINANCE_ROOT"] = str(sample)
+    try:
+        main()
+    finally:
+        os.environ.pop("FINANCE_ROOT")
 
     captured = capsys.readouterr()
     assert (
@@ -78,13 +70,9 @@ gouv/tax
     )
 
 
-def test_cat_without_prefix(capsys):
-    file = get_test_file("../finance-tools.sample.yml")
-    with TemporaryDirectory() as tmp:
-        dst = Path(tmp) / "finance-tools.yml"
-        copyfile(file, dst)
-        sys.argv[1:] = ["--finance-root", tmp, "cat"]
-        main()
+def test_cat_without_prefix(capsys, sample):
+    sys.argv[1:] = ["--finance-root", sample, "cat"]
+    main()
 
     captured = capsys.readouterr()
     assert (
@@ -97,13 +85,9 @@ gouv/tax
     )
 
 
-def test_categories_with_known_prefix(capsys):
-    file = get_test_file("../finance-tools.sample.yml")
-    with TemporaryDirectory() as tmp:
-        dst = Path(tmp) / "finance-tools.yml"
-        copyfile(file, dst)
-        sys.argv[1:] = ["--finance-root", tmp, "categories", "food"]
-        main()
+def test_categories_with_known_prefix(capsys, sample):
+    sys.argv[1:] = ["--finance-root", sample, "categories", "food"]
+    main()
 
     captured = capsys.readouterr()
     assert (
@@ -115,13 +99,9 @@ food/work
     )
 
 
-def test_categories_with_empty_prefix(capsys):
-    file = get_test_file("../finance-tools.sample.yml")
-    with TemporaryDirectory() as tmp:
-        dst = Path(tmp) / "finance-tools.yml"
-        copyfile(file, dst)
-        sys.argv[1:] = ["--finance-root", tmp, "categories", ""]
-        main()
+def test_categories_with_empty_prefix(capsys, sample):
+    sys.argv[1:] = ["--finance-root", sample, "categories", ""]
+    main()
 
     captured = capsys.readouterr()
     assert (
@@ -134,13 +114,9 @@ gouv/tax
     )
 
 
-def test_categories_with_unknown_prefix(capsys):
-    file = get_test_file("../finance-tools.sample.yml")
-    with TemporaryDirectory() as tmp:
-        dst = Path(tmp) / "finance-tools.yml"
-        copyfile(file, dst)
-        sys.argv[1:] = ["--finance-root", tmp, "categories", "unknown"]
-        main()
+def test_categories_with_unknown_prefix(capsys, sample):
+    sys.argv[1:] = ["--finance-root", sample, "categories", "unknown"]
+    main()
 
     captured = capsys.readouterr()
     assert captured.out == ""

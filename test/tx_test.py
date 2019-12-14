@@ -1,18 +1,16 @@
 from tempfile import TemporaryDirectory
 from unittest.mock import patch, call
 
+import pytest
 from pandas.testing import assert_frame_equal
-
 from src import tx
 from src.tx import *
-from .utils import get_test_file, TestConfig
 
 
 # ---------- Top Level Functions ----------
 
 
-def test_read_bnp_tx_ok(tmpdir):
-    cfg = TestConfig(tmpdir.strpath)
+def test_read_bnp_tx_ok(cfg):
     cfg.category_set.add("food/workfood")
 
     csv = cfg.root_dir / "2019-03.mhuang-CHQ.csv"
@@ -41,8 +39,7 @@ Date,bnpMainCategory,bnpSubCategory,Label,Amount,Type,mainCategory,subCategory,I
 
 
 @patch("builtins.print")
-def test_read_bnp_tx_validate_errors(mocked_print, tmpdir):
-    cfg = TestConfig(tmpdir.strpath)
+def test_read_bnp_tx_validate_errors(mocked_print, cfg):
     cfg.category_set.add("food/restaurant")
 
     csv = cfg.root_dir / "2019-03.mhuang-CHQ.csv"
@@ -79,8 +76,7 @@ Date,bnpMainCategory,bnpSubCategory,Label,Amount,Type,mainCategory,subCategory,I
     ]
 
 
-def test_read_boursorama_tx_ok(tmpdir):
-    cfg = TestConfig(tmpdir.strpath)
+def test_read_boursorama_tx_ok(cfg):
     cfg.autocomplete.extend(
         (("expense", "food", "restaurant", True), r".*ROYAL PLAISANC.*")
     )
@@ -112,11 +108,10 @@ dateOp,dateVal,Label,brsMainCategory,brsSubCategory,supplierFound,Amount,Type,ma
 
 
 @patch("builtins.print")
-def test_read_boursorama_tx_validation_errors(mocked_print, tmpdir):
+def test_read_boursorama_tx_validation_errors(mocked_print, cfg):
     """
     Ensure validation errors are handled correctly.
     """
-    cfg = TestConfig(tmpdir.strpath)
     cfg.category_set.add("food/restaurant")
 
     csv = cfg.root_dir / "2019-06.mhuang-BRS-CHQ.csv"
@@ -200,8 +195,7 @@ def test_merge_bank_tx():
     assert_frame_equal(actual_df, expected_df)
 
 
-def test_merge_balances(tmpdir):
-    cfg = TestConfig(tmpdir.strpath)
+def test_merge_balances(cfg):
     cfg.accounts.extend(
         [
             BnpAccount("CHQ", "mhuang-BNP-CHQ", "****9413"),
@@ -237,8 +231,7 @@ Date,Amount
     assert_frame_equal(actual_df, expected_df)
 
 
-def test_validate_tx(tmpdir):
-    cfg = TestConfig(tmpdir.strpath)
+def test_validate_tx(cfg):
     cfg.category_set.add("food/workfood")
 
     err1 = tx.validate_tx(
@@ -413,9 +406,7 @@ def test_october_account_match():
 # ---------- Class: AccountPipeline ----------
 
 
-def test_create_pipeline(tmpdir):
-    cfg = TestConfig(tmpdir.strpath)
-
+def test_create_pipeline(cfg):
     p1 = AccountPipeline.create_pipeline(
         BnpAccount("CHQ", "foo-BNP-CHQ", "****0001"), cfg
     )
@@ -434,13 +425,12 @@ def test_create_pipeline(tmpdir):
 # ---------- Class: BnpPipeline ----------
 
 
-def test_bnp_pipeline_integrate(tmpdir):
+def test_bnp_pipeline_integrate(cfg):
     header = (
         "Date,bnpMainCategory,bnpSubCategory,Label,Amount,Type,"
         "mainCategory,subCategory,IsRegular\n"
     )
 
-    cfg = TestConfig(tmpdir.strpath)
     (cfg.root_dir / "2018-08").mkdir()
     (cfg.root_dir / "2018-09").mkdir()
 
@@ -500,9 +490,8 @@ def test_bnp_pipeline_integrate(tmpdir):
     assert b in summary.targets
 
 
-def test_bnp_pipeline_write_balances(tmpdir):
+def test_bnp_pipeline_write_balances(cfg):
     # Given an existing CSV file with 2 rows
-    cfg = TestConfig(tmpdir.strpath)
     csv = cfg.root_dir / "balance.xxx.csv"
     csv.write_text(
         """\
@@ -530,10 +519,10 @@ main,sub,****1234,2018-09-02,924.37
     )
 
 
-def test_bnp_pipeline_read_raw():
+def test_bnp_pipeline_read_raw(location):
     # Given an existing CSV for BNP
     # When reading its content
-    csv = get_test_file("E1851234.csv")
+    csv = location / "E1851234.csv"
     actual_balances, actual_transactions = BnpPipeline.read_raw(csv)
 
     # Then the balances DataFrame is read correctly
@@ -579,59 +568,32 @@ def test_bnp_pipeline_read_raw():
     assert_frame_equal(actual_transactions, expected_transactions)
 
 
-def test_bnp_pipeline_guess_meta_account_type():
+@pytest.mark.parametrize(
+    "cat, label, value",
+    [
+        # case 0: Crédit Immobilier (CDI)
+        ("CDI", "credit", True),
+        # case 1: Livret A (LVA)
+        ("LVA", "transfer", True),
+        # case 2: Livret Développement Durable (LDD)
+        ("LDD", "transfer", True),
+        # case 3: Compte de Chèque (CHQ)
+        ("CHQ", "expense", ""),
+    ],
+)
+def test_bnp_pipeline_guess_meta_account_type(cat, label, value, cfg):
     cols = ["Label", "Type", "mainCategory", "subCategory", "IsRegular"]
 
-    # case 0: Crédit Immobilier (CDI)
-    with TemporaryDirectory() as d:
-        account0 = BnpAccount("CDI", "xxx", "****1234")
-        cfg0 = TestConfig(d)
-        cfg0.accounts.append(account0)
-        pipeline0 = BnpPipeline(account=account0, cfg=cfg0)
-        raw0 = pd.DataFrame(columns=cols, data=[("Label", "", "", "", "")])
-        expected0 = pd.DataFrame(columns=cols, data=[("Label", "credit", "", "", True)])
-        actual0 = pipeline0.guess_meta(raw0)
-        assert_frame_equal(actual0, expected0)
-
-    # case 1: Livret A (LVA)
-    with TemporaryDirectory() as d:
-        account1 = BnpAccount("LVA", "xxx", "****1234")
-        cfg1 = TestConfig(d)
-        cfg1.accounts.append(account1)
-        raw1 = pd.DataFrame(columns=cols, data=[("Label", "", "", "", "")])
-        pipeline1 = BnpPipeline(account=account1, cfg=cfg1)
-        expected1 = pd.DataFrame(
-            columns=cols, data=[("Label", "transfer", "", "", True)]
-        )
-        actual1 = pipeline1.guess_meta(raw1)
-        assert_frame_equal(actual1, expected1)
-
-    # case 2: Livret Développement Durable (LDD)
-    with TemporaryDirectory() as d:
-        account2 = BnpAccount("LDD", "xxx", "****1234")
-        cfg2 = TestConfig(d)
-        cfg2.accounts.append(account2)
-        raw2 = pd.DataFrame(columns=cols, data=[("Label", "", "", "", "")])
-        pipeline2 = BnpPipeline(account=account2, cfg=cfg2)
-        expected2 = pd.DataFrame(
-            columns=cols, data=[("Label", "transfer", "", "", True)]
-        )
-        actual2 = pipeline2.guess_meta(raw2)
-        assert_frame_equal(actual2, expected2)
-
-    # case 3: Compte de Chèque (CHQ)
-    with TemporaryDirectory() as d:
-        account3 = BnpAccount("CHQ", "xxx", "****1234")
-        cfg3 = TestConfig(d)
-        cfg3.accounts.append(account3)
-        raw3 = pd.DataFrame(columns=cols, data=[("Label", "", "", "", "")])
-        pipeline3 = BnpPipeline(account=account3, cfg=cfg3)
-        expected3 = pd.DataFrame(columns=cols, data=[("Label", "expense", "", "", "")])
-        actual3 = pipeline3.guess_meta(raw3)
-        assert_frame_equal(actual3, expected3)
+    account = BnpAccount(cat, "xxx", "****1234")
+    cfg.accounts.append(account)
+    pipeline = BnpPipeline(account=account, cfg=cfg)
+    raw = pd.DataFrame(columns=cols, data=[("Label", "", "", "", "")])
+    expected = pd.DataFrame(columns=cols, data=[("Label", label, "", "", value)])
+    actual = pipeline.guess_meta(raw)
+    assert_frame_equal(actual, expected)
 
 
-def test_bnp_pipeline_guess_meta_transaction_label(tmpdir):
+def test_bnp_pipeline_guess_meta_transaction_label(cfg):
     cols = ["Label", "Type", "mainCategory", "subCategory", "IsRegular"]
     raw = pd.DataFrame(
         columns=cols,
@@ -649,7 +611,6 @@ def test_bnp_pipeline_guess_meta_transaction_label(tmpdir):
     )
 
     account = BnpAccount("CHQ", "xxx", "****1234")
-    cfg = TestConfig(tmpdir.strpath)
     cfg.accounts.append(account)
     cfg.autocomplete.extend(
         [
@@ -759,8 +720,7 @@ Date,bnpMainCategory,bnpSubCategory,Label,Amount,Type,mainCategory,subCategory,I
 # ---------- Class: BoursoramaPipeline ----------
 
 
-def test_boursorama_pipeline_integrate(tmpdir):
-    cfg = TestConfig(tmpdir.strpath)
+def test_boursorama_pipeline_integrate(cfg):
     (cfg.root_dir / "2019-08").mkdir()
     (cfg.root_dir / "2019-09").mkdir()
 
@@ -843,109 +803,105 @@ Date,Amount
     assert b in summary.targets
 
 
-def test_boursorama_account_read_raw():
-    csv = get_test_file("export-operations-30-03-2019_08-50-51.csv")
+def test_boursorama_account_read_raw(location, cfg):
+    csv = location / "export-operations-30-03-2019_08-50-51.csv"
 
-    with TemporaryDirectory() as d:
-        account1 = BoursoramaAccount("type1", "name1", "****1234")
-        cfg1 = TestConfig(d)
-        cfg1.accounts.append(account1)
-        b1, tx1 = BoursoramaPipeline(account1, cfg1).read_raw(csv)
+    account = BoursoramaAccount("type1", "name1", "****1234")
+    cfg.accounts.append(account)
+    b, tx = BoursoramaPipeline(account, cfg).read_raw(csv)
 
-        expected_b1 = pd.DataFrame(
-            {
-                "accountNum": "001234",
-                "Amount": 370.0,
-                "Date": pd.Timestamp("2019-03-29"),
-            },
-            index=[0],
-        )
-        assert_frame_equal(expected_b1, b1)
-        expected_tx1 = pd.DataFrame(
-            columns=[
-                "dateOp",
-                "dateVal",
-                "Label",
-                "brsMainCategory",
-                "brsSubCategory",
-                "supplierFound",
-                "Amount",
-                "accountNum",
-                "accountLabel",
-                "accountBalance",
-            ],
-            data=[
-                (
-                    pd.Timestamp("2019-03-12"),
-                    pd.Timestamp("2019-03-12"),
-                    "Prime Parrainage",
-                    "Virements reçus",
-                    "Virements reçus",
-                    "prime parrainage",
-                    80.0,
-                    "001234",
-                    "BOURSORAMA BANQUE",
-                    370.0,
-                ),
-                (
-                    pd.Timestamp("2019-03-12"),
-                    pd.Timestamp("2019-03-12"),
-                    "VIR VIREMENT CREATION COMPTE",
-                    "Virements reçus",
-                    "Virements reçus",
-                    "virement creation compte",
-                    300.0,
-                    "001234",
-                    "BOURSORAMA BANQUE",
-                    370.0,
-                ),
-                (
-                    pd.Timestamp("2019-03-12"),
-                    pd.Timestamp("2019-03-12"),
-                    "VIR VIREMENT CREATION COMPTE",
-                    "Virements émis de comptes à comptes",
-                    "Mouvements internes débiteurs",
-                    "virement creation compte",
-                    -10.0,
-                    "001234",
-                    "BOURSORAMA BANQUE",
-                    370.0,
-                ),
-            ],
-        )
-        assert_frame_equal(expected_tx1, tx1)
+    expected_b = pd.DataFrame(
+        {"accountNum": "001234", "Amount": 370.0, "Date": pd.Timestamp("2019-03-29")},
+        index=[0],
+    )
+    assert_frame_equal(expected_b, b)
+    expected_tx = pd.DataFrame(
+        columns=[
+            "dateOp",
+            "dateVal",
+            "Label",
+            "brsMainCategory",
+            "brsSubCategory",
+            "supplierFound",
+            "Amount",
+            "accountNum",
+            "accountLabel",
+            "accountBalance",
+        ],
+        data=[
+            (
+                pd.Timestamp("2019-03-12"),
+                pd.Timestamp("2019-03-12"),
+                "Prime Parrainage",
+                "Virements reçus",
+                "Virements reçus",
+                "prime parrainage",
+                80.0,
+                "001234",
+                "BOURSORAMA BANQUE",
+                370.0,
+            ),
+            (
+                pd.Timestamp("2019-03-12"),
+                pd.Timestamp("2019-03-12"),
+                "VIR VIREMENT CREATION COMPTE",
+                "Virements reçus",
+                "Virements reçus",
+                "virement creation compte",
+                300.0,
+                "001234",
+                "BOURSORAMA BANQUE",
+                370.0,
+            ),
+            (
+                pd.Timestamp("2019-03-12"),
+                pd.Timestamp("2019-03-12"),
+                "VIR VIREMENT CREATION COMPTE",
+                "Virements émis de comptes à comptes",
+                "Mouvements internes débiteurs",
+                "virement creation compte",
+                -10.0,
+                "001234",
+                "BOURSORAMA BANQUE",
+                370.0,
+            ),
+        ],
+    )
+    assert_frame_equal(expected_tx, tx)
 
-    with TemporaryDirectory() as d:
-        account2 = BoursoramaAccount("type2", "name2", "****3607")
-        cfg2 = TestConfig(d)
-        cfg2.accounts.append(account2)
-        b2, tx2 = BoursoramaPipeline(account2, cfg2).read_raw(csv)
 
-        expected_b2 = pd.DataFrame(
-            {
-                "accountNum": "003607",
-                "Amount": 4810.0,
-                "Date": pd.Timestamp("2019-03-29"),  # date from filename, not row
-            },
-            index=[0],
-        )
-        assert_frame_equal(expected_b2, b2)
-        expected_tx2 = pd.DataFrame(
-            {
-                "dateOp": pd.Timestamp("2019-03-12"),
-                "dateVal": pd.Timestamp("2019-03-12"),
-                "Label": "VIR VIREMENT CREATION COMPTE",
-                "brsMainCategory": "Virements reçus de comptes à comptes",
-                "brsSubCategory": "Mouvements internes créditeurs",
-                "supplierFound": "virement creation compte",
-                "Amount": 10.0,
-                "accountNum": "003607",
-                "accountLabel": "COMPTE SUR LIVRET",
-                "accountBalance": 4810.0,
-            },
-            index=[0],
-        )
-        assert_frame_equal(expected_tx2, tx2)
+def test_boursorama_account_read_raw_account_2(location, cfg):
+    csv = location / "export-operations-30-03-2019_08-50-51.csv"
+
+    account = BoursoramaAccount("type2", "name2", "****3607")
+    cfg.accounts.append(account)
+    b, tx = BoursoramaPipeline(account, cfg).read_raw(csv)
+
+    expected_b = pd.DataFrame(
+        {
+            "accountNum": "003607",
+            "Amount": 4810.0,
+            "Date": pd.Timestamp("2019-03-29"),  # date from filename, not row
+        },
+        index=[0],
+    )
+    assert_frame_equal(expected_b, b)
+    expected_tx = pd.DataFrame(
+        {
+            "dateOp": pd.Timestamp("2019-03-12"),
+            "dateVal": pd.Timestamp("2019-03-12"),
+            "Label": "VIR VIREMENT CREATION COMPTE",
+            "brsMainCategory": "Virements reçus de comptes à comptes",
+            "brsSubCategory": "Mouvements internes créditeurs",
+            "supplierFound": "virement creation compte",
+            "Amount": 10.0,
+            "accountNum": "003607",
+            "accountLabel": "COMPTE SUR LIVRET",
+            "accountBalance": 4810.0,
+        },
+        index=[0],
+    )
+    assert_frame_equal(expected_tx, tx)
 
 
 def test_boursorama_account_write_balances():
@@ -1085,39 +1041,30 @@ dateOp,dateVal,Label,brsMainCategory,brsSubCategory,supplierFound,Amount,Type,ma
         )
 
 
-def test_boursorama_pipeline_guess_meta_account_type():
+@pytest.mark.parametrize(
+    "cat, label",
+    [
+        # case 0: Livret (LVR)
+        ("LVR", "transfer"),
+        # case 1: Compte de Chèque (CHQ)
+        ("CHQ", "expense"),
+    ],
+)
+def test_boursorama_pipeline_guess_meta_account_type(cat, label, cfg):
     cols = ["Label", "Type", "mainCategory", "subCategory", "IsRegular"]
 
-    # case 0: Livret (LVR)
-    with TemporaryDirectory() as d:
-        account0 = BoursoramaAccount("LVR", "xxx", "****1234")
-        cfg0 = TestConfig(d)
-        cfg0.accounts.append(account0)
-        raw_df0 = pd.DataFrame(columns=cols, data=[("Label", "", "", "", "")])
-        expected_df0 = pd.DataFrame(
-            columns=cols, data=[("Label", "transfer", "", "", False)]
-        )
-        actual_df0 = BoursoramaPipeline(account0, cfg0).guess_meta(raw_df0)
-        assert_frame_equal(actual_df0, expected_df0)
-
-    # case 1: Compte de Chèque (CHQ)
-    with TemporaryDirectory() as d:
-        account1 = BoursoramaAccount("CHQ", "xxx", "****1234")
-        cfg1 = TestConfig(d)
-        cfg1.accounts.append(account1)
-        raw_df1 = pd.DataFrame(columns=cols, data=[("Label", "", "", "", "")])
-        expected_df1 = pd.DataFrame(
-            columns=cols, data=[("Label", "expense", "", "", False)]
-        )
-        actual_df1 = BoursoramaPipeline(account1, cfg1).guess_meta(raw_df1)
-        assert_frame_equal(actual_df1, expected_df1)
+    account = BoursoramaAccount(cat, "xxx", "****1234")
+    cfg.accounts.append(account)
+    raw_df = pd.DataFrame(columns=cols, data=[("Label", "", "", "", "")])
+    expected_df = pd.DataFrame(columns=cols, data=[("Label", label, "", "", False)])
+    actual_df = BoursoramaPipeline(account, cfg).guess_meta(raw_df)
+    assert_frame_equal(actual_df, expected_df)
 
 
-def test_boursorama_account_guess_mata_transaction_label(tmpdir):
+def test_boursorama_account_guess_mata_transaction_label(cfg):
     cols = ["Label", "Type", "mainCategory", "subCategory", "IsRegular"]
 
     account = BoursoramaAccount("LVR", "xxx", "****1234")
-    cfg = TestConfig(tmpdir.strpath)
     cfg.accounts.append(account)
     cfg.autocomplete.extend(
         [
@@ -1185,8 +1132,7 @@ Finished."""
 # ---------- Class: Configuration ----------
 
 
-def test_configuration_categories(tmpdir):
-    cfg = TestConfig(tmpdir.strpath)
+def test_configuration_categories(cfg):
     cfg.category_set.update(
         [
             "food/supermarket",
@@ -1391,8 +1337,8 @@ def test_configurator_autocomplete_without_content():
     assert Configurator.load_autocomplete(cfg["auto-complete"]) == []
 
 
-def test_configurator_parse_yaml():
-    cfg = Configurator.parse_yaml(get_test_file("../finance-tools.sample.yml"))
+def test_configurator_parse_yaml(sample):
+    cfg = Configurator.parse_yaml(sample / "finance-tools.yml")
     assert cfg.accounts == [
         BnpAccount("CHQ", "astark-BNP-CHQ", "****0002"),
         DegiroAccount("STK", "astark-DGR-STK", "****0003"),
