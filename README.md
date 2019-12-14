@@ -3,18 +3,19 @@
 `tx` — A script for collecting transaction files (CSV) from different companies:
 BNP Paribas, Boursorama, Degiro, October.
 
+## Hacking
+
+Install pre-commit for day-to-day development. It will ensure a good quality code before commiting anything.
+
+```bash
+python -m pip install -U --user pre-commit
+pre-commit install
+```
+
 ## Testing
 
 Run unit tests (at root level of the project directory):
 
-    $ pytest
-
-## Code Analysis
-
-Run [Flake8][flake8] for checking errors:
-
-    $ flake8
-
-The configuration of Flake8 is stored in `setup.cfg`.
-
-[flake8]: http://flake8.pycqa.org/en/latest/
+```bash
+python -m pytest
+```

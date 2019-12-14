@@ -37,7 +37,7 @@ def test_no_argument():
     assert str(exc.value) == CURRENT_USAGE
 
 
-@pytest.mark.parametrize('arg', ['-h, --help'])
+@pytest.mark.parametrize("arg", ["-h, --help"])
 def test_help(capsys, arg):
     sys.argv[1:] = [arg]
     # docopt will print the help message on STDOUT and exit
@@ -49,103 +49,116 @@ def test_help(capsys, arg):
 
 def test_invalid_argument():
     # Usage is printed on invalid argument
-    sys.argv[1:] = ['unknown']
+    sys.argv[1:] = ["unknown"]
     with pytest.raises(SystemExit) as exc:
         main()
     assert str(exc.value) == CURRENT_USAGE
 
 
 def test_config_path_from_envar_cat_without_prefix(capsys):
-    file = get_test_file('../finance-tools.sample.yml')
+    file = get_test_file("../finance-tools.sample.yml")
     with TemporaryDirectory() as tmp:
-        dst = Path(tmp) / 'finance-tools.yml'
+        dst = Path(tmp) / "finance-tools.yml"
         copyfile(file, dst)
-        sys.argv[1:] = ['cat']
-        os.environ['FINANCE_ROOT'] = tmp
+        sys.argv[1:] = ["cat"]
+        os.environ["FINANCE_ROOT"] = tmp
         try:
             main()
         finally:
-            os.environ.pop('FINANCE_ROOT')
+            os.environ.pop("FINANCE_ROOT")
 
     captured = capsys.readouterr()
-    assert captured.out == """food/restaurant
+    assert (
+        captured.out
+        == """food/restaurant
 food/supermarket
 food/work
 gouv/tax
 """
+    )
 
 
 def test_cat_without_prefix(capsys):
-    file = get_test_file('../finance-tools.sample.yml')
+    file = get_test_file("../finance-tools.sample.yml")
     with TemporaryDirectory() as tmp:
-        dst = Path(tmp) / 'finance-tools.yml'
+        dst = Path(tmp) / "finance-tools.yml"
         copyfile(file, dst)
-        sys.argv[1:] = ['--finance-root', tmp, 'cat']
+        sys.argv[1:] = ["--finance-root", tmp, "cat"]
         main()
 
     captured = capsys.readouterr()
-    assert captured.out == """food/restaurant
+    assert (
+        captured.out
+        == """food/restaurant
 food/supermarket
 food/work
 gouv/tax
 """
+    )
 
 
 def test_categories_with_known_prefix(capsys):
-    file = get_test_file('../finance-tools.sample.yml')
+    file = get_test_file("../finance-tools.sample.yml")
     with TemporaryDirectory() as tmp:
-        dst = Path(tmp) / 'finance-tools.yml'
+        dst = Path(tmp) / "finance-tools.yml"
         copyfile(file, dst)
-        sys.argv[1:] = ['--finance-root', tmp, 'categories', 'food']
+        sys.argv[1:] = ["--finance-root", tmp, "categories", "food"]
         main()
 
     captured = capsys.readouterr()
-    assert captured.out == """food/restaurant
+    assert (
+        captured.out
+        == """food/restaurant
 food/supermarket
 food/work
 """
+    )
 
 
 def test_categories_with_empty_prefix(capsys):
-    file = get_test_file('../finance-tools.sample.yml')
+    file = get_test_file("../finance-tools.sample.yml")
     with TemporaryDirectory() as tmp:
-        dst = Path(tmp) / 'finance-tools.yml'
+        dst = Path(tmp) / "finance-tools.yml"
         copyfile(file, dst)
-        sys.argv[1:] = ['--finance-root', tmp, 'categories', '']
+        sys.argv[1:] = ["--finance-root", tmp, "categories", ""]
         main()
 
     captured = capsys.readouterr()
-    assert captured.out == """food/restaurant
+    assert (
+        captured.out
+        == """food/restaurant
 food/supermarket
 food/work
 gouv/tax
 """
+    )
 
 
 def test_categories_with_unknown_prefix(capsys):
-    file = get_test_file('../finance-tools.sample.yml')
+    file = get_test_file("../finance-tools.sample.yml")
     with TemporaryDirectory() as tmp:
-        dst = Path(tmp) / 'finance-tools.yml'
+        dst = Path(tmp) / "finance-tools.yml"
         copyfile(file, dst)
-        sys.argv[1:] = ['--finance-root', tmp, 'categories', 'unknown']
+        sys.argv[1:] = ["--finance-root", tmp, "categories", "unknown"]
         main()
 
     captured = capsys.readouterr()
-    assert captured.out == ''
+    assert captured.out == ""
 
 
 def test_merge(tmpdir, capsys):
     d = Path(tmpdir.strpath)
-    root_dir = d / 'finance'
-    download_dir = d / 'download'
+    root_dir = d / "finance"
+    download_dir = d / "download"
 
     root_dir.mkdir()
     download_dir.mkdir()
 
     # Given configuration
-    with (root_dir / 'finance-tools.yml').open('w') as f:
+    with (root_dir / "finance-tools.yml").open("w") as f:
         # language=yml
-        f.write(f'''\
+        f.write(
+            f"""\
 accounts:
   userA-BNP-CHQ:
     company: BNP
@@ -162,52 +175,64 @@ categories:
 auto-complete:
 
 download-dir: {download_dir}
-''')
+"""
+        )
 
     # And two staging files to be merged
-    (root_dir / '2019-08').mkdir()
-    tx_bnp = root_dir / '2019-08' / '2019-08.userA-BNP-CHQ.csv'
-    tx_brs = root_dir / '2019-08' / '2019-08.userB-BRS-CHQ.csv'
-    tx_bnp.write_text('''\
+    (root_dir / "2019-08").mkdir()
+    tx_bnp = root_dir / "2019-08" / "2019-08.userA-BNP-CHQ.csv"
+    tx_brs = root_dir / "2019-08" / "2019-08.userB-BRS-CHQ.csv"
+    tx_bnp.write_text(
+        """\
 Date,bnpMainCategory,bnpSubCategory,Label,Amount,Type,mainCategory,subCategory,IsRegular
 2019-08-01,m,s,myLabel,-10.0,expense,food,restaurant,False
-''')
-    tx_brs.write_text('''\
+"""
+    )
+    tx_brs.write_text(
+        """\
 dateOp,dateVal,Label,brsMainCategory,brsSubCategory,supplierFound,Amount,Type,mainCategory,subCategory,IsRegular
 2019-08-02,2019-08-02,myLabel,m,s,supplier,-11.0,transfer,,,False
-''')
+"""
+    )
 
     # When performing `merge` command to merge these files
-    sys.argv[1:] = ['--finance-root', str(root_dir), 'merge']
+    sys.argv[1:] = ["--finance-root", str(root_dir), "merge"]
     main()
 
     # Then the files are merged correctly
-    tx_merged = root_dir / 'total.csv'
-    assert tx_merged.read_text() == '''\
+    tx_merged = root_dir / "total.csv"
+    assert (
+        tx_merged.read_text()
+        == """\
 Date,Account,ShortType,LongType,Label,Amount,Type,Category,SubCategory,IsRegular
 2019-08-01,userA-BNP-CHQ,m,s,myLabel,-10.0,expense,food,restaurant,False
 2019-08-02,userB-BRS-CHQ,m,s,myLabel,-11.0,transfer,,,False
-'''
+"""
+    )
     # And a summary is printed to standard output (stdout)
     captured = capsys.readouterr()
-    assert captured.out == f'''\
+    assert (
+        captured.out
+        == f"""\
 Merge done
-'''
-    assert captured.err == ''
+"""
+    )
+    assert captured.err == ""
 
 
 def test_move(tmpdir, capsys):
     d = Path(tmpdir.strpath)
-    root_dir = d / 'finance'
-    download_dir = d / 'download'
+    root_dir = d / "finance"
+    download_dir = d / "download"
 
     root_dir.mkdir()
     download_dir.mkdir()
 
     # Given configuration
-    with (root_dir / 'finance-tools.yml').open('w') as f:
+    with (root_dir / "finance-tools.yml").open("w") as f:
         # language=yml
-        f.write(f'''\
+        f.write(
+            f"""\
 accounts:
   credit-BNP-P15:
     company: BNP
@@ -219,26 +244,32 @@ categories:
 auto-complete:
 
 download-dir: {download_dir}
-''')
+"""
+        )
 
     # And a CSV file downloaded from BNP website
-    csv = download_dir / 'E1851234.csv'
-    csv.write_text('''\
+    csv = download_dir / "E1851234.csv"
+    csv.write_text(
+        """\
 Crédit immobilier;Crédit immobilier;****1234;03/07/2019;;-123 456,78
 05/06/2019;;; AMORTISSEMENT PRET 1234;67,97
-''', encoding='ISO-8859-1')
+""",
+        encoding="ISO-8859-1",
+    )
 
     # When performing `move` command to copy the file into finance root
-    sys.argv[1:] = ['--finance-root', str(root_dir), 'move']
+    sys.argv[1:] = ["--finance-root", str(root_dir), "move"]
     main()
 
     # Then the data is copied
-    assert (root_dir / '2019-06' / '2019-06.credit-BNP-P15.csv').exists()
-    assert (root_dir / 'balance.credit-BNP-P15.csv').exists()
+    assert (root_dir / "2019-06" / "2019-06.credit-BNP-P15.csv").exists()
+    assert (root_dir / "balance.credit-BNP-P15.csv").exists()
     assert csv.exists()
     # And a summary is printed to standard output (stdout)
     captured = capsys.readouterr()
-    assert captured.out == f'''\
+    assert (
+        captured.out
+        == f"""\
 $$$ Summary $$$
 ---------------
 1 files copied.
@@ -249,5 +280,6 @@ Targets:
 - {tmpdir.strpath}/finance/2019-06/2019-06.credit-BNP-P15.csv
 - {tmpdir.strpath}/finance/balance.credit-BNP-P15.csv
 Finished.
-'''
-    assert captured.err == ''
+"""
+    )
+    assert captured.err == ""
