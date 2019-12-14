@@ -116,6 +116,16 @@ class CartaAccount(Account):
     pass
 
 
+class DegiroAccount(Account):
+    def __init__(self, account_type: str, account_id: str, account_num: str):
+        super().__init__(
+            account_type=account_type,
+            account_id=account_id,
+            account_num=account_num,
+            pattern=r'Portfolio\.csv'
+        )
+
+
 class Configuration:
     """
     Type-safe representation of the user configuration.
@@ -186,6 +196,14 @@ class Configurator:
                         account_id=symbolic_name,
                         account_num='****%s' % last4,
                         pattern=fields['expr']
+                    )
+                )
+            elif company == 'Degiro':
+                accounts.append(
+                    DegiroAccount(
+                        account_type=fields['type'],
+                        account_id=symbolic_name,
+                        account_num='****%s' % last4,
                     )
                 )
             else:

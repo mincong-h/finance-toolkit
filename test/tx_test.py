@@ -1,15 +1,16 @@
+from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch, call
 
 import pandas as pd
 import yaml
 from pandas.testing import assert_frame_equal
-from pathlib import Path
-from src import tx
-from src.tx import BnpAccount, BoursoramaAccount, Summary, Configurator, BnpPipeline, BoursoramaPipeline, \
-    Account, AccountPipeline
 
+from src import tx
+from src.tx import BnpAccount, BoursoramaAccount, DegiroAccount, Summary, Configurator, BnpPipeline, BoursoramaPipeline, \
+    Account, AccountPipeline
 from .utils import get_test_file, TestConfig
+
 
 # ---------- Top Level Functions ----------
 
@@ -328,6 +329,14 @@ def test_boursorama_account_hash():
     c = Account('aType', 'anId', '****0001', r'export-operations-(\d{2}-\d{2}-\d{4})_.+\.csv')
     assert hash(a) == hash(b)
     assert hash(a) == hash(c)
+
+
+# ---------- Class: DegiroAccount ----------
+
+
+def test_degiro_account_match():
+    a = DegiroAccount('aType', 'anId', '****0001')
+    assert a.match(Path('Portfolio.csv'))
 
 
 # ---------- Class: AccountPipeline ----------
@@ -938,10 +947,16 @@ accounts:
     type: CHQ
     id: '****0001'
     label: Arya Stark - Boursorama (Compte de Chèque)
+  astark-DGR-STK:
+    company: Degiro
+    type: STK
+    id: '****0002'
+    label: Arya Stark - Degiro (Stock)
 ''')
     # results are sorted by lexicographical order on symbolic name
     assert Configurator.load_accounts(cfg['accounts']) == [
         BoursoramaAccount('CHQ', 'astark-BRS-CHQ', '****0001'),
+        DegiroAccount('STK', 'astark-DGR-STK', '****0002'),
         BnpAccount('CHQ', 'sstark-BNP-CHQ', '****0001'),
         BnpAccount('LVA', 'sstark-BNP-LVA', '****0002'),
     ]
