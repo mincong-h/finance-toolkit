@@ -22,17 +22,29 @@
 # - account_original_id: the original id of the account, used by that company.
 #
 accounts:
-  # Sansa Stark - BNP Paribas (Livret A)
   sstark-BNP-LVA:
     company: BNP
     type: LVA
     id: '****0001'
+    label: Sansa Stark - BNP Paribas (Livret A)
 
-  # Arya Stark - BNP Paribas (Compte de Chèque)
   astark-BNP-CHQ:
     company: BNP
     type: CHQ
     id: '****0002'
+    label: Arya Stark - BNP Paribas (Compte de Chèque)
+
+  astark-DGR-STK:
+    company: Degiro
+    type: STK
+    id: '****0003'
+    label: Arya Stark - Degiro (Stock)
+
+  astark-OCT-CWL:
+    company: October
+    type: CWL
+    id: 'astark'
+    label: Arya Stark - October (CrowdLending)
 
 # Categories
 # ----------

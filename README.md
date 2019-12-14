@@ -1,6 +1,7 @@
 # Tools
 
-`tx` — A script for collecting transaction files (CSV) from different companies: BNP Paribas, Boursorama, Degiro.
+`tx` — A script for collecting transaction files (CSV) from different companies:
+BNP Paribas, Boursorama, Degiro, October.
 
 ## Testing
 
