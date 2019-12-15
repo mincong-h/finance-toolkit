@@ -25,19 +25,19 @@ accounts:
   sstark-BNP-LVA:
     company: BNP
     type: LVA
-    id: '****0001'
+    id: '00000001'
     label: Sansa Stark - BNP Paribas (Livret A)
 
   astark-BNP-CHQ:
     company: BNP
     type: CHQ
-    id: '****0002'
+    id: '00000002'
     label: Arya Stark - BNP Paribas (Compte de Chèque)
 
   astark-DGR-STK:
     company: Degiro
     type: STK
-    id: '****0003'
+    id: '00000003'
     label: Arya Stark - Degiro (Stock)
 
   astark-OCT-CWL:

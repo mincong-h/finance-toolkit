@@ -85,6 +85,17 @@ class Account:
             and self.num == o.num
         )
 
+    def __repr__(self) -> str:
+        return (
+            f"{type(self).__name__}<type={self.type!r}, "
+            f"id={self.id!r}, num={self.altered_num!r}>"
+        )
+
+    @property
+    def altered_num(self) -> str:
+        """Return part of the account number, to protect the data when displayed."""
+        return f"****{self.num[-4:]}"
+
     def is_account(self, account_full_num: str):
         return account_full_num.endswith(self.num.replace("*", ""))
 
@@ -177,7 +188,6 @@ class Configurator:
     def load_accounts(cls, raw: Dict) -> List[Account]:
         accounts = []
         for symbolic_name, fields in raw.items():
-            last4 = f"    {fields['id']}"[-4:]
             company = fields["company"]
             if company == "BNP":
                 if "expr" in fields:
@@ -189,7 +199,7 @@ class Configurator:
                     BnpAccount(
                         account_type=fields["type"],
                         account_id=symbolic_name,
-                        account_num=f"****{last4}",
+                        account_num=fields["id"],
                     )
                 )
             elif company == "Boursorama":
@@ -202,7 +212,7 @@ class Configurator:
                     BoursoramaAccount(
                         account_type=fields["type"],
                         account_id=symbolic_name,
-                        account_num=f"****{last4}",
+                        account_num=fields["id"],
                     )
                 )
             elif company == "Carta":
@@ -210,7 +220,7 @@ class Configurator:
                     CartaAccount(
                         account_type=fields["type"],
                         account_id=symbolic_name,
-                        account_num=f"****{last4}",
+                        account_num=fields["id"],
                         pattern=fields["expr"],
                     )
                 )
@@ -219,7 +229,7 @@ class Configurator:
                     DegiroAccount(
                         account_type=fields["type"],
                         account_id=symbolic_name,
-                        account_num=f"****{last4}",
+                        account_num=fields["id"],
                     )
                 )
             elif company == "October":

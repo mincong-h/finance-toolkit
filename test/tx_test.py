@@ -335,6 +335,15 @@ def test_account_eq_hash():
     assert hash(a) == hash(b)
 
 
+def test_account_repr_attrs():
+    a = Account("aType", "anId", "00000001", r".*")
+    assert repr(a) == "Account<type='aType', id='anId', num='****0001'>"
+    assert a.type == "aType"
+    assert a.id == "anId"
+    assert a.num == "00000001"
+    assert a.altered_num == "****0001"
+
+
 # ---------- Class: BnpAccount ----------
 
 
@@ -1340,8 +1349,8 @@ def test_configurator_autocomplete_without_content():
 def test_configurator_parse_yaml(sample):
     cfg = Configurator.parse_yaml(sample / "finance-tools.yml")
     assert cfg.accounts == [
-        BnpAccount("CHQ", "astark-BNP-CHQ", "****0002"),
-        DegiroAccount("STK", "astark-DGR-STK", "****0003"),
+        BnpAccount("CHQ", "astark-BNP-CHQ", "00000002"),
+        DegiroAccount("STK", "astark-DGR-STK", "00000003"),
         OctoberAccount("CWL", "astark-OCT-CWL", "astark"),
-        BnpAccount("LVA", "sstark-BNP-LVA", "****0001"),
+        BnpAccount("LVA", "sstark-BNP-LVA", "00000001"),
     ]
