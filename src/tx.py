@@ -364,9 +364,12 @@ class BnpPipeline(AccountPipeline):
         for i, row in df.iterrows():
             for values, regex in self.cfg.autocomplete:
                 if re.compile(regex).match(row.Label):
-                    df.loc[i, "Type"], df.loc[i, "mainCategory"], df.loc[
-                        i, "subCategory"
-                    ], df.loc[i, "IsRegular"] = values
+                    (
+                        df.loc[i, "Type"],
+                        df.loc[i, "mainCategory"],
+                        df.loc[i, "subCategory"],
+                        df.loc[i, "IsRegular"],
+                    ) = values
                     break
         return df
 
@@ -485,9 +488,12 @@ class BoursoramaPipeline(AccountPipeline):
         for i, row in df.iterrows():
             for values, regex in self.cfg.autocomplete:
                 if re.compile(regex).match(row.Label):
-                    df.loc[i, "Type"], df.loc[i, "mainCategory"], df.loc[
-                        i, "subCategory"
-                    ], df.loc[i, "IsRegular"] = values
+                    (
+                        df.loc[i, "Type"],
+                        df.loc[i, "mainCategory"],
+                        df.loc[i, "subCategory"],
+                        df.loc[i, "IsRegular"],
+                    ) = values
                     break
         return df
 
