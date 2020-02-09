@@ -4,8 +4,8 @@ import sys
 from pathlib import Path
 
 import pytest
-from tx.__main__ import main
 
+from tx.__main__ import main
 
 CURRENT_USAGE = """Usage:
   tx.py [options] (cat|categories) [<prefix>]

@@ -3,6 +3,7 @@ from shutil import copyfile
 from tempfile import TemporaryDirectory
 
 import pytest
+
 from tx.tx import Configuration
 
 

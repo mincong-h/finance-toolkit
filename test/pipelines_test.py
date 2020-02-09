@@ -1,0 +1,697 @@
+from pathlib import Path
+from tempfile import TemporaryDirectory
+
+import pandas as pd
+import pytest
+from pandas.util.testing import assert_frame_equal
+
+from tx.accounts import BnpAccount, BoursoramaAccount, Account
+from tx.pipelines import AccountPipeline, BnpPipeline, BoursoramaPipeline
+from tx.utils import Summary
+
+
+# ---------- Class: AccountPipeline ----------
+
+
+def test_create_pipeline(cfg):
+    p1 = AccountPipeline.create_pipeline(
+        BnpAccount("CHQ", "foo-BNP-CHQ", "****0001"), cfg
+    )
+    p2 = AccountPipeline.create_pipeline(
+        BoursoramaAccount("CHQ", "foo-BNP-CHQ", "****0001"), cfg
+    )
+    p3 = AccountPipeline.create_pipeline(
+        Account("unknown", "unknown", "unknown", "unknown"), cfg
+    )
+
+    assert isinstance(p1, BnpPipeline)
+    assert isinstance(p2, BoursoramaPipeline)
+    assert isinstance(p3, AccountPipeline)
+
+
+# ---------- Class: BnpPipeline ----------
+
+
+def test_bnp_pipeline_integrate(cfg):
+    header = (
+        "Date,bnpMainCategory,bnpSubCategory,Label,Amount,Type,"
+        "mainCategory,subCategory,IsRegular\n"
+    )
+
+    (cfg.root_dir / "2018-08").mkdir()
+    (cfg.root_dir / "2018-09").mkdir()
+
+    # Given two existing CSVs for transactions
+    tx08 = cfg.root_dir / "2018-08" / "2018-08.xxx.csv"
+    tx09 = cfg.root_dir / "2018-09" / "2018-09.xxx.csv"
+    with tx08.open("w") as f:
+        f.write(header)
+        f.write("2018-08-30,M,S,myLabel,-0.49,expense,main,sub,True\n")
+    with tx09.open("w") as f:
+        f.write(header)
+        f.write("2018-09-01,M,S,myLabel,-1.49,expense,main,sub,True\n")
+
+    # And a file for balance
+    b = cfg.root_dir / "balance.xxx.csv"
+    with b.open("w") as f:
+        f.write("mainCategory,subCategory,accountNum,Date,Amount\n")
+        f.write("main,sub,****1234,2018-08-02,24.37\n")
+
+    # And a file to be integrated
+    new_file = cfg.root_dir / "E0001234.csv"
+    with new_file.open("w") as f:
+        f.write("this;is;balance;03/09/2018;line;1 234,56\n")
+        f.write("31/08/2018;M;S;myLabel;-0,99\n")
+        f.write("02/09/2018;M;S;myLabel;-2,49\n")
+
+    # When integrating new lines
+    summary = Summary(Path("/path/to/sources"))
+    account = BnpAccount("CHQ", "xxx", "****1234")
+    cfg.accounts.append(account)
+    pipeline = BnpPipeline(account, cfg)
+    pipeline.integrate(new_file, cfg.root_dir, summary)
+
+    # Then the new lines are integrated
+    expected_lines8 = [
+        header,
+        "2018-08-30,M,S,myLabel,-0.49,expense,main,sub,True\n",
+        "2018-08-31,M,S,myLabel,-0.99,expense,,,\n",
+    ]
+    with tx08.open("r") as f:
+        actual_lines8 = f.readlines()
+    assert actual_lines8 == expected_lines8
+
+    expected_lines9 = [
+        header,
+        "2018-09-01,M,S,myLabel,-1.49,expense,main,sub,True\n",
+        "2018-09-02,M,S,myLabel,-2.49,expense,,,\n",
+    ]
+    with tx09.open("r") as f:
+        actual_lines9 = f.readlines()
+    assert actual_lines9 == expected_lines9
+
+    # And the summary is correct
+    assert new_file in summary.sources
+    assert tx08 in summary.targets
+    assert tx09 in summary.targets
+    assert b in summary.targets
+
+
+def test_bnp_pipeline_write_balances(cfg):
+    # Given an existing CSV file with 2 rows
+    csv = cfg.root_dir / "balance.xxx.csv"
+    csv.write_text(
+        """\
+mainCategory,subCategory,accountNum,Date,Amount
+main,sub,****1234,2018-08-02,724.37
+main,sub,****1234,2018-07-04,189.29
+"""
+    )
+
+    # When writing new row into the CSV file
+    cols = ["mainCategory", "subCategory", "accountNum", "Date", "Amount"]
+    data = [("main", "sub", "****1234", pd.Timestamp("2018-09-02"), 924.37)]
+    new_lines = pd.DataFrame(columns=cols, data=data)
+    BnpPipeline.write_balances(csv, new_lines)
+
+    # Then rows are available and sorted
+    assert (
+        csv.read_text()
+        == """\
+mainCategory,subCategory,accountNum,Date,Amount
+main,sub,****1234,2018-07-04,189.29
+main,sub,****1234,2018-08-02,724.37
+main,sub,****1234,2018-09-02,924.37
+"""
+    )
+
+
+def test_bnp_pipeline_read_raw(location):
+    # Given an existing CSV for BNP
+    # When reading its content
+    csv = location / "E1851234.csv"
+    actual_balances, actual_transactions = BnpPipeline.read_raw(csv)
+
+    # Then the balances DataFrame is read correctly
+    b_cols = ["mainCategory", "subCategory", "accountNum", "Date", "Amount"]
+    b_data = [
+        (
+            "Crédit immobilier",
+            "Crédit immobilier",
+            "****1234",
+            pd.Timestamp("2019-07-03"),
+            -123456.78,
+        )
+    ]
+    expected_balances = pd.DataFrame(columns=b_cols, data=b_data)
+    assert_frame_equal(actual_balances, expected_balances)
+
+    # And the transactions DataFrame is read correctly
+    t_cols = [
+        "Date",
+        "bnpMainCategory",
+        "bnpSubCategory",
+        "Label",
+        "Amount",
+        "Type",
+        "mainCategory",
+        "subCategory",
+        "IsRegular",
+    ]
+    t_data = [
+        (
+            pd.Timestamp("2019-06-05"),
+            "",
+            "",
+            "AMORTISSEMENT PRET 1234",
+            67.97,
+            "",
+            "",
+            "",
+            "",
+        )
+    ]
+    expected_transactions = pd.DataFrame(columns=t_cols, data=t_data)
+    assert_frame_equal(actual_transactions, expected_transactions)
+
+
+@pytest.mark.parametrize(
+    "cat, label, value",
+    [
+        # case 0: Crédit Immobilier (CDI)
+        ("CDI", "credit", True),
+        # case 1: Livret A (LVA)
+        ("LVA", "transfer", True),
+        # case 2: Livret Développement Durable (LDD)
+        ("LDD", "transfer", True),
+        # case 3: Compte de Chèque (CHQ)
+        ("CHQ", "expense", ""),
+    ],
+)
+def test_bnp_pipeline_guess_meta_account_type(cat, label, value, cfg):
+    cols = ["Label", "Type", "mainCategory", "subCategory", "IsRegular"]
+
+    account = BnpAccount(cat, "xxx", "****1234")
+    cfg.accounts.append(account)
+    pipeline = BnpPipeline(account=account, cfg=cfg)
+    raw = pd.DataFrame(columns=cols, data=[("Label", "", "", "", "")])
+    expected = pd.DataFrame(columns=cols, data=[("Label", label, "", "", value)])
+    actual = pipeline.guess_meta(raw)
+    assert_frame_equal(actual, expected)
+
+
+def test_bnp_pipeline_guess_meta_transaction_label(cfg):
+    cols = ["Label", "Type", "mainCategory", "subCategory", "IsRegular"]
+    raw = pd.DataFrame(
+        columns=cols,
+        data=[
+            ("FOUJITA", "", "", "", False),  # find
+            ("FOUJITA LEETCODE", "", "", "", False),  # find first
+        ],
+    )
+    expected = pd.DataFrame(
+        columns=cols,
+        data=[
+            ("FOUJITA", "expense", "food", "resto", True),
+            ("FOUJITA LEETCODE", "expense", "food", "resto", True),
+        ],
+    )
+
+    account = BnpAccount("CHQ", "xxx", "****1234")
+    cfg.accounts.append(account)
+    cfg.autocomplete.extend(
+        [
+            (("expense", "food", "resto", True), r".*FOUJITA.*"),
+            (("expense", "util", "tech", False), r".*LEETCODE.*"),
+        ]
+    )
+    actual = BnpPipeline(account, cfg).guess_meta(raw)
+    assert_frame_equal(actual, expected)
+
+
+def test_bnp_pipeline_append_tx_file_nonexistent_csv():
+    df = pd.DataFrame(
+        columns=[
+            "Date",
+            "bnpMainCategory",
+            "bnpSubCategory",
+            "Label",
+            "Amount",
+            "Type",
+            "mainCategory",
+            "subCategory",
+            "IsRegular",
+        ],
+        data=[(pd.Timestamp("2019-08-01"), "m", "s", "myLabel", 10.0, "", "", "", "")],
+    )
+    with TemporaryDirectory() as root:
+        csv = Path(root) / "my.csv"
+        BnpPipeline.append_tx_file(csv, df)
+        assert (
+            csv.read_text()
+            == """\
+Date,bnpMainCategory,bnpSubCategory,Label,Amount,Type,mainCategory,subCategory,IsRegular
+2019-08-01,m,s,myLabel,10.0,,,,
+"""
+        )
+
+
+def test_bnp_pipeline_append_tx_file_existing_csv():
+    df = pd.DataFrame(
+        columns=[
+            "Date",
+            "bnpMainCategory",
+            "bnpSubCategory",
+            "Label",
+            "Amount",
+            "Type",
+            "mainCategory",
+            "subCategory",
+            "IsRegular",
+        ],
+        data=[(pd.Timestamp("2019-08-01"), "m", "s", "myLabel", 10.0, "", "", "", "")],
+    )
+    with TemporaryDirectory() as root:
+        csv = Path(root) / "my.csv"
+        csv.write_text(
+            """\
+Date,bnpMainCategory,bnpSubCategory,Label,Amount,Type,mainCategory,subCategory,IsRegular
+2019-08-01,m,s,myLabel,10.0,myType,main,sub,True
+"""
+        )
+        BnpPipeline.append_tx_file(csv, df)
+        assert (
+            csv.read_text()
+            == """\
+Date,bnpMainCategory,bnpSubCategory,Label,Amount,Type,mainCategory,subCategory,IsRegular
+2019-08-01,m,s,myLabel,10.0,myType,main,sub,True
+"""
+        )
+
+
+def test_bnp_pipeline_append_tx_file_drop_duplicates():
+    """
+    Mainly for third party payment websites, like PayPal.
+    They don't provide distinguishable label.
+    """
+    df = pd.DataFrame(
+        columns=[
+            "Date",
+            "bnpMainCategory",
+            "bnpSubCategory",
+            "Label",
+            "Amount",
+            "Type",
+            "mainCategory",
+            "subCategory",
+            "IsRegular",
+        ],
+        data=[
+            (pd.Timestamp("2019-08-01"), "m", "s", "myLabel", 10.0, "", "", "", ""),
+            (pd.Timestamp("2019-08-01"), "m", "s", "myLabel", 11.0, "", "", "", ""),
+        ],
+    )
+    with TemporaryDirectory() as root:
+        csv = Path(root) / "my.csv"
+        BnpPipeline.append_tx_file(csv, df)
+        assert (
+            csv.read_text()
+            == """\
+Date,bnpMainCategory,bnpSubCategory,Label,Amount,Type,mainCategory,subCategory,IsRegular
+2019-08-01,m,s,myLabel,10.0,,,,
+2019-08-01,m,s,myLabel,11.0,,,,
+"""
+        )
+
+
+# ---------- Class: BoursoramaPipeline ----------
+
+
+def test_boursorama_pipeline_integrate(cfg):
+    (cfg.root_dir / "2019-08").mkdir()
+    (cfg.root_dir / "2019-09").mkdir()
+
+    # Given two existing CSVs for transactions
+    tx08 = cfg.root_dir / "2019-08" / "2019-08.xxx.csv"
+    tx09 = cfg.root_dir / "2019-09" / "2019-09.xxx.csv"
+    tx08.write_text(
+        """\
+dateOp,dateVal,Label,brsMainCategory,brsSubCategory,supplierFound,Amount,Type,mainCategory,subCategory,IsRegular
+2019-08-29,2019-08-29,VIR Virement interne depuis BOURSORA,Virements reçus de comptes à comptes,Mouvements internes créditeurs,virement interne depuis boursora,30.0,transfer,,,False
+"""  # noqa: E501
+    )
+    tx09.write_text(
+        """\
+dateOp,dateVal,Label,brsMainCategory,brsSubCategory,supplierFound,Amount,Type,mainCategory,subCategory,IsRegular
+2019-09-01,2019-09-01,VIR Virement interne depuis BOURSORA,Virements reçus de comptes à comptes,Mouvements internes créditeurs,virement interne depuis boursora,40.0,transfer,,,False
+"""  # noqa: E501
+    )
+
+    # And a file for balance
+    b = cfg.root_dir / "balance.xxx.csv"
+    b.write_text(
+        """\
+Date,Amount
+2019-08-29,300.0
+2019-09-01,200.0
+"""
+    )
+
+    # And a file to be integrated
+    new_file = cfg.root_dir / "export-operations-04-09-2019_23-17-18.csv"
+    new_file.write_text(
+        """\
+dateOp;dateVal;Label;category;categoryParent;supplierFound;Amount;accountNum;accountLabel;accountbalance
+2019-08-30;2019-08-30;"VIR Virement interne depuis BOURSORA";"Virements reçus de comptes à comptes";"Mouvements internes créditeurs";"virement interne depuis boursora";10,00;00001234;"COMPTE SUR LIVRET";"1 000,00"
+2019-09-02;2019-09-02;"VIR Virement interne depuis BOURSORA";"Virements reçus de comptes à comptes";"Mouvements internes créditeurs";"virement interne depuis boursora";11,00;00001234;"COMPTE SUR LIVRET";"1 000,00"
+""",  # noqa: E501
+        encoding="ISO-8859-1",
+    )
+
+    # When integrating new lines
+    summary = Summary(Path("/path/to/sources"))
+    account = BoursoramaAccount("LVR", "xxx", "001234")
+    cfg.accounts.append(account)
+    BoursoramaPipeline(account, cfg).integrate(new_file, cfg.root_dir, summary)
+
+    # Then the new lines are integrated
+    assert (
+        tx08.read_text()
+        == """\
+dateOp,dateVal,Label,brsMainCategory,brsSubCategory,supplierFound,Amount,Type,mainCategory,subCategory,IsRegular
+2019-08-29,2019-08-29,VIR Virement interne depuis BOURSORA,Virements reçus de comptes à comptes,Mouvements internes créditeurs,virement interne depuis boursora,30.0,transfer,,,False
+2019-08-30,2019-08-30,VIR Virement interne depuis BOURSORA,Virements reçus de comptes à comptes,Mouvements internes créditeurs,virement interne depuis boursora,10.0,transfer,,,False
+"""  # noqa: E501
+    )
+    assert (
+        tx09.read_text()
+        == """\
+dateOp,dateVal,Label,brsMainCategory,brsSubCategory,supplierFound,Amount,Type,mainCategory,subCategory,IsRegular
+2019-09-01,2019-09-01,VIR Virement interne depuis BOURSORA,Virements reçus de comptes à comptes,Mouvements internes créditeurs,virement interne depuis boursora,40.0,transfer,,,False
+2019-09-02,2019-09-02,VIR Virement interne depuis BOURSORA,Virements reçus de comptes à comptes,Mouvements internes créditeurs,virement interne depuis boursora,11.0,transfer,,,False
+"""  # noqa: E501
+    )
+
+    # And the balance is correct
+    assert (
+        b.read_text()
+        == """\
+Date,Amount
+2019-08-29,300.0
+2019-09-01,200.0
+2019-09-03,1000.0
+"""
+    )
+
+    # And the summary is correct
+    assert new_file in summary.sources
+    assert tx08 in summary.targets
+    assert tx09 in summary.targets
+    assert b in summary.targets
+
+
+def test_boursorama_account_read_raw(location, cfg):
+    csv = location / "export-operations-30-03-2019_08-50-51.csv"
+
+    account = BoursoramaAccount("type1", "name1", "001234")
+    cfg.accounts.append(account)
+    b, tx = BoursoramaPipeline(account, cfg).read_raw(csv)
+
+    expected_b = pd.DataFrame(
+        {"accountNum": "001234", "Amount": 370.0, "Date": pd.Timestamp("2019-03-29")},
+        index=[0],
+    )
+    assert_frame_equal(expected_b, b)
+    expected_tx = pd.DataFrame(
+        columns=[
+            "dateOp",
+            "dateVal",
+            "Label",
+            "brsMainCategory",
+            "brsSubCategory",
+            "supplierFound",
+            "Amount",
+            "accountNum",
+            "accountLabel",
+            "accountBalance",
+        ],
+        data=[
+            (
+                pd.Timestamp("2019-03-12"),
+                pd.Timestamp("2019-03-12"),
+                "Prime Parrainage",
+                "Virements reçus",
+                "Virements reçus",
+                "prime parrainage",
+                80.0,
+                "001234",
+                "BOURSORAMA BANQUE",
+                370.0,
+            ),
+            (
+                pd.Timestamp("2019-03-12"),
+                pd.Timestamp("2019-03-12"),
+                "VIR VIREMENT CREATION COMPTE",
+                "Virements reçus",
+                "Virements reçus",
+                "virement creation compte",
+                300.0,
+                "001234",
+                "BOURSORAMA BANQUE",
+                370.0,
+            ),
+            (
+                pd.Timestamp("2019-03-12"),
+                pd.Timestamp("2019-03-12"),
+                "VIR VIREMENT CREATION COMPTE",
+                "Virements émis de comptes à comptes",
+                "Mouvements internes débiteurs",
+                "virement creation compte",
+                -10.0,
+                "001234",
+                "BOURSORAMA BANQUE",
+                370.0,
+            ),
+        ],
+    )
+    assert_frame_equal(expected_tx, tx)
+
+
+def test_boursorama_account_read_raw_account_2(location, cfg):
+    csv = location / "export-operations-30-03-2019_08-50-51.csv"
+
+    account = BoursoramaAccount("type2", "name2", "003607")
+    cfg.accounts.append(account)
+    b, tx = BoursoramaPipeline(account, cfg).read_raw(csv)
+
+    expected_b = pd.DataFrame(
+        {
+            "accountNum": "003607",
+            "Amount": 4810.0,
+            "Date": pd.Timestamp("2019-03-29"),  # date from filename, not row
+        },
+        index=[0],
+    )
+    assert_frame_equal(expected_b, b)
+    expected_tx = pd.DataFrame(
+        {
+            "dateOp": pd.Timestamp("2019-03-12"),
+            "dateVal": pd.Timestamp("2019-03-12"),
+            "Label": "VIR VIREMENT CREATION COMPTE",
+            "brsMainCategory": "Virements reçus de comptes à comptes",
+            "brsSubCategory": "Mouvements internes créditeurs",
+            "supplierFound": "virement creation compte",
+            "Amount": 10.0,
+            "accountNum": "003607",
+            "accountLabel": "COMPTE SUR LIVRET",
+            "accountBalance": 4810.0,
+        },
+        index=[0],
+    )
+    assert_frame_equal(expected_tx, tx)
+
+
+def test_boursorama_account_write_balances():
+    with TemporaryDirectory() as d:
+        # Given an existing CSV file with 2 rows
+        csv = Path(d) / "balance.xxx.csv"
+        csv.write_text(
+            """\
+Date,Amount
+2019-03-01,300.00
+2019-03-12,370.00
+"""
+        )
+
+        # When writing new row into the CSV file
+        new_lines = pd.DataFrame(
+            columns=["Date", "Amount"], data=[(pd.Timestamp("2019-03-10"), 320.00)]
+        )
+        BoursoramaPipeline.write_balances(csv, new_lines)
+
+        # Then rows are available and sorted
+        assert (
+            csv.read_text()
+            == """\
+Date,Amount
+2019-03-01,300.0
+2019-03-10,320.0
+2019-03-12,370.0
+"""
+        )
+
+
+def test_boursorama_pipeline_append_tx():
+    with TemporaryDirectory() as d:
+        # Given an existing CSV
+        csv = Path(d) / "2018-09.xxx.csv"
+        csv.write_text(
+            """\
+dateOp,dateVal,Label,brsMainCategory,brsSubCategory,supplierFound,Amount,Type,mainCategory,subCategory,IsRegular
+2018-09-26,2018-09-26,CARTE 25/09/18 93 LABEL,"Restaurants, bars",Loisirs,My Restaurant,-20.1,expense,food,resto,True
+"""  # noqa: E501
+        )
+
+        # When writing new row into the CSV file
+        cols = [
+            "dateOp",
+            "dateVal",
+            "Label",
+            "brsMainCategory",
+            "brsSubCategory",
+            "supplierFound",
+            "Amount",
+            "Type",
+            "mainCategory",
+            "subCategory",
+            "IsRegular",
+        ]
+        data = [
+            (
+                pd.Timestamp("2018-09-27"),
+                pd.Timestamp("2018-09-27"),
+                "L",
+                "M",
+                "S",
+                "SP",
+                -10.0,
+                "expense",
+                "M",
+                "S",
+                True,
+            )
+        ]
+        new_lines = pd.DataFrame(columns=cols, data=data)
+        BoursoramaPipeline.append_tx(csv, new_lines)
+
+        # Then rows are available and sorted
+        assert (
+            csv.read_text()
+            == """\
+dateOp,dateVal,Label,brsMainCategory,brsSubCategory,supplierFound,Amount,Type,mainCategory,subCategory,IsRegular
+2018-09-26,2018-09-26,CARTE 25/09/18 93 LABEL,"Restaurants, bars",Loisirs,My Restaurant,-20.1,expense,food,resto,True
+2018-09-27,2018-09-27,L,M,S,SP,-10.0,expense,M,S,True
+"""  # noqa: E501
+        )
+
+
+def test_boursorama_pipeline_append_tx_drop_duplicates():
+    with TemporaryDirectory() as d:
+        # Given an existing CSV
+        csv = Path(d) / "my.csv"
+        csv.write_text(
+            """\
+dateOp,dateVal,Label,brsMainCategory,brsSubCategory,supplierFound,Amount,Type,mainCategory,subCategory,IsRegular
+2018-09-26,2018-09-26,myLabel,main,sub,supplier,-20.1,expense,food,resto,True
+"""
+        )
+
+        # When writing new row into the CSV file
+        cols = [
+            "dateOp",
+            "dateVal",
+            "Label",
+            "brsMainCategory",
+            "brsSubCategory",
+            "supplierFound",
+            "Amount",
+            "Type",
+            "mainCategory",
+            "subCategory",
+            "IsRegular",
+        ]
+        data = [
+            (
+                pd.Timestamp("2018-09-26"),
+                pd.Timestamp("2018-09-26"),
+                "myLabel",
+                "main",
+                "sub",
+                "supplier",
+                -20.1,
+                "expense",
+                "food",
+                "resto",
+                True,
+            )
+        ]
+        new_lines = pd.DataFrame(columns=cols, data=data)
+        BoursoramaPipeline.append_tx(csv, new_lines)
+
+        # Then rows has no duplicates
+        assert (
+            csv.read_text()
+            == """\
+dateOp,dateVal,Label,brsMainCategory,brsSubCategory,supplierFound,Amount,Type,mainCategory,subCategory,IsRegular
+2018-09-26,2018-09-26,myLabel,main,sub,supplier,-20.1,expense,food,resto,True
+"""
+        )
+
+
+@pytest.mark.parametrize(
+    "cat, label",
+    [
+        # case 0: Livret (LVR)
+        ("LVR", "transfer"),
+        # case 1: Compte de Chèque (CHQ)
+        ("CHQ", "expense"),
+    ],
+)
+def test_boursorama_pipeline_guess_meta_account_type(cat, label, cfg):
+    cols = ["Label", "Type", "mainCategory", "subCategory", "IsRegular"]
+
+    account = BoursoramaAccount(cat, "xxx", "****1234")
+    cfg.accounts.append(account)
+    raw_df = pd.DataFrame(columns=cols, data=[("Label", "", "", "", "")])
+    expected_df = pd.DataFrame(columns=cols, data=[("Label", label, "", "", False)])
+    actual_df = BoursoramaPipeline(account, cfg).guess_meta(raw_df)
+    assert_frame_equal(actual_df, expected_df)
+
+
+def test_boursorama_account_guess_mata_transaction_label(cfg):
+    cols = ["Label", "Type", "mainCategory", "subCategory", "IsRegular"]
+
+    account = BoursoramaAccount("LVR", "xxx", "****1234")
+    cfg.accounts.append(account)
+    cfg.autocomplete.extend(
+        [
+            (("expense", "food", "resto", True), r".*FOUJITA.*"),
+            (("expense", "util", "tech", False), r".*LEETCODE.*"),
+        ]
+    )
+    raw = pd.DataFrame(
+        columns=cols,
+        data=[
+            ("FOUJITA", "", "", "", ""),  # find
+            ("FOUJITA LEETCODE", "", "", "", ""),  # find first
+        ],
+    )
+    expected = pd.DataFrame(
+        columns=cols,
+        data=[
+            ("FOUJITA", "expense", "food", "resto", True),
+            ("FOUJITA LEETCODE", "expense", "food", "resto", True),
+        ],
+    )
+    actual = BoursoramaPipeline(account, cfg).guess_meta(raw)
+    assert_frame_equal(actual, expected)
