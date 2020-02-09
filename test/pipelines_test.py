@@ -5,15 +5,20 @@ import pandas as pd
 import pytest
 from pandas.util.testing import assert_frame_equal
 
-from tx.accounts import BnpAccount, BoursoramaAccount, Account
+from tx.accounts import (
+    Account,
+    BnpAccount,
+    BoursoramaAccount,
+    FortuneoAccount,
+)
 from tx.pipelines import (
     BalancePipeline,
     BnpPipeline,
     BnpBalancePipeline,
     BnpTransactionPipeline,
-    BoursoramaPipeline,
     BoursoramaBalancePipeline,
     BoursoramaTransactionPipeline,
+    FortuneoTransactionPipeline,
     PipelineFactory,
     TransactionPipeline,
 )
@@ -31,12 +36,16 @@ def test_new_transaction_pipeline(cfg):
         BoursoramaAccount("CHQ", "foo-BNP-CHQ", "****0001")
     )
     p3 = PipelineFactory(cfg).new_transaction_pipeline(
+        FortuneoAccount("CHQ", "foo-FTN-CHQ", "12345")
+    )
+    p4 = PipelineFactory(cfg).new_transaction_pipeline(
         Account("unknown", "unknown", "unknown", "unknown")
     )
 
     assert isinstance(p1, BnpTransactionPipeline)
-    assert isinstance(p2, BoursoramaPipeline)
-    assert isinstance(p3, TransactionPipeline)
+    assert isinstance(p2, BoursoramaTransactionPipeline)
+    assert isinstance(p3, FortuneoTransactionPipeline)
+    assert isinstance(p4, TransactionPipeline)
 
 
 def test_new_balance_pipeline(cfg):
