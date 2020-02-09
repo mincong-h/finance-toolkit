@@ -1,4 +1,5 @@
 import re
+from abc import ABCMeta, abstractmethod
 from pathlib import Path
 from typing import Tuple
 
@@ -9,16 +10,26 @@ from .accounts import Account, BnpAccount, BoursoramaAccount
 from .utils import Configuration, Summary
 
 
-class Pipeline:
+class Pipeline(metaclass=ABCMeta):
     def __init__(self, account: Account, cfg: Configuration):
         self.account = account
         self.cfg = cfg
 
-    def integrate(self, path: Path, dest_dir: Path, summary: Summary) -> None:
-        pass
+    @abstractmethod
+    def run(self, path: Path, dest_dir: Path, summary: Summary) -> None:
+        """
+        Run pipeline
+
+        :param path: the source path where data should be read
+        :param dest_dir: the destination, a directory path where data should be written
+        :param summary: the summary containing results of different pipelines
+        """
 
 
 class TransactionPipeline(Pipeline):
+    def run(self, path: Path, dest_dir: Path, summary: Summary) -> None:
+        pass
+
     def guess_meta(self, df: DataFrame) -> DataFrame:
         return df
 
@@ -35,6 +46,9 @@ class TransactionPipeline(Pipeline):
 
 
 class BalancePipeline(Pipeline):
+    def run(self, path: Path, dest_dir: Path, summary: Summary) -> None:
+        pass
+
     def read_balance(self, path: Path) -> DataFrame:
         df = pd.read_csv(path, parse_dates=["Date"])
         df = df[["Date", "Amount"]]
@@ -47,7 +61,7 @@ class BalancePipeline(Pipeline):
         pass
 
 
-class BnpPipeline:
+class BnpPipeline(Pipeline, metaclass=ABCMeta):
     @classmethod
     def read_raw(cls, csv: Path) -> Tuple[DataFrame, DataFrame]:
         with csv.open(encoding="ISO-8859-1") as f:
@@ -92,7 +106,7 @@ class BnpPipeline:
 
 
 class BnpTransactionPipeline(BnpPipeline, TransactionPipeline):
-    def integrate(self, path: Path, dest_dir: Path, summary: Summary) -> None:
+    def run(self, path: Path, dest_dir: Path, summary: Summary) -> None:
         # read
         tx = self.read_new_transactions(path)
         summary.add_source(path)
@@ -159,7 +173,7 @@ class BnpTransactionPipeline(BnpPipeline, TransactionPipeline):
 
 
 class BnpBalancePipeline(BnpPipeline, BalancePipeline):
-    def integrate(self, path: Path, dest_dir: Path, summary: Summary) -> None:
+    def run(self, path: Path, dest_dir: Path, summary: Summary) -> None:
         balances = self.read_new_balances(path)
         b_path = dest_dir / f"balance.{self.account.filename}"
         self.write_balances(b_path, balances)
@@ -182,7 +196,7 @@ class BnpBalancePipeline(BnpPipeline, BalancePipeline):
         return balances
 
 
-class BoursoramaPipeline(Pipeline):
+class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
     def read_raw(self, csv: Path) -> Tuple[DataFrame, DataFrame]:
         df = pd.read_csv(
             csv,
@@ -219,7 +233,7 @@ class BoursoramaPipeline(Pipeline):
 
 
 class BoursoramaTransactionPipeline(BoursoramaPipeline, TransactionPipeline):
-    def integrate(self, path: Path, dest_dir: Path, summary: Summary):
+    def run(self, path: Path, dest_dir: Path, summary: Summary):
         # read
         tx = self.read_new_transactions(path)
         summary.add_source(path)
@@ -287,7 +301,7 @@ class BoursoramaTransactionPipeline(BoursoramaPipeline, TransactionPipeline):
 
 
 class BoursoramaBalancePipeline(BoursoramaPipeline, BalancePipeline):
-    def integrate(self, path: Path, dest_dir: Path, summary: Summary):
+    def run(self, path: Path, dest_dir: Path, summary: Summary):
         balances = self.read_new_balances(path)
         balance_file = dest_dir / f"balance.{self.account.filename}"
         self.write_balances(balance_file, balances)

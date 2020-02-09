@@ -94,8 +94,8 @@ def test_bnp_pipeline_integrate(cfg):
     summary = Summary(Path("/path/to/sources"))
     account = BnpAccount("CHQ", "xxx", "****1234")
     cfg.accounts.append(account)
-    BnpTransactionPipeline(account, cfg).integrate(new_file, cfg.root_dir, summary)
-    BnpBalancePipeline(account, cfg).integrate(new_file, cfg.root_dir, summary)
+    BnpTransactionPipeline(account, cfg).run(new_file, cfg.root_dir, summary)
+    BnpBalancePipeline(account, cfg).run(new_file, cfg.root_dir, summary)
 
     # Then the new lines are integrated
     expected_lines8 = [
@@ -398,9 +398,7 @@ dateOp;dateVal;Label;category;categoryParent;supplierFound;Amount;accountNum;acc
     summary = Summary(Path("/path/to/sources"))
     account = BoursoramaAccount("LVR", "xxx", "001234")
     cfg.accounts.append(account)
-    BoursoramaTransactionPipeline(account, cfg).integrate(
-        new_file, cfg.root_dir, summary
-    )
+    BoursoramaTransactionPipeline(account, cfg).run(new_file, cfg.root_dir, summary)
 
     # Then the new lines are integrated
     assert (
@@ -421,7 +419,7 @@ dateOp,dateVal,Label,brsMainCategory,brsSubCategory,supplierFound,Amount,Type,ma
     )
 
     # And the balance is correct
-    BoursoramaBalancePipeline(account, cfg).integrate(new_file, cfg.root_dir, summary)
+    BoursoramaBalancePipeline(account, cfg).run(new_file, cfg.root_dir, summary)
     assert (
         b.read_text()
         == """\
@@ -444,7 +442,7 @@ def test_boursorama_account_read_raw(location, cfg):
 
     account = BoursoramaAccount("type1", "name1", "001234")
     cfg.accounts.append(account)
-    b, tx = BoursoramaPipeline(account, cfg).read_raw(csv)
+    b, tx = BoursoramaTransactionPipeline(account, cfg).read_raw(csv)
 
     expected_b = pd.DataFrame(
         {"accountNum": "001234", "Amount": 370.0, "Date": pd.Timestamp("2019-03-29")},
@@ -511,7 +509,7 @@ def test_boursorama_account_read_raw_account_2(location, cfg):
 
     account = BoursoramaAccount("type2", "name2", "003607")
     cfg.accounts.append(account)
-    b, tx = BoursoramaPipeline(account, cfg).read_raw(csv)
+    b, tx = BoursoramaTransactionPipeline(account, cfg).read_raw(csv)
 
     expected_b = pd.DataFrame(
         {

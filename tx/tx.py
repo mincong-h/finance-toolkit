@@ -245,9 +245,9 @@ def move(cfg: Configuration):
         for account in cfg.accounts:
             if account.match(path):
                 pipeline = factory.new_transaction_pipeline(account)
-                pipeline.integrate(path, cfg.root_dir, summary)
+                pipeline.run(path, cfg.root_dir, summary)
                 balance_pipeline = factory.new_balance_pipeline(account)
-                balance_pipeline.integrate(path, cfg.root_dir, summary)
+                balance_pipeline.run(path, cfg.root_dir, summary)
     print(summary)
 
 
