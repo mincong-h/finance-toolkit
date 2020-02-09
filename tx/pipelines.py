@@ -9,15 +9,16 @@ from .accounts import Account, BnpAccount, BoursoramaAccount
 from .utils import Configuration, Summary
 
 
-class AccountPipeline:
+class Pipeline:
     def __init__(self, account: Account, cfg: Configuration):
         self.account = account
         self.cfg = cfg
 
     def integrate(self, path: Path, dest_dir: Path, summary: Summary) -> None:
-        # do nothing
-        return
+        pass
 
+
+class TransactionPipeline(Pipeline):
     def guess_meta(self, df: DataFrame) -> DataFrame:
         return df
 
@@ -30,45 +31,77 @@ class AccountPipeline:
         return df
 
     def write_balances(self, path: Path, new_balances: DataFrame):
-        # do nothing
-        return
+        pass
 
+
+class BalancePipeline(Pipeline):
+    def read_balance(self, path: Path) -> DataFrame:
+        df = pd.read_csv(path, parse_dates=["Date"])
+        df = df[["Date", "Amount"]]
+        df["Account"] = self.account.id
+        df["AccountId"] = self.account.num
+        df["AccountType"] = self.account.type
+        return df
+
+    def write_balances(self, path: Path, new_balances: DataFrame):
+        pass
+
+
+class BnpPipeline:
     @classmethod
-    def parse_account(cls, path: Path, cfg: Configuration) -> Account:
-        parts = path.name.split(".")
-        account_id = parts[1]
-        accounts = cfg.as_dict()
-        if len(parts) == 3 and account_id in accounts:
-            return accounts[account_id]
-        return Account("unknown", "unknown", "unknown", r"unknown")
+    def read_raw(cls, csv: Path) -> Tuple[DataFrame, DataFrame]:
+        with csv.open(encoding="ISO-8859-1") as f:
+            first = next(f).strip()
 
-    @classmethod
-    def create_pipeline(cls, account: Account, cfg: Configuration):
-        if isinstance(account, BnpAccount):
-            return BnpPipeline(account, cfg)
-        if isinstance(account, BoursoramaAccount):
-            return BoursoramaPipeline(account, cfg)
-        return AccountPipeline(account, cfg)
+        balances = pd.DataFrame.from_records(
+            data=[first.split(";")],
+            columns=[
+                "mainCategory",
+                "subCategory",
+                "accountNum",
+                "Date",
+                "unknown",
+                "Amount",
+            ],
+        )
+        balances["Date"] = pd.to_datetime(balances["Date"], format="%d/%m/%Y")
+        balances["Amount"] = balances["Amount"].apply(
+            lambda v: v.replace(",", ".").replace(" ", "")
+        )
+        balances["Amount"] = balances["Amount"].astype(float)
+        del balances["unknown"]
 
-    @classmethod
-    def create_pipeline_from_path(cls, path: Path, cfg: Configuration):
-        return cls.create_pipeline(cls.parse_account(path, cfg), cfg)
+        tx = pd.read_csv(
+            csv,
+            date_parser=lambda s: pd.datetime.strptime(s, "%d/%m/%Y"),
+            decimal=",",
+            delimiter=";",
+            encoding="ISO-8859-1",
+            names=["Date", "bnpMainCategory", "bnpSubCategory", "Label", "Amount"],
+            parse_dates=["Date"],
+            skipinitialspace=True,
+            skiprows=1,
+            thousands=" ",
+        )
+        tx = tx.fillna("")
+        tx["Type"] = ""
+        tx["mainCategory"] = ""
+        tx["subCategory"] = ""
+        tx["IsRegular"] = ""
+        return balances, tx
 
 
-class BnpPipeline(AccountPipeline):
+class BnpTransactionPipeline(BnpPipeline, TransactionPipeline):
     def integrate(self, path: Path, dest_dir: Path, summary: Summary) -> None:
         # read
-        balances, tx = self.read_raw(path)
+        tx = self.read_new_transactions(path)
         summary.add_source(path)
 
         # process
         tx = self.guess_meta(tx)
         tx["month"] = tx["Date"].apply(lambda date: date.strftime("%Y-%m"))
-        b_path = dest_dir / f"balance.{self.account.filename}"
 
         # write
-        self.write_balances(b_path, balances)
-        summary.add_target(b_path)
         for m in tx["month"].unique():
             d = dest_dir / m
             if not d.exists():
@@ -120,13 +153,19 @@ class BnpPipeline(AccountPipeline):
         ]
         df.to_csv(csv, columns=cols, index=None)
 
-    def read_balance(self, path: Path) -> DataFrame:
-        df = pd.read_csv(path, parse_dates=["Date"])
-        df = df[["Date", "Amount"]]
-        df["Account"] = self.account.id
-        df["AccountId"] = self.account.num
-        df["AccountType"] = self.account.type
-        return df
+    def read_new_transactions(self, path: Path) -> DataFrame:
+        _, tx = self.read_raw(path)
+        return tx
+
+
+class BnpBalancePipeline(BnpPipeline, BalancePipeline):
+    def integrate(self, path: Path, dest_dir: Path, summary: Summary) -> None:
+        balances = self.read_new_balances(path)
+        b_path = dest_dir / f"balance.{self.account.filename}"
+        self.write_balances(b_path, balances)
+
+        summary.add_source(path)
+        summary.add_target(b_path)
 
     @classmethod
     def write_balances(cls, csv: Path, new_lines: DataFrame) -> None:
@@ -138,63 +177,58 @@ class BnpPipeline(AccountPipeline):
         df = df.sort_values(by="Date")
         df.to_csv(csv, index=None)
 
-    @classmethod
-    def read_raw(cls, csv: Path) -> Tuple[DataFrame, DataFrame]:
-        with csv.open(encoding="ISO-8859-1") as f:
-            first = next(f).strip()
+    def read_new_balances(self, csv: Path) -> DataFrame:
+        balances, _ = self.read_raw(csv)
+        return balances
 
-        balances = pd.DataFrame.from_records(
-            data=[first.split(";")],
-            columns=[
-                "mainCategory",
-                "subCategory",
-                "accountNum",
-                "Date",
-                "unknown",
-                "Amount",
-            ],
-        )
-        balances["Date"] = pd.to_datetime(balances["Date"], format="%d/%m/%Y")
-        balances["Amount"] = balances["Amount"].apply(
-            lambda v: v.replace(",", ".").replace(" ", "")
-        )
-        balances["Amount"] = balances["Amount"].astype(float)
-        del balances["unknown"]
 
-        tx = pd.read_csv(
+class BoursoramaPipeline(Pipeline):
+    def read_raw(self, csv: Path) -> Tuple[DataFrame, DataFrame]:
+        df = pd.read_csv(
             csv,
-            date_parser=lambda s: pd.datetime.strptime(s, "%d/%m/%Y"),
             decimal=",",
             delimiter=";",
+            dtype={"accountNum": "str"},
             encoding="ISO-8859-1",
-            names=["Date", "bnpMainCategory", "bnpSubCategory", "Label", "Amount"],
-            parse_dates=["Date"],
+            parse_dates=["dateOp", "dateVal"],
             skipinitialspace=True,
-            skiprows=1,
             thousands=" ",
         )
-        tx = tx.fillna("")
-        tx["Type"] = ""
-        tx["mainCategory"] = ""
-        tx["subCategory"] = ""
-        tx["IsRegular"] = ""
-        return balances, tx
+        df = df.rename(columns={"accountbalance": "accountBalance"})
+        transactions = df[df["accountNum"].map(self.account.is_account)]
+        transactions = transactions.reset_index(drop=True)
+        transactions = transactions.rename(
+            columns={
+                "category": "brsMainCategory",
+                "categoryParent": "brsSubCategory",
+                "label": "Label",
+                "amount": "Amount",
+            }
+        )
+
+        m = self.account.pattern.match(csv.name)
+        balances = df.groupby("accountNum")["accountBalance"].max().to_frame()
+        balances.reset_index(inplace=True)
+        balances["Date"] = pd.datetime.strptime(m.group(1), "%d-%m-%Y") - pd.Timedelta(
+            "1 day"
+        )
+        balances = balances[balances["accountNum"].map(self.account.is_account)]
+        balances = balances.reset_index(drop=True)
+        balances = balances.rename(columns={"accountBalance": "Amount"})
+        return balances, transactions
 
 
-class BoursoramaPipeline(AccountPipeline):
+class BoursoramaTransactionPipeline(BoursoramaPipeline, TransactionPipeline):
     def integrate(self, path: Path, dest_dir: Path, summary: Summary):
         # read
-        balances, tx = self.read_raw(path)
+        tx = self.read_new_transactions(path)
         summary.add_source(path)
 
         # process
         tx = self.guess_meta(tx)
         tx["month"] = tx.dateOp.apply(lambda date: date.strftime("%Y-%m"))
-        balance_file = dest_dir / f"balance.{self.account.filename}"
 
         # write
-        self.write_balances(balance_file, balances)
-        summary.add_target(balance_file)
         for m in tx["month"].unique():
             d = dest_dir / m
             if not d.exists():
@@ -247,12 +281,19 @@ class BoursoramaPipeline(AccountPipeline):
 
         df.to_csv(csv, columns=cols, index=None, date_format="%Y-%m-%d")
 
-    def read_balance(self, path: Path) -> DataFrame:
-        df = pd.read_csv(path, parse_dates=["Date"])
-        df["Account"] = self.account.id
-        df["AccountId"] = self.account.num
-        df["AccountType"] = self.account.type
-        return df
+    def read_new_transactions(self, path: Path):
+        _, tx = self.read_raw(path)
+        return tx
+
+
+class BoursoramaBalancePipeline(BoursoramaPipeline, BalancePipeline):
+    def integrate(self, path: Path, dest_dir: Path, summary: Summary):
+        balances = self.read_new_balances(path)
+        balance_file = dest_dir / f"balance.{self.account.filename}"
+        self.write_balances(balance_file, balances)
+
+        summary.add_source(path)
+        summary.add_target(balance_file)
 
     @classmethod
     def write_balances(cls, csv: Path, new_lines: DataFrame):
@@ -262,36 +303,41 @@ class BoursoramaPipeline(AccountPipeline):
         df = df.sort_values(by="Date")
         df.to_csv(csv, index=None, columns=["Date", "Amount"])
 
-    def read_raw(self, csv: Path) -> Tuple[DataFrame, DataFrame]:
-        df = pd.read_csv(
-            csv,
-            decimal=",",
-            delimiter=";",
-            dtype={"accountNum": "str"},
-            encoding="ISO-8859-1",
-            parse_dates=["dateOp", "dateVal"],
-            skipinitialspace=True,
-            thousands=" ",
-        )
-        df = df.rename(columns={"accountbalance": "accountBalance"})
-        transactions = df[df["accountNum"].map(self.account.is_account)]
-        transactions = transactions.reset_index(drop=True)
-        transactions = transactions.rename(
-            columns={
-                "category": "brsMainCategory",
-                "categoryParent": "brsSubCategory",
-                "label": "Label",
-                "amount": "Amount",
-            }
-        )
+    def read_new_balances(self, csv: Path) -> DataFrame:
+        balances, _ = self.read_raw(csv)
+        return balances
 
-        m = self.account.pattern.match(csv.name)
-        balances = df.groupby("accountNum")["accountBalance"].max().to_frame()
-        balances.reset_index(inplace=True)
-        balances["Date"] = pd.datetime.strptime(m.group(1), "%d-%m-%Y") - pd.Timedelta(
-            "1 day"
-        )
-        balances = balances[balances["accountNum"].map(self.account.is_account)]
-        balances = balances.reset_index(drop=True)
-        balances = balances.rename(columns={"accountBalance": "Amount"})
-        return balances, transactions
+
+class AccountParser:
+    def __init__(self, cfg: Configuration):
+        self.accounts = cfg.as_dict()
+
+    def parse(self, path: Path) -> Account:
+        parts = path.name.split(".")
+        account_id = parts[1]
+        if len(parts) == 3 and account_id in self.accounts:
+            return self.accounts[account_id]
+        return Account("unknown", "unknown", "unknown", r"unknown")
+
+
+class PipelineFactory:
+    def __init__(self, cfg: Configuration):
+        self.cfg = cfg
+
+    def new_transaction_pipeline(self, account: Account):
+        if isinstance(account, BnpAccount):
+            return BnpTransactionPipeline(account, self.cfg)
+        if isinstance(account, BoursoramaAccount):
+            return BoursoramaTransactionPipeline(account, self.cfg)
+        return TransactionPipeline(account, self.cfg)
+
+    def new_balance_pipeline(self, account: Account):
+        if isinstance(account, BnpAccount):
+            return BnpBalancePipeline(account, self.cfg)
+        if isinstance(account, BoursoramaAccount):
+            return BoursoramaBalancePipeline(account, self.cfg)
+        return BalancePipeline(account, self.cfg)
+
+    def parse_balance_pipeline(self, path: Path):
+        account = AccountParser(self.cfg).parse(path)
+        return self.new_transaction_pipeline(account)

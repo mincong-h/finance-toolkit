@@ -6,27 +6,53 @@ import pytest
 from pandas.util.testing import assert_frame_equal
 
 from tx.accounts import BnpAccount, BoursoramaAccount, Account
-from tx.pipelines import AccountPipeline, BnpPipeline, BoursoramaPipeline
+from tx.pipelines import (
+    BalancePipeline,
+    BnpPipeline,
+    BnpBalancePipeline,
+    BnpTransactionPipeline,
+    BoursoramaPipeline,
+    BoursoramaBalancePipeline,
+    BoursoramaTransactionPipeline,
+    PipelineFactory,
+    TransactionPipeline,
+)
 from tx.utils import Summary
 
 
 # ---------- Class: AccountPipeline ----------
 
 
-def test_create_pipeline(cfg):
-    p1 = AccountPipeline.create_pipeline(
-        BnpAccount("CHQ", "foo-BNP-CHQ", "****0001"), cfg
+def test_new_transaction_pipeline(cfg):
+    p1 = PipelineFactory(cfg).new_transaction_pipeline(
+        BnpAccount("CHQ", "foo-BNP-CHQ", "****0001")
     )
-    p2 = AccountPipeline.create_pipeline(
-        BoursoramaAccount("CHQ", "foo-BNP-CHQ", "****0001"), cfg
+    p2 = PipelineFactory(cfg).new_transaction_pipeline(
+        BoursoramaAccount("CHQ", "foo-BNP-CHQ", "****0001")
     )
-    p3 = AccountPipeline.create_pipeline(
-        Account("unknown", "unknown", "unknown", "unknown"), cfg
+    p3 = PipelineFactory(cfg).new_transaction_pipeline(
+        Account("unknown", "unknown", "unknown", "unknown")
     )
 
-    assert isinstance(p1, BnpPipeline)
+    assert isinstance(p1, BnpTransactionPipeline)
     assert isinstance(p2, BoursoramaPipeline)
-    assert isinstance(p3, AccountPipeline)
+    assert isinstance(p3, TransactionPipeline)
+
+
+def test_new_balance_pipeline(cfg):
+    p1 = PipelineFactory(cfg).new_balance_pipeline(
+        BnpAccount("CHQ", "foo-BNP-CHQ", "****0001")
+    )
+    p2 = PipelineFactory(cfg).new_balance_pipeline(
+        BoursoramaAccount("CHQ", "foo-BNP-CHQ", "****0001")
+    )
+    p3 = PipelineFactory(cfg).new_balance_pipeline(
+        Account("unknown", "unknown", "unknown", "unknown")
+    )
+
+    assert isinstance(p1, BnpBalancePipeline)
+    assert isinstance(p2, BoursoramaBalancePipeline)
+    assert isinstance(p3, BalancePipeline)
 
 
 # ---------- Class: BnpPipeline ----------
@@ -68,8 +94,8 @@ def test_bnp_pipeline_integrate(cfg):
     summary = Summary(Path("/path/to/sources"))
     account = BnpAccount("CHQ", "xxx", "****1234")
     cfg.accounts.append(account)
-    pipeline = BnpPipeline(account, cfg)
-    pipeline.integrate(new_file, cfg.root_dir, summary)
+    BnpTransactionPipeline(account, cfg).integrate(new_file, cfg.root_dir, summary)
+    BnpBalancePipeline(account, cfg).integrate(new_file, cfg.root_dir, summary)
 
     # Then the new lines are integrated
     expected_lines8 = [
@@ -97,7 +123,7 @@ def test_bnp_pipeline_integrate(cfg):
     assert b in summary.targets
 
 
-def test_bnp_pipeline_write_balances(cfg):
+def test_bnp_balance_pipeline_write_balances(cfg):
     # Given an existing CSV file with 2 rows
     csv = cfg.root_dir / "balance.xxx.csv"
     csv.write_text(
@@ -112,7 +138,7 @@ main,sub,****1234,2018-07-04,189.29
     cols = ["mainCategory", "subCategory", "accountNum", "Date", "Amount"]
     data = [("main", "sub", "****1234", pd.Timestamp("2018-09-02"), 924.37)]
     new_lines = pd.DataFrame(columns=cols, data=data)
-    BnpPipeline.write_balances(csv, new_lines)
+    BnpBalancePipeline.write_balances(csv, new_lines)
 
     # Then rows are available and sorted
     assert (
@@ -193,7 +219,7 @@ def test_bnp_pipeline_guess_meta_account_type(cat, label, value, cfg):
 
     account = BnpAccount(cat, "xxx", "****1234")
     cfg.accounts.append(account)
-    pipeline = BnpPipeline(account=account, cfg=cfg)
+    pipeline = BnpTransactionPipeline(account=account, cfg=cfg)
     raw = pd.DataFrame(columns=cols, data=[("Label", "", "", "", "")])
     expected = pd.DataFrame(columns=cols, data=[("Label", label, "", "", value)])
     actual = pipeline.guess_meta(raw)
@@ -225,7 +251,7 @@ def test_bnp_pipeline_guess_meta_transaction_label(cfg):
             (("expense", "util", "tech", False), r".*LEETCODE.*"),
         ]
     )
-    actual = BnpPipeline(account, cfg).guess_meta(raw)
+    actual = BnpTransactionPipeline(account, cfg).guess_meta(raw)
     assert_frame_equal(actual, expected)
 
 
@@ -246,7 +272,7 @@ def test_bnp_pipeline_append_tx_file_nonexistent_csv():
     )
     with TemporaryDirectory() as root:
         csv = Path(root) / "my.csv"
-        BnpPipeline.append_tx_file(csv, df)
+        BnpTransactionPipeline.append_tx_file(csv, df)
         assert (
             csv.read_text()
             == """\
@@ -279,7 +305,7 @@ Date,bnpMainCategory,bnpSubCategory,Label,Amount,Type,mainCategory,subCategory,I
 2019-08-01,m,s,myLabel,10.0,myType,main,sub,True
 """
         )
-        BnpPipeline.append_tx_file(csv, df)
+        BnpTransactionPipeline.append_tx_file(csv, df)
         assert (
             csv.read_text()
             == """\
@@ -313,7 +339,7 @@ def test_bnp_pipeline_append_tx_file_drop_duplicates():
     )
     with TemporaryDirectory() as root:
         csv = Path(root) / "my.csv"
-        BnpPipeline.append_tx_file(csv, df)
+        BnpTransactionPipeline.append_tx_file(csv, df)
         assert (
             csv.read_text()
             == """\
@@ -372,7 +398,9 @@ dateOp;dateVal;Label;category;categoryParent;supplierFound;Amount;accountNum;acc
     summary = Summary(Path("/path/to/sources"))
     account = BoursoramaAccount("LVR", "xxx", "001234")
     cfg.accounts.append(account)
-    BoursoramaPipeline(account, cfg).integrate(new_file, cfg.root_dir, summary)
+    BoursoramaTransactionPipeline(account, cfg).integrate(
+        new_file, cfg.root_dir, summary
+    )
 
     # Then the new lines are integrated
     assert (
@@ -393,6 +421,7 @@ dateOp,dateVal,Label,brsMainCategory,brsSubCategory,supplierFound,Amount,Type,ma
     )
 
     # And the balance is correct
+    BoursoramaBalancePipeline(account, cfg).integrate(new_file, cfg.root_dir, summary)
     assert (
         b.read_text()
         == """\
@@ -527,7 +556,7 @@ Date,Amount
         new_lines = pd.DataFrame(
             columns=["Date", "Amount"], data=[(pd.Timestamp("2019-03-10"), 320.00)]
         )
-        BoursoramaPipeline.write_balances(csv, new_lines)
+        BoursoramaBalancePipeline.write_balances(csv, new_lines)
 
         # Then rows are available and sorted
         assert (
@@ -582,7 +611,7 @@ dateOp,dateVal,Label,brsMainCategory,brsSubCategory,supplierFound,Amount,Type,ma
             )
         ]
         new_lines = pd.DataFrame(columns=cols, data=data)
-        BoursoramaPipeline.append_tx(csv, new_lines)
+        BoursoramaTransactionPipeline.append_tx(csv, new_lines)
 
         # Then rows are available and sorted
         assert (
@@ -636,7 +665,7 @@ dateOp,dateVal,Label,brsMainCategory,brsSubCategory,supplierFound,Amount,Type,ma
             )
         ]
         new_lines = pd.DataFrame(columns=cols, data=data)
-        BoursoramaPipeline.append_tx(csv, new_lines)
+        BoursoramaTransactionPipeline.append_tx(csv, new_lines)
 
         # Then rows has no duplicates
         assert (
@@ -664,7 +693,7 @@ def test_boursorama_pipeline_guess_meta_account_type(cat, label, cfg):
     cfg.accounts.append(account)
     raw_df = pd.DataFrame(columns=cols, data=[("Label", "", "", "", "")])
     expected_df = pd.DataFrame(columns=cols, data=[("Label", label, "", "", False)])
-    actual_df = BoursoramaPipeline(account, cfg).guess_meta(raw_df)
+    actual_df = BoursoramaTransactionPipeline(account, cfg).guess_meta(raw_df)
     assert_frame_equal(actual_df, expected_df)
 
 
@@ -693,5 +722,5 @@ def test_boursorama_account_guess_mata_transaction_label(cfg):
             ("FOUJITA LEETCODE", "expense", "food", "resto", True),
         ],
     )
-    actual = BoursoramaPipeline(account, cfg).guess_meta(raw)
+    actual = BoursoramaTransactionPipeline(account, cfg).guess_meta(raw)
     assert_frame_equal(actual, expected)

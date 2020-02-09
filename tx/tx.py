@@ -15,7 +15,7 @@ from .accounts import (
     DegiroAccount,
     OctoberAccount,
 )
-from .pipelines import AccountPipeline
+from .pipelines import PipelineFactory, AccountParser
 from .utils import Configuration, Summary
 
 
@@ -223,7 +223,7 @@ def merge_balances(paths: List[Path], cfg: Configuration) -> DataFrame:
     m = pd.DataFrame(columns=["Date", "Account", "AccountId", "Amount", "AccountType"])
 
     for path in paths:
-        pipeline = AccountPipeline.create_pipeline_from_path(path, cfg)
+        pipeline = PipelineFactory(cfg).parse_balance_pipeline(path)
         df = pipeline.read_balance(path)
         m = m.append(df, sort=False)
 
@@ -240,11 +240,14 @@ def merge_balances(paths: List[Path], cfg: Configuration) -> DataFrame:
 def move(cfg: Configuration):
     paths = [child for child in cfg.download_dir.iterdir() if child.is_file()]
     summary = Summary(cfg.download_dir)
+    factory = PipelineFactory(cfg)
     for path in paths:
         for account in cfg.accounts:
             if account.match(path):
-                pipeline = AccountPipeline.create_pipeline(account, cfg)
+                pipeline = factory.new_transaction_pipeline(account)
                 pipeline.integrate(path, cfg.root_dir, summary)
+                balance_pipeline = factory.new_balance_pipeline(account)
+                balance_pipeline.integrate(path, cfg.root_dir, summary)
     print(summary)
 
 
@@ -263,7 +266,7 @@ def merge(cfg: Configuration):
         "IsRegular",
     ]
     for path in cfg.root_dir.glob("20[1-9]*/*.csv"):
-        a = AccountPipeline.parse_account(path, cfg)
+        a = AccountParser(cfg).parse(path)
         if isinstance(a, BoursoramaAccount):
             df = read_boursorama_tx(path, cfg)
             df = df.rename(
