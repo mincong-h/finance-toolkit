@@ -3,7 +3,7 @@ from shutil import copyfile
 from tempfile import TemporaryDirectory
 
 import pytest
-from src.tx import Configuration
+from tx.tx import Configuration
 
 
 @pytest.fixture(scope="session")

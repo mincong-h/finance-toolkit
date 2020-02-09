@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from src.accounts import (
+from tx.accounts import (
     Account,
     BnpAccount,
     BoursoramaAccount,

@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 import pytest
-from src.tx import main
+from tx.__main__ import main
 
 
 CURRENT_USAGE = """Usage:

@@ -3,8 +3,8 @@ from unittest.mock import patch, call
 
 import pytest
 from pandas.testing import assert_frame_equal
-from src import tx
-from src.tx import *
+from tx import tx
+from tx.tx import *
 
 
 # ---------- Top Level Functions ----------
