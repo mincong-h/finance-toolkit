@@ -416,6 +416,12 @@ accounts:
     id: '****0002'
     expr: 'patter2\\.csv'
     label: Boursorama has its own naming convention, field 'expr' is not accepted.
+  astark-FTN-CHQ:
+    company: Fortuneo
+    type: CHQ
+    id: '12345'
+    expr: 'patterFortuneo\\.csv'
+    label: Fortuneo has its own naming convention, field 'expr' is not accepted.
   astark-OCT-CWL:
     company: October
     type: CWL
@@ -426,6 +432,7 @@ accounts:
     )
     assert Configurator.load_accounts(cfg["accounts"]) == [
         BoursoramaAccount("CHQ", "astark-BRS-CHQ", "****0002"),
+        FortuneoAccount("CHQ", "astark-FTN-CHQ", "12345"),
         OctoberAccount("CWL", "astark-OCT-CWL", "astark"),
         BnpAccount("CHQ", "sstark-BNP-CHQ", "****0001"),
     ]
@@ -437,6 +444,10 @@ accounts:
         call(
             "Boursorama has its own naming convention for downloaded files,"
             " you cannot overwrite it: expr='patter2\\\\.csv'"
+        ),
+        call(
+            "Fortuneo has its own naming convention for downloaded files,"
+            " you cannot overwrite it: expr='patterFortuneo\\\\.csv'"
         ),
         call(
             "October has its own naming convention for downloaded files,"
@@ -509,6 +520,7 @@ def test_configurator_parse_yaml(sample):
     assert cfg.accounts == [
         BnpAccount("CHQ", "astark-BNP-CHQ", "00000002"),
         DegiroAccount("STK", "astark-DGR-STK", "00000003"),
+        FortuneoAccount("CHQ", "astark-FTN-CHQ", "12345"),
         OctoberAccount("CWL", "astark-OCT-CWL", "astark"),
         BnpAccount("LVA", "sstark-BNP-LVA", "00000001"),
     ]

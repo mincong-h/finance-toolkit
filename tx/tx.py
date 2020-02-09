@@ -13,6 +13,7 @@ from .accounts import (
     BoursoramaAccount,
     CartaAccount,
     DegiroAccount,
+    FortuneoAccount,
     OctoberAccount,
 )
 from .pipelines import PipelineFactory, AccountParser
@@ -67,6 +68,19 @@ class Configurator:
             elif company == "Degiro":
                 accounts.append(
                     DegiroAccount(
+                        account_type=fields["type"],
+                        account_id=symbolic_name,
+                        account_num=fields["id"],
+                    )
+                )
+            elif company == "Fortuneo":
+                if "expr" in fields:
+                    print(
+                        "Fortuneo has its own naming convention for downloaded files,"
+                        f" you cannot overwrite it: expr={fields['expr']!r}"
+                    )
+                accounts.append(
+                    FortuneoAccount(
                         account_type=fields["type"],
                         account_id=symbolic_name,
                         account_num=fields["id"],

@@ -78,6 +78,16 @@ class DegiroAccount(Account):
         )
 
 
+class FortuneoAccount(Account):
+    def __init__(self, account_type: str, account_id: str, account_num: str):
+        super().__init__(
+            account_type=account_type,
+            account_id=account_id,
+            account_num=account_num,
+            pattern=r"HistoriqueOperations_(\d+)_du_\d{2}_\d{2}_\d{4}_au_\d{2}_\d{2}_\d{4}\.csv",
+        )
+
+
 class OctoberAccount(Account):
     def __init__(self, account_type: str, account_id: str, account_num: str):
         super().__init__(
