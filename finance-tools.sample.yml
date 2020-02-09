@@ -40,6 +40,12 @@ accounts:
     id: '00000003'
     label: Arya Stark - Degiro (Stock)
 
+  astark-FTN-CHQ:
+    company: Fortuneo
+    type: CHQ
+    id: '12345'
+    label: Arya Stark - Fortuneo (Compte de Chèque)
+
   astark-OCT-CWL:
     company: October
     type: CWL

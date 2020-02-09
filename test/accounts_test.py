@@ -5,6 +5,7 @@ from tx.accounts import (
     BnpAccount,
     BoursoramaAccount,
     DegiroAccount,
+    FortuneoAccount,
     OctoberAccount,
 )
 
@@ -86,6 +87,14 @@ def test_boursorama_account_hash():
 def test_degiro_account_match():
     a = DegiroAccount("aType", "anId", "****0001")
     assert a.match(Path("Portfolio.csv"))
+
+
+# ---------- Class: Fortuneo ----------
+
+
+def test_fortuneo_account_match():
+    a = FortuneoAccount("aType", "anId", "12345")
+    assert a.match(Path("HistoriqueOperations_12345_du_14_01_2019_au_14_12_2019.csv"))
 
 
 # ---------- Class: OctoberAccount ----------
