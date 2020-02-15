@@ -21,18 +21,17 @@ class Pipeline(metaclass=ABCMeta):
         self.cfg = cfg
 
     @abstractmethod
-    def run(self, path: Path, dest_dir: Path, summary: Summary) -> None:
+    def run(self, path: Path, summary: Summary) -> None:
         """
         Run pipeline
 
         :param path: the source path where data should be read
-        :param dest_dir: the destination, a directory path where data should be written
         :param summary: the summary containing results of different pipelines
         """
 
 
 class TransactionPipeline(Pipeline):
-    def run(self, path: Path, dest_dir: Path, summary: Summary) -> None:
+    def run(self, path: Path, summary: Summary) -> None:
         pass
 
     def guess_meta(self, df: DataFrame) -> DataFrame:
@@ -46,9 +45,9 @@ class TransactionPipeline(Pipeline):
 
 
 class BalancePipeline(Pipeline, metaclass=ABCMeta):
-    def run(self, path: Path, dest_dir: Path, summary: Summary):
+    def run(self, path: Path, summary: Summary):
         balances = self.read_new_balances(path)
-        balance_file = dest_dir / f"balance.{self.account.filename}"
+        balance_file = self.cfg.root_dir / f"balance.{self.account.filename}"
         self.write_balances(balance_file, balances)
 
         summary.add_source(path)
@@ -78,7 +77,7 @@ class BalancePipeline(Pipeline, metaclass=ABCMeta):
 
 
 class NoopBalancePipeline(BalancePipeline):
-    def run(self, path: Path, dest_dir: Path, summary: Summary):
+    def run(self, path: Path, summary: Summary):
         pass
 
     def read_new_balances(self, csv: Path) -> DataFrame:
@@ -138,7 +137,7 @@ class BnpPipeline(Pipeline, metaclass=ABCMeta):
 
 
 class BnpTransactionPipeline(BnpPipeline, TransactionPipeline):
-    def run(self, path: Path, dest_dir: Path, summary: Summary) -> None:
+    def run(self, path: Path, summary: Summary) -> None:
         # read
         tx = self.read_new_transactions(path)
         summary.add_source(path)
@@ -149,7 +148,7 @@ class BnpTransactionPipeline(BnpPipeline, TransactionPipeline):
 
         # write
         for m in tx["month"].unique():
-            d = dest_dir / m
+            d = self.cfg.root_dir / m
             d.mkdir(exist_ok=True)
             csv = d / f"{m}.{self.account.filename}"
             self.append_tx_file(csv, tx[tx["month"] == m])
@@ -243,7 +242,7 @@ class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
 
 
 class BoursoramaTransactionPipeline(BoursoramaPipeline, TransactionPipeline):
-    def run(self, path: Path, dest_dir: Path, summary: Summary):
+    def run(self, path: Path, summary: Summary):
         # read
         tx = self.read_new_transactions(path)
         summary.add_source(path)
@@ -254,7 +253,7 @@ class BoursoramaTransactionPipeline(BoursoramaPipeline, TransactionPipeline):
 
         # write
         for m in tx["Month"].unique():
-            d = dest_dir / m
+            d = self.cfg.root_dir / m
             d.mkdir(exist_ok=True)
             csv = d / f"{m}.{self.account.filename}"
             self.append_tx(csv, tx[tx["Month"] == m])
@@ -311,7 +310,7 @@ class BoursoramaBalancePipeline(BoursoramaPipeline, BalancePipeline):
 
 
 class FortuneoTransactionPipeline(TransactionPipeline):
-    def run(self, path: Path, dest_dir: Path, summary: Summary):
+    def run(self, path: Path, summary: Summary):
         # read
         tx = self.read_new_transactions(path)
         summary.add_source(path)
@@ -322,7 +321,7 @@ class FortuneoTransactionPipeline(TransactionPipeline):
 
         # write
         for m in tx["Month"].unique():
-            d = dest_dir / m
+            d = self.cfg.root_dir / m
             d.mkdir(exist_ok=True)
             csv = d / f"{m}.{self.account.filename}"
             self.append_transactions(csv, tx[tx["Month"] == m])
@@ -431,7 +430,7 @@ class PipelineFactory:
     def __init__(self, cfg: Configuration):
         self.cfg = cfg
 
-    def new_transaction_pipeline(self, account: Account):
+    def new_transaction_pipeline(self, account: Account) -> TransactionPipeline:
         if isinstance(account, BnpAccount):
             return BnpTransactionPipeline(account, self.cfg)
         if isinstance(account, BoursoramaAccount):
@@ -440,13 +439,13 @@ class PipelineFactory:
             return FortuneoTransactionPipeline(account, self.cfg)
         return TransactionPipeline(account, self.cfg)
 
-    def new_balance_pipeline(self, account: Account):
+    def new_balance_pipeline(self, account: Account) -> BalancePipeline:
         if isinstance(account, BnpAccount):
             return BnpBalancePipeline(account, self.cfg)
         if isinstance(account, BoursoramaAccount):
             return BoursoramaBalancePipeline(account, self.cfg)
         return NoopBalancePipeline(account, self.cfg)
 
-    def parse_balance_pipeline(self, path: Path):
+    def parse_balance_pipeline(self, path: Path) -> BalancePipeline:
         account = AccountParser(self.cfg).parse(path)
         return self.new_balance_pipeline(account)

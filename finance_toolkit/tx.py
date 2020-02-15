@@ -211,10 +211,8 @@ def move(cfg: Configuration):
     for path in paths:
         for account in cfg.accounts:
             if account.match(path):
-                pipeline = factory.new_transaction_pipeline(account)
-                pipeline.run(path, cfg.root_dir, summary)
-                balance_pipeline = factory.new_balance_pipeline(account)
-                balance_pipeline.run(path, cfg.root_dir, summary)
+                factory.new_transaction_pipeline(account).run(path, summary)
+                factory.new_balance_pipeline(account).run(path, summary)
     print(summary)
 
 

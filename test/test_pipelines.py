@@ -104,8 +104,8 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
     summary = Summary(Path("/path/to/sources"))
     account = BnpAccount("CHQ", "xxx", "****1234")
     cfg.accounts.append(account)
-    BnpTransactionPipeline(account, cfg).run(new_file, cfg.root_dir, summary)
-    BnpBalancePipeline(account, cfg).run(new_file, cfg.root_dir, summary)
+    BnpTransactionPipeline(account, cfg).run(new_file, summary)
+    BnpBalancePipeline(account, cfg).run(new_file, summary)
 
     # Then the new lines are integrated
     assert (
@@ -380,7 +380,7 @@ dateOp;dateVal;Label;category;categoryParent;supplierFound;Amount;accountNum;acc
     summary = Summary(Path("/path/to/sources"))
     account = BoursoramaAccount("LVR", "xxx", "001234")
     cfg.accounts.append(account)
-    BoursoramaTransactionPipeline(account, cfg).run(new_file, cfg.root_dir, summary)
+    BoursoramaTransactionPipeline(account, cfg).run(new_file, summary)
 
     # Then the new lines are integrated
     assert (
@@ -401,7 +401,7 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
     )
 
     # And the balance is correct
-    BoursoramaBalancePipeline(account, cfg).run(new_file, cfg.root_dir, summary)
+    BoursoramaBalancePipeline(account, cfg).run(new_file, summary)
     assert (
         b.read_text()
         == """\

@@ -152,7 +152,7 @@ def test_run(cfg):
     pipeline = FortuneoTransactionPipeline(account, cfg)
 
     # when running the pipeline
-    pipeline.run(csv, cfg.root_dir, summary)
+    pipeline.run(csv, summary)
 
     # then the transactions are integrated
     tx201904 = cfg.root_dir / "2019-04" / "2019-04.astark-FTN-CHQ.csv"
