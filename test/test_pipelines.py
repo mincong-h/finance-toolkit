@@ -19,8 +19,8 @@ from finance_toolkit.pipelines import (
     BoursoramaTransactionPipeline,
     FortuneoTransactionPipeline,
     NoopBalancePipeline,
+    NoopTransactionPipeline,
     PipelineFactory,
-    TransactionPipeline,
 )
 from finance_toolkit.utils import Summary
 
@@ -45,7 +45,7 @@ def test_new_transaction_pipeline(cfg):
     assert isinstance(p1, BnpTransactionPipeline)
     assert isinstance(p2, BoursoramaTransactionPipeline)
     assert isinstance(p3, FortuneoTransactionPipeline)
-    assert isinstance(p4, TransactionPipeline)
+    assert isinstance(p4, NoopTransactionPipeline)
 
 
 def test_new_balance_pipeline(cfg):
@@ -258,7 +258,7 @@ def test_bnp_pipeline_append_tx_file_nonexistent_csv():
     )
     with TemporaryDirectory() as root:
         csv = Path(root) / "my.csv"
-        BnpTransactionPipeline.append_tx_file(csv, df)
+        BnpTransactionPipeline.append_transactions(csv, df)
         assert (
             csv.read_text()
             == """\
@@ -289,7 +289,7 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
 2019-08-01,myLabel,10.0,myType,main,sub,True
 """
         )
-        BnpTransactionPipeline.append_tx_file(csv, df)
+        BnpTransactionPipeline.append_transactions(csv, df)
         assert (
             csv.read_text()
             == """\
@@ -321,7 +321,7 @@ def test_bnp_pipeline_append_tx_file_drop_duplicates():
     )
     with TemporaryDirectory() as root:
         csv = Path(root) / "my.csv"
-        BnpTransactionPipeline.append_tx_file(csv, df)
+        BnpTransactionPipeline.append_transactions(csv, df)
         assert (
             csv.read_text()
             == """\
@@ -553,7 +553,7 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
         ]
         data = [(pd.Timestamp("2018-09-27"), "L", -10.0, "expense", "M", "S", True,)]
         new_lines = pd.DataFrame(columns=cols, data=data)
-        BoursoramaTransactionPipeline.append_tx(csv, new_lines)
+        BoursoramaTransactionPipeline.append_transactions(csv, new_lines)
 
         # Then rows are available and sorted
         assert (
@@ -599,7 +599,7 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
             )
         ]
         new_lines = pd.DataFrame(columns=cols, data=data)
-        BoursoramaTransactionPipeline.append_tx(csv, new_lines)
+        BoursoramaTransactionPipeline.append_transactions(csv, new_lines)
 
         # Then rows has no duplicates
         assert (

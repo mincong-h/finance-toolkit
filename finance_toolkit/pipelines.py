@@ -30,9 +30,44 @@ class Pipeline(metaclass=ABCMeta):
         """
 
 
-class TransactionPipeline(Pipeline):
-    def run(self, path: Path, summary: Summary) -> None:
-        pass
+class TransactionPipeline(Pipeline, metaclass=ABCMeta):
+    def run(self, source: Path, summary: Summary) -> None:
+        # read
+        tx = self.read_new_transactions(source)
+        summary.add_source(source)
+
+        # process
+        tx = self.guess_meta(tx)
+        tx["Month"] = tx.Date.apply(lambda date: date.strftime("%Y-%m"))
+
+        # write
+        for m in tx["Month"].unique():
+            d = self.cfg.root_dir / m
+            d.mkdir(exist_ok=True)
+            target = d / f"{m}.{self.account.filename}"
+            self.append_transactions(target, tx[tx["Month"] == m])
+            summary.add_target(target)
+
+    @classmethod
+    def append_transactions(cls, csv: Path, new_transactions: DataFrame):
+        df = new_transactions.copy()
+        cols = [
+            "Date",
+            "Label",
+            "Amount",
+            "Type",
+            "MainCategory",
+            "SubCategory",
+            "IsRegular",
+        ]
+
+        if csv.exists():
+            existing = pd.read_csv(csv, parse_dates=["Date"])
+            df = df.append(existing, sort=False)
+
+        df = df.drop_duplicates(subset=["Date", "Label", "Amount"], keep="last")
+        df = df.sort_values(by=["Date", "Label"])
+        df.to_csv(csv, columns=cols, index=None, date_format="%Y-%m-%d")
 
     def guess_meta(self, df: DataFrame) -> DataFrame:
         """
@@ -42,6 +77,23 @@ class TransactionPipeline(Pipeline):
         :return: a DataFrame containing additional metadata
         """
         return df
+
+    @abstractmethod
+    def read_new_transactions(self, csv: Path) -> DataFrame:
+        """
+        Read new transactions from a CSV file, probably downloaded from internet.
+
+        :param csv: the path of the CSV file
+        """
+        pass
+
+
+class NoopTransactionPipeline(TransactionPipeline):
+    def run(self, source: Path, summary: Summary) -> None:
+        pass
+
+    def read_new_transactions(self, csv: Path) -> DataFrame:
+        pass
 
 
 class BalancePipeline(Pipeline, metaclass=ABCMeta):
@@ -137,23 +189,6 @@ class BnpPipeline(Pipeline, metaclass=ABCMeta):
 
 
 class BnpTransactionPipeline(BnpPipeline, TransactionPipeline):
-    def run(self, path: Path, summary: Summary) -> None:
-        # read
-        tx = self.read_new_transactions(path)
-        summary.add_source(path)
-
-        # process
-        tx = self.guess_meta(tx)
-        tx["month"] = tx["Date"].apply(lambda date: date.strftime("%Y-%m"))
-
-        # write
-        for m in tx["month"].unique():
-            d = self.cfg.root_dir / m
-            d.mkdir(exist_ok=True)
-            csv = d / f"{m}.{self.account.filename}"
-            self.append_tx_file(csv, tx[tx["month"] == m])
-            summary.add_target(csv)
-
     def guess_meta(self, df: DataFrame) -> DataFrame:
         if self.account.type == "CDI":
             df["Type"], df["IsRegular"] = "credit", True
@@ -173,27 +208,6 @@ class BnpTransactionPipeline(BnpPipeline, TransactionPipeline):
                     ) = values
                     break
         return df
-
-    @classmethod
-    def append_tx_file(cls, csv: Path, data: DataFrame) -> None:
-        df = data.copy()
-        if csv.exists():
-            existing = pd.read_csv(csv, parse_dates=["Date"])
-            df = df.append(existing, sort=False)
-
-        df = df.drop_duplicates(subset=["Date", "Label", "Amount"], keep="last")
-        df = df.sort_values(by=["Date", "Label"])
-
-        cols = [
-            "Date",
-            "Label",
-            "Amount",
-            "Type",
-            "MainCategory",
-            "SubCategory",
-            "IsRegular",
-        ]
-        df.to_csv(csv, columns=cols, index=None)
 
     def read_new_transactions(self, path: Path) -> DataFrame:
         _, tx = self.read_raw(path)
@@ -242,23 +256,6 @@ class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
 
 
 class BoursoramaTransactionPipeline(BoursoramaPipeline, TransactionPipeline):
-    def run(self, path: Path, summary: Summary):
-        # read
-        tx = self.read_new_transactions(path)
-        summary.add_source(path)
-
-        # process
-        tx = self.guess_meta(tx)
-        tx["Month"] = tx.Date.apply(lambda date: date.strftime("%Y-%m"))
-
-        # write
-        for m in tx["Month"].unique():
-            d = self.cfg.root_dir / m
-            d.mkdir(exist_ok=True)
-            csv = d / f"{m}.{self.account.filename}"
-            self.append_tx(csv, tx[tx["Month"] == m])
-            summary.add_target(csv)
-
     def guess_meta(self, df: DataFrame) -> DataFrame:
         if self.account.type == "LVR":
             df["Type"], df["IsRegular"] = "transfer", False
@@ -277,27 +274,6 @@ class BoursoramaTransactionPipeline(BoursoramaPipeline, TransactionPipeline):
                     break
         return df
 
-    @classmethod
-    def append_tx(cls, csv: Path, data: DataFrame):
-        df = data.copy()
-        cols = [
-            "Date",
-            "Label",
-            "Amount",
-            "Type",
-            "MainCategory",
-            "SubCategory",
-            "IsRegular",
-        ]
-
-        if csv.exists():
-            existing = pd.read_csv(csv, parse_dates=["Date"])
-            df = df.append(existing, sort=False)
-
-        df = df.drop_duplicates(subset=["Date", "Label", "Amount"], keep="last")
-        df = df.sort_values(by=["Date", "Label"])
-        df.to_csv(csv, columns=cols, index=None, date_format="%Y-%m-%d")
-
     def read_new_transactions(self, path: Path):
         _, tx = self.read_raw(path)
         return tx
@@ -310,23 +286,6 @@ class BoursoramaBalancePipeline(BoursoramaPipeline, BalancePipeline):
 
 
 class FortuneoTransactionPipeline(TransactionPipeline):
-    def run(self, path: Path, summary: Summary):
-        # read
-        tx = self.read_new_transactions(path)
-        summary.add_source(path)
-
-        # process
-        tx = self.guess_meta(tx)
-        tx["Month"] = tx.Date.apply(lambda date: date.strftime("%Y-%m"))
-
-        # write
-        for m in tx["Month"].unique():
-            d = self.cfg.root_dir / m
-            d.mkdir(exist_ok=True)
-            csv = d / f"{m}.{self.account.filename}"
-            self.append_transactions(csv, tx[tx["Month"] == m])
-            summary.add_target(csv)
-
     def guess_meta(self, df: DataFrame) -> DataFrame:
         for i, row in df.iterrows():
             for values, regex in self.cfg.autocomplete:
@@ -393,26 +352,6 @@ class FortuneoTransactionPipeline(TransactionPipeline):
         ]
         return tx
 
-    def append_transactions(self, csv: Path, new_transactions: DataFrame):
-        df = new_transactions.copy()
-        cols = [
-            "Date",
-            "Label",
-            "Amount",
-            "Type",
-            "MainCategory",
-            "SubCategory",
-            "IsRegular",
-        ]
-
-        if csv.exists():
-            existing = pd.read_csv(csv, parse_dates=["Date"])
-            df = df.append(existing, sort=False)
-
-        df = df.drop_duplicates(subset=["Date", "Label", "Amount"], keep="last")
-        df = df.sort_values(by=["Date", "Label"])
-        df.to_csv(csv, columns=cols, index=None, date_format="%Y-%m-%d")
-
 
 class AccountParser:
     def __init__(self, cfg: Configuration):
@@ -437,7 +376,7 @@ class PipelineFactory:
             return BoursoramaTransactionPipeline(account, self.cfg)
         if isinstance(account, FortuneoAccount):
             return FortuneoTransactionPipeline(account, self.cfg)
-        return TransactionPipeline(account, self.cfg)
+        return NoopTransactionPipeline(account, self.cfg)
 
     def new_balance_pipeline(self, account: Account) -> BalancePipeline:
         if isinstance(account, BnpAccount):
