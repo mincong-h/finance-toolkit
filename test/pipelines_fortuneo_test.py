@@ -180,3 +180,83 @@ Targets:
 - {tx201912}
 Finished."""
     )
+
+
+def test_guess_meta(location, cfg):
+    # Given a Fortuneo account
+    account = FortuneoAccount("CHQ", "astark-FTN-CHQ", "12345")
+    cfg.accounts.append(account)
+    pipeline = FortuneoTransactionPipeline(account, cfg)
+    cfg.autocomplete = [
+        (("expense", "shopping", "online", False), r".*AMAZON.*"),
+        (("expense", "shopping", "offline", False), r".*FNAC METZ.*"),
+        (("expense", "food", "supermarket", True), r".*LECLERC MARLY.*"),
+    ]
+    csv = location / "HistoriqueOperations_12345_du_14_01_2019_au_14_12_2019.csv"
+
+    # And transactions to be guessed
+    transactions = pipeline.read_new_transactions(csv)
+
+    # When guessing metadata on transactions
+    transactions = pipeline.guess_meta(transactions)
+
+    # Then the result is correct
+    expected = pd.DataFrame(
+        columns=[
+            "Date",
+            "Label",
+            "Amount",
+            "Type",
+            "MainCategory",
+            "SubCategory",
+            "IsRegular",
+        ],
+        data=[
+            (
+                pd.Timestamp("2019-12-13"),
+                "CARTE 12/12 FNAC METZ",
+                -6.4,
+                "expense",
+                "shopping",
+                "offline",
+                False,
+            ),
+            (
+                pd.Timestamp("2019-12-13"),
+                "CARTE 12/12 BRIOCHE DOREE METZ",
+                -10.9,
+                "",
+                "",
+                "",
+                "",
+            ),
+            (
+                pd.Timestamp("2019-12-13"),
+                "CARTE 12/12 AMAZON EU SARL PAYLI2090401/",
+                -45.59,
+                "expense",
+                "shopping",
+                "online",
+                False,
+            ),
+            (
+                pd.Timestamp("2019-12-12"),
+                "CARTE 11/12 LECLERC MARLY",
+                -15.75,
+                "expense",
+                "food",
+                "supermarket",
+                True,
+            ),
+            (
+                pd.Timestamp("2019-04-30"),
+                "VIR MALAKOFF MEDERIC PREVOYANCE",
+                45.0,
+                "",
+                "",
+                "",
+                "",
+            ),
+        ],
+    )
+    assert_frame_equal(transactions, expected)

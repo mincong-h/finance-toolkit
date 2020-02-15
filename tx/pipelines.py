@@ -36,6 +36,12 @@ class TransactionPipeline(Pipeline):
         pass
 
     def guess_meta(self, df: DataFrame) -> DataFrame:
+        """
+        Guess metadata for transactions.
+
+        :param df: the DataFrame for transactions
+        :return: a DataFrame containing additional metadata
+        """
         return df
 
     def read_balance(self, path: Path) -> DataFrame:
@@ -342,6 +348,19 @@ class FortuneoTransactionPipeline(TransactionPipeline):
             csv = d / f"{m}.{self.account.filename}"
             self.append_transactions(csv, tx[tx["Month"] == m])
             summary.add_target(csv)
+
+    def guess_meta(self, df: DataFrame) -> DataFrame:
+        for i, row in df.iterrows():
+            for values, regex in self.cfg.autocomplete:
+                if re.compile(regex).match(row.Label):
+                    (
+                        df.loc[i, "Type"],
+                        df.loc[i, "MainCategory"],
+                        df.loc[i, "SubCategory"],
+                        df.loc[i, "IsRegular"],
+                    ) = values
+                    break
+        return df
 
     def read_new_transactions(self, csv: Path) -> DataFrame:
         # encoding: we don't know the exact encoding used by Fortuneo,
