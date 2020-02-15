@@ -101,7 +101,7 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
         f.write("02/09/2018;M;S;myLabel;-2,49\n")
 
     # When integrating new lines
-    summary = Summary(Path("/path/to/sources"))
+    summary = Summary(cfg)
     account = BnpAccount("CHQ", "xxx", "****1234")
     cfg.accounts.append(account)
     BnpTransactionPipeline(account, cfg).run(new_file, summary)
@@ -377,7 +377,7 @@ dateOp;dateVal;Label;category;categoryParent;supplierFound;Amount;accountNum;acc
     )
 
     # When integrating new lines
-    summary = Summary(Path("/path/to/sources"))
+    summary = Summary(cfg)
     account = BoursoramaAccount("LVR", "xxx", "001234")
     cfg.accounts.append(account)
     BoursoramaTransactionPipeline(account, cfg).run(new_file, summary)

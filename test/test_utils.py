@@ -1,43 +1,41 @@
-from pathlib import Path
-
 from finance_toolkit.utils import Summary
 
 
 # ---------- Class: Summary ----------
 
 
-def test_summary_without_source_files():
-    summary = Summary(Path("/path/to/sources"))
+def test_summary_without_source_files(cfg):
+    summary = Summary(cfg)
     assert (
         str(summary)
-        == """\
+        == f"""\
 $$$ Summary $$$
 ---------------
-No CSV found in "/path/to/sources".
+No CSV found in "{cfg.download_dir}".
 ---------------
 Finished."""
     )
 
 
-def test_summary_with_source_files():
-    s = Summary(Path("/path/to/sources"))
-    s.add_source(Path("/path/to/sources/def"))
-    s.add_source(Path("/path/to/sources/abc"))
-    s.add_target(Path("/path/to/targets/456"))
-    s.add_target(Path("/path/to/targets/123"))
+def test_summary_with_source_files(cfg):
+    s = Summary(cfg)
+    s.add_source(cfg.download_dir / "def")
+    s.add_source(cfg.download_dir / "abc")
+    s.add_target(cfg.root_dir / "456")
+    s.add_target(cfg.root_dir / "123")
     assert (
         str(s)
-        == """\
+        == f"""\
 $$$ Summary $$$
 ---------------
 2 files copied.
 ---------------
 Sources:
-- /path/to/sources/abc
-- /path/to/sources/def
+- {cfg.download_dir}/abc
+- {cfg.download_dir}/def
 Targets:
-- /path/to/targets/123
-- /path/to/targets/456
+- {cfg.root_dir}/123
+- {cfg.root_dir}/456
 Finished."""
     )
 

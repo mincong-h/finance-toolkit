@@ -206,7 +206,7 @@ def merge_balances(paths: List[Path], cfg: Configuration) -> DataFrame:
 
 def move(cfg: Configuration):
     paths = [child for child in cfg.download_dir.iterdir() if child.is_file()]
-    summary = Summary(cfg.download_dir)
+    summary = Summary(cfg)
     factory = PipelineFactory(cfg)
     for path in paths:
         for account in cfg.accounts:

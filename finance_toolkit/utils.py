@@ -37,8 +37,8 @@ class Configuration:
 
 
 class Summary:
-    def __init__(self, source_dir: Path):
-        self.source_dir = source_dir
+    def __init__(self, cfg: Configuration):
+        self.source_dir = cfg.download_dir
         self.sources = set()
         self.targets = set()
 

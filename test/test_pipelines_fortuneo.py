@@ -148,7 +148,7 @@ def test_run(cfg):
     csv = (
         cfg.download_dir / "HistoriqueOperations_12345_du_14_01_2019_au_14_12_2019.csv"
     )
-    summary = Summary(cfg.download_dir)
+    summary = Summary(cfg)
     pipeline = FortuneoTransactionPipeline(account, cfg)
 
     # when running the pipeline
