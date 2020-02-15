@@ -122,6 +122,10 @@ def test_append_transactions_nonexistent_target(cfg, tmpdir):
                 "Date": [pd.Timestamp("2020-02-13"), pd.Timestamp("2020-02-14")],
                 "Label": ["Label B", "Label D"],
                 "Amount": [30.0, 40.0],
+                "Type": None,
+                "MainCategory": None,
+                "SubCategory": None,
+                "IsRegular": None,
             }
         ),
     )
