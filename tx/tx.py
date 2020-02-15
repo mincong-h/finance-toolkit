@@ -155,7 +155,7 @@ def validate_tx(row: Series, cfg: Configuration) -> str:
     if row.Type not in TX_TYPES:
         return f"Unknown transaction type: {row.Type}"
 
-    category = f"{row.Category}/{row.SubCategory}"
+    category = f"{row.MainCategory}/{row.SubCategory}"
     if row.Type == "expense" and category not in cfg.categories():
         return f"Category {category!r} does not exist."
 
@@ -165,54 +165,8 @@ def validate_tx(row: Series, cfg: Configuration) -> str:
     return ""
 
 
-def read_boursorama_tx(path: Path, cfg: Configuration) -> DataFrame:
-    df = pd.read_csv(path, parse_dates=["dateOp", "dateVal"])
-    df = df.drop(columns=["dateVal", "supplierFound"])
-    df = df.rename(
-        columns={
-            "dateOp": "Date",
-            "brsMainCategory": "ShortType",
-            "brsSubCategory": "LongType",
-            "mainCategory": "Category",
-            "subCategory": "SubCategory",
-        }
-    )
-    df = df[
-        [
-            "Date",
-            "ShortType",
-            "LongType",
-            "Label",
-            "Amount",
-            "Type",
-            "Category",
-            "SubCategory",
-            "IsRegular",
-        ]
-    ]
-    errors = []
-    for idx, row in df.iterrows():
-        err = validate_tx(row, cfg)
-        if err:
-            df.drop(idx, inplace=True)
-            errors.append((idx + 2, err))  # base-1 (+1) and header (+1)
-    if errors:
-        print(f"{path}:")
-        for line, err in errors:
-            print(f"  - Line {line}: {err}")
-    return df
-
-
-def read_bnp_tx(path: Path, cfg: Configuration) -> DataFrame:
+def read_transactions(path: Path, cfg: Configuration) -> DataFrame:
     df = pd.read_csv(path, parse_dates=["Date"])
-    df = df.rename(
-        columns={
-            "bnpMainCategory": "ShortType",
-            "bnpSubCategory": "LongType",
-            "mainCategory": "Category",
-            "subCategory": "SubCategory",
-        }
-    )
     errors = []
     for idx, row in df.iterrows():
         err = validate_tx(row, cfg)
@@ -270,47 +224,21 @@ def merge(cfg: Configuration):
     cols = [
         "Date",
         "Account",
-        "ShortType",
-        "LongType",
         "Label",
         "Amount",
         "Type",
-        "Category",
+        "MainCategory",
         "SubCategory",
         "IsRegular",
     ]
     for path in cfg.root_dir.glob("20[1-9]*/*.csv"):
-        a = AccountParser(cfg).parse(path)
-        if isinstance(a, BoursoramaAccount):
-            df = read_boursorama_tx(path, cfg)
-            df = df.rename(
-                columns={
-                    "dateOp": "Date",
-                    "brsMainCategory": "LongType",
-                    "brsSubCategory": "ShortType",
-                    "mainCategory": "Category",
-                    "subCategory": "SubCategory",
-                }
-            )
-            df["Account"] = a.id
-            bank_transactions.append(df[cols])
-        elif a.type in {"CHQ", "LVA", "LDD", "CDI"}:
-            df = read_bnp_tx(path, cfg)
-            df = df.rename(
-                columns={
-                    "bnpMainCategory": "LongType",
-                    "bnpSubCategory": "ShortType",
-                    "mainCategory": "Category",
-                    "subCategory": "SubCategory",
-                }
-            )
-            df["Account"] = a.id
-            bank_transactions.append(df[cols])
+        account = AccountParser(cfg).parse(path)
+        df = read_transactions(path, cfg)
+        df["Account"] = account.id
+        bank_transactions.append(df[cols])
 
     tx = merge_bank_tx(bank_transactions)
-    tx = tx.sort_values(
-        by=["Date", "Account", "ShortType", "LongType", "Label", "Amount"]
-    )
+    tx = tx.sort_values(by=["Date", "Account", "Label", "Amount"])
     tx.to_csv(cfg.root_dir / "total.csv", columns=cols, index=False)
     # TODO export results
     b = merge_balances([p for p in cfg.root_dir.glob("balance.*.csv")], cfg)

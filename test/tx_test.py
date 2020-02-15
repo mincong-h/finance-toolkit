@@ -15,20 +15,18 @@ def test_read_bnp_tx_ok(cfg):
     csv = cfg.root_dir / "2019-03.mhuang-CHQ.csv"
     csv.write_text(
         """\
-Date,bnpMainCategory,bnpSubCategory,Label,Amount,Type,mainCategory,subCategory,IsRegular
-2018-04-30,FAC.CB,FACTURE CARTE,DU 270418 MC DONALDS PARIS 18 CARTE 4974,-4.95,expense,food,workfood,True
+Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
+2018-04-30,DU 270418 MC DONALDS PARIS 18 CARTE 4974,-4.95,expense,food,workfood,True
 """
     )
-    actual_df = tx.read_bnp_tx(csv, cfg)
+    actual_df = tx.read_transactions(csv, cfg)
     expected_df = pd.DataFrame(
         {
             "Date": pd.Timestamp("2018-04-30"),
-            "ShortType": "FAC.CB",
-            "LongType": "FACTURE CARTE",
             "Label": "DU 270418 MC DONALDS PARIS 18 CARTE 4974",
             "Amount": -4.95,
             "Type": "expense",
-            "Category": "food",
+            "MainCategory": "food",
             "SubCategory": "workfood",
             "IsRegular": True,
         },
@@ -44,23 +42,21 @@ def test_read_bnp_tx_validate_errors(mocked_print, cfg):
     csv = cfg.root_dir / "2019-03.mhuang-CHQ.csv"
     csv.write_text(
         """\
-Date,bnpMainCategory,bnpSubCategory,Label,Amount,Type,mainCategory,subCategory,IsRegular
-2018-04-30,main,sub,myLabel,-1.0,expense,food,restaurant,True
-2018-04-30,main,sub,myLabel,-2.0,expense,,,True
-2018-04-30,main,sub,myLabel,-3.0,expense,food,,True
-2018-04-30,main,sub,myLabel,-4.0,expense,,restaurant,True
+Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
+2018-04-30,myLabel,-1.0,expense,food,restaurant,True
+2018-04-30,myLabel,-2.0,expense,,,True
+2018-04-30,myLabel,-3.0,expense,food,,True
+2018-04-30,myLabel,-4.0,expense,,restaurant,True
 """
     )
-    actual_df = tx.read_bnp_tx(csv, cfg)
+    actual_df = tx.read_transactions(csv, cfg)
     expected_df = pd.DataFrame(
         {
             "Date": pd.Timestamp("2018-04-30"),
-            "ShortType": "main",
-            "LongType": "sub",
             "Label": "myLabel",
             "Amount": -1.0,
             "Type": "expense",
-            "Category": "food",
+            "MainCategory": "food",
             "SubCategory": "restaurant",
             "IsRegular": True,
         },
@@ -84,20 +80,18 @@ def test_read_boursorama_tx_ok(cfg):
     csv = cfg.root_dir / "2019-06.mhuang-BRS-CHQ.csv"
     csv.write_text(
         """\
-dateOp,dateVal,Label,brsMainCategory,brsSubCategory,supplierFound,Amount,Type,mainCategory,subCategory,IsRegular
-2019-06-26,2019-06-26,CARTE 25/06/19 93 ROYAL PLAISANC CB*1234,"Restaurants, bars, discothèques...",Loisirs,royal plaisance,-20.1,expense,food,restaurant,True
+Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
+2019-06-26,CARTE 25/06/19 93 ROYAL PLAISANC CB*1234,-20.1,expense,food,restaurant,True
 """
     )
-    actual_df = tx.read_boursorama_tx(csv, cfg)
+    actual_df = tx.read_transactions(csv, cfg)
     expected_df = pd.DataFrame(
         {
             "Date": pd.Timestamp("2019-06-26"),
-            "ShortType": "Restaurants, bars, discothèques...",
-            "LongType": "Loisirs",
             "Label": "CARTE 25/06/19 93 ROYAL PLAISANC CB*1234",
             "Amount": -20.1,
             "Type": "expense",
-            "Category": "food",
+            "MainCategory": "food",
             "SubCategory": "restaurant",
             "IsRegular": True,
         },
@@ -116,23 +110,21 @@ def test_read_boursorama_tx_validation_errors(mocked_print, cfg):
     csv = cfg.root_dir / "2019-06.mhuang-BRS-CHQ.csv"
     csv.write_text(
         """\
-dateOp,dateVal,Label,brsMainCategory,brsSubCategory,supplierFound,Amount,Type,mainCategory,subCategory,IsRegular
-2019-06-26,2019-06-26,myLabel,main,sub,supplier,-1.0,expense,food,restaurant,True
-2019-06-26,2019-06-26,myLabel,main,sub,supplier,-2.0,expense,,,True
-2019-06-26,2019-06-26,myLabel,main,sub,supplier,-3.0,expense,food,,True
-2019-06-26,2019-06-26,myLabel,main,sub,supplier,-4.0,expense,,restaurant,True
+Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
+2019-06-26,myLabel,-1.0,expense,food,restaurant,True
+2019-06-26,myLabel,-2.0,expense,,,True
+2019-06-26,myLabel,-3.0,expense,food,,True
+2019-06-26,myLabel,-4.0,expense,,restaurant,True
 """
     )
-    actual_df = tx.read_boursorama_tx(csv, cfg)
+    actual_df = tx.read_transactions(csv, cfg)
     expected_df = pd.DataFrame(
         {
             "Date": pd.Timestamp("2019-06-26"),
-            "ShortType": "main",
-            "LongType": "sub",
             "Label": "myLabel",
             "Amount": -1.0,
             "Type": "expense",
-            "Category": "food",
+            "MainCategory": "food",
             "SubCategory": "restaurant",
             "IsRegular": True,
         },
@@ -237,12 +229,10 @@ def test_validate_tx(cfg):
         pd.Series(
             {
                 "Date": pd.Timestamp("2018-04-30"),
-                "ShortType": "aShortType",
-                "LongType": "aLongType",
                 "Label": "aLabel",
                 "Amount": -4.95,
                 "Type": "X",
-                "Category": "food",
+                "MainCategory": "food",
                 "SubCategory": "workfood",
                 "IsRegular": True,
             }
@@ -255,12 +245,10 @@ def test_validate_tx(cfg):
         pd.Series(
             {
                 "Date": pd.Timestamp("2018-04-30"),
-                "ShortType": "aShortType",
-                "LongType": "aLongType",
                 "Label": "aLabel",
                 "Amount": -4.95,
                 "Type": "expense",
-                "Category": "X",
+                "MainCategory": "X",
                 "SubCategory": "workfood",
                 "IsRegular": True,
             }
@@ -273,12 +261,10 @@ def test_validate_tx(cfg):
         pd.Series(
             {
                 "Date": pd.Timestamp("2018-04-30"),
-                "ShortType": "aShortType",
-                "LongType": "aLongType",
                 "Label": "aLabel",
                 "Amount": -4.95,
                 "Type": "expense",
-                "Category": "food",
+                "MainCategory": "food",
                 "SubCategory": "X",
                 "IsRegular": True,
             }
@@ -291,12 +277,10 @@ def test_validate_tx(cfg):
         pd.Series(
             {
                 "Date": pd.Timestamp("2018-04-30"),
-                "ShortType": "aShortType",
-                "LongType": "aLongType",
                 "Label": "aLabel",
                 "Amount": -4.95,
                 "Type": "expense",
-                "Category": "food",
+                "MainCategory": "food",
                 "SubCategory": "workfood",
                 "IsRegular": "X",
             }
@@ -309,12 +293,10 @@ def test_validate_tx(cfg):
         pd.Series(
             {
                 "Date": pd.Timestamp("2018-04-30"),
-                "ShortType": "aShortType",
-                "LongType": "aLongType",
                 "Label": "aLabel",
                 "Amount": -4.95,
                 "Type": "expense",
-                "Category": "food",
+                "MainCategory": "food",
                 "SubCategory": "workfood",
                 "IsRegular": True,
             }
