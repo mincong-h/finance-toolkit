@@ -3,9 +3,9 @@ from pathlib import Path
 import pandas as pd
 from pandas.util.testing import assert_frame_equal
 
-from tx.accounts import FortuneoAccount
-from tx.pipelines import FortuneoTransactionPipeline
-from tx.utils import Summary
+from finance_toolkit.accounts import FortuneoAccount
+from finance_toolkit.pipelines import FortuneoTransactionPipeline
+from finance_toolkit.utils import Summary
 
 
 def test_fortuneo_transaction_pipeline_read_new_transactions(location, cfg):

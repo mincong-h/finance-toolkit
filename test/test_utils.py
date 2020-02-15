@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from tx.utils import Summary
+from finance_toolkit.utils import Summary
 
 
 # ---------- Class: Summary ----------

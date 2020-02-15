@@ -11,7 +11,7 @@ transactions from different companies:
 
 ## Install
 
-Ensure module `tx` is ready to be used:
+Ensure module `finance-tookit` is ready to be used:
 
 ```sh
 # clone the project
@@ -20,8 +20,8 @@ git clone https://github.com/mincong-h/finance-toolkit.git
 # go to project
 cd finance-toolkit
 
-# install requirements
-pip install -r requirements.txt
+# install Finance Toolkit and its dependencies (the finance-toolkit executable will be created)
+python setup.py install
 ```
 
 Create a new directory for storing your finance data. It's recommended to store
@@ -33,7 +33,7 @@ following lines:
 ```sh
 export FINANCE_ROOT="${HOME}/finance-data"
 export PYTHONPATH="${HOME}/github/finance-toolkit/"
-alias tx='python3 -m tx'
+alias tx='finance-toolkit'
 ```
 
 Create a new configuration file for configuring your accounts (do not forget to

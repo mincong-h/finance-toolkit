@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 """Finance Tools"""
 from pathlib import Path
 from typing import List, Tuple, Dict

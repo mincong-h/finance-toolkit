@@ -1,16 +1,16 @@
-"""Test the main() function from tx.py."""
+"""Test the main() function."""
 import os
 import sys
 from pathlib import Path
 
 import pytest
 
-from tx.__main__ import main
+from finance_toolkit.__main__ import main
 
 CURRENT_USAGE = """Usage:
-  tx.py [options] (cat|categories) [<prefix>]
-  tx.py [options] merge
-  tx.py [options] move"""
+  finance-toolkit [options] (cat|categories) [<prefix>]
+  finance-toolkit [options] merge
+  finance-toolkit [options] move"""
 
 CURRENT_HELP = f"""Finance Tools
 
