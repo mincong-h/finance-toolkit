@@ -123,8 +123,7 @@ class BnpTransactionPipeline(BnpPipeline, TransactionPipeline):
         # write
         for m in tx["month"].unique():
             d = dest_dir / m
-            if not d.exists():
-                d.mkdir()
+            d.mkdir(exist_ok=True)
             csv = d / f"{m}.{self.account.filename}"
             self.append_tx_file(csv, tx[tx["month"] == m])
             summary.add_target(csv)
@@ -250,8 +249,7 @@ class BoursoramaTransactionPipeline(BoursoramaPipeline, TransactionPipeline):
         # write
         for m in tx["month"].unique():
             d = dest_dir / m
-            if not d.exists():
-                d.mkdir()
+            d.mkdir(exist_ok=True)
             csv = d / f"{m}.{self.account.filename}"
             self.append_tx(csv, tx[tx["month"] == m])
             summary.add_target(csv)
@@ -328,6 +326,23 @@ class BoursoramaBalancePipeline(BoursoramaPipeline, BalancePipeline):
 
 
 class FortuneoTransactionPipeline(TransactionPipeline):
+    def run(self, path: Path, dest_dir: Path, summary: Summary):
+        # read
+        tx = self.read_new_transactions(path)
+        summary.add_source(path)
+
+        # process
+        tx = self.guess_meta(tx)
+        tx["Month"] = tx.Date.apply(lambda date: date.strftime("%Y-%m"))
+
+        # write
+        for m in tx["Month"].unique():
+            d = dest_dir / m
+            d.mkdir(exist_ok=True)
+            csv = d / f"{m}.{self.account.filename}"
+            self.append_transactions(csv, tx[tx["Month"] == m])
+            summary.add_target(csv)
+
     def read_new_transactions(self, csv: Path) -> DataFrame:
         # encoding: we don't know the exact encoding used by Fortuneo,
         # considering it as UTF-8 until we find a better solution

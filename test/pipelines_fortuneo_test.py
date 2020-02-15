@@ -5,6 +5,7 @@ from pandas.util.testing import assert_frame_equal
 
 from tx.accounts import FortuneoAccount
 from tx.pipelines import FortuneoTransactionPipeline
+from tx.utils import Summary
 
 
 def test_fortuneo_transaction_pipeline_read_new_transactions(location, cfg):
@@ -132,3 +133,50 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
 2020-02-14,Label D,40.0,,,,
 """
     assert csv.read_text() == content
+
+
+def test_run(location, cfg):
+    # given a Fortuneo account and data to be integrated
+    account = FortuneoAccount("CHQ", "astark-FTN-CHQ", "12345")
+    cfg.accounts.append(account)
+    csv = location / "HistoriqueOperations_12345_du_14_01_2019_au_14_12_2019.csv"
+    summary = Summary(location)
+    pipeline = FortuneoTransactionPipeline(account, cfg)
+
+    # when running the pipeline
+    pipeline.run(csv, cfg.root_dir, summary)
+
+    # then the transactions are integrated
+    tx201904 = cfg.root_dir / "2019-04" / "2019-04.astark-FTN-CHQ.csv"
+    assert (
+        tx201904.read_text()
+        == """\
+Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
+2019-04-30,VIR MALAKOFF MEDERIC PREVOYANCE,45.0,,,,
+"""
+    )
+    tx201912 = cfg.root_dir / "2019-12" / "2019-12.astark-FTN-CHQ.csv"
+    assert (
+        tx201912.read_text()
+        == """\
+Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
+2019-12-12,CARTE 11/12 LECLERC MARLY,-15.75,,,,
+2019-12-13,CARTE 12/12 AMAZON EU SARL PAYLI2090401/,-45.59,,,,
+2019-12-13,CARTE 12/12 BRIOCHE DOREE METZ,-10.9,,,,
+2019-12-13,CARTE 12/12 FNAC METZ,-6.4,,,,
+"""
+    )
+    assert (
+        str(summary)
+        == f"""\
+$$$ Summary $$$
+---------------
+1 files copied.
+---------------
+Sources:
+- {csv}
+Targets:
+- {tx201904}
+- {tx201912}
+Finished."""
+    )
