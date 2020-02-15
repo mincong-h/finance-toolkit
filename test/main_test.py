@@ -160,14 +160,14 @@ download-dir: {download_dir}
     tx_brs = root_dir / "2019-08" / "2019-08.userB-BRS-CHQ.csv"
     tx_bnp.write_text(
         """\
-Date,bnpMainCategory,bnpSubCategory,Label,Amount,Type,mainCategory,subCategory,IsRegular
-2019-08-01,m,s,myLabel,-10.0,expense,food,restaurant,False
+Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
+2019-08-01,myLabel,-10.0,expense,food,restaurant,False
 """
     )
     tx_brs.write_text(
         """\
-dateOp,dateVal,Label,brsMainCategory,brsSubCategory,supplierFound,Amount,Type,mainCategory,subCategory,IsRegular
-2019-08-02,2019-08-02,myLabel,m,s,supplier,-11.0,transfer,,,False
+Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
+2019-08-02,myLabel,-11.0,transfer,,,False
 """
     )
 
@@ -180,9 +180,9 @@ dateOp,dateVal,Label,brsMainCategory,brsSubCategory,supplierFound,Amount,Type,ma
     assert (
         tx_merged.read_text()
         == """\
-Date,Account,ShortType,LongType,Label,Amount,Type,Category,SubCategory,IsRegular
-2019-08-01,userA-BNP-CHQ,m,s,myLabel,-10.0,expense,food,restaurant,False
-2019-08-02,userB-BRS-CHQ,m,s,myLabel,-11.0,transfer,,,False
+Date,Account,Label,Amount,Type,MainCategory,SubCategory,IsRegular
+2019-08-01,userA-BNP-CHQ,myLabel,-10.0,expense,food,restaurant,False
+2019-08-02,userB-BRS-CHQ,myLabel,-11.0,transfer,,,False
 """
     )
     # And a summary is printed to standard output (stdout)

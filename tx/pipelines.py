@@ -108,10 +108,13 @@ class BnpPipeline(Pipeline, metaclass=ABCMeta):
             skiprows=1,
             thousands=" ",
         )
+
+        del tx["bnpMainCategory"]
+        del tx["bnpSubCategory"]
         tx = tx.fillna("")
         tx["Type"] = ""
-        tx["mainCategory"] = ""
-        tx["subCategory"] = ""
+        tx["MainCategory"] = ""
+        tx["SubCategory"] = ""
         tx["IsRegular"] = ""
         return balances, tx
 
@@ -147,8 +150,8 @@ class BnpTransactionPipeline(BnpPipeline, TransactionPipeline):
                 if re.compile(regex).match(row.Label):
                     (
                         df.loc[i, "Type"],
-                        df.loc[i, "mainCategory"],
-                        df.loc[i, "subCategory"],
+                        df.loc[i, "MainCategory"],
+                        df.loc[i, "SubCategory"],
                         df.loc[i, "IsRegular"],
                     ) = values
                     break
@@ -162,17 +165,15 @@ class BnpTransactionPipeline(BnpPipeline, TransactionPipeline):
             df = df.append(existing, sort=False)
 
         df = df.drop_duplicates(subset=["Date", "Label", "Amount"], keep="last")
-        df = df.sort_values(by=["Date", "bnpMainCategory", "bnpSubCategory", "Label"])
+        df = df.sort_values(by=["Date", "Label"])
 
         cols = [
             "Date",
-            "bnpMainCategory",
-            "bnpSubCategory",
             "Label",
             "Amount",
             "Type",
-            "mainCategory",
-            "subCategory",
+            "MainCategory",
+            "SubCategory",
             "IsRegular",
         ]
         df.to_csv(csv, columns=cols, index=None)
@@ -222,13 +223,12 @@ class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
         transactions = df[df["accountNum"].map(self.account.is_account)]
         transactions = transactions.reset_index(drop=True)
         transactions = transactions.rename(
-            columns={
-                "category": "brsMainCategory",
-                "categoryParent": "brsSubCategory",
-                "label": "Label",
-                "amount": "Amount",
-            }
+            columns={"dateOp": "Date", "label": "Label", "amount": "Amount"}
         )
+        del transactions["dateVal"]
+        del transactions["category"]
+        del transactions["categoryParent"]
+        del transactions["supplierFound"]
 
         m = self.account.pattern.match(csv.name)
         balances = df.groupby("accountNum")["accountBalance"].max().to_frame()
@@ -250,14 +250,14 @@ class BoursoramaTransactionPipeline(BoursoramaPipeline, TransactionPipeline):
 
         # process
         tx = self.guess_meta(tx)
-        tx["month"] = tx.dateOp.apply(lambda date: date.strftime("%Y-%m"))
+        tx["Month"] = tx.Date.apply(lambda date: date.strftime("%Y-%m"))
 
         # write
-        for m in tx["month"].unique():
+        for m in tx["Month"].unique():
             d = dest_dir / m
             d.mkdir(exist_ok=True)
             csv = d / f"{m}.{self.account.filename}"
-            self.append_tx(csv, tx[tx["month"] == m])
+            self.append_tx(csv, tx[tx["Month"] == m])
             summary.add_target(csv)
 
     def guess_meta(self, df: DataFrame) -> DataFrame:
@@ -271,8 +271,8 @@ class BoursoramaTransactionPipeline(BoursoramaPipeline, TransactionPipeline):
                 if re.compile(regex).match(row.Label):
                     (
                         df.loc[i, "Type"],
-                        df.loc[i, "mainCategory"],
-                        df.loc[i, "subCategory"],
+                        df.loc[i, "MainCategory"],
+                        df.loc[i, "SubCategory"],
                         df.loc[i, "IsRegular"],
                     ) = values
                     break
@@ -282,26 +282,21 @@ class BoursoramaTransactionPipeline(BoursoramaPipeline, TransactionPipeline):
     def append_tx(cls, csv: Path, data: DataFrame):
         df = data.copy()
         cols = [
-            "dateOp",
-            "dateVal",
+            "Date",
             "Label",
-            "brsMainCategory",
-            "brsSubCategory",
-            "supplierFound",
             "Amount",
             "Type",
-            "mainCategory",
-            "subCategory",
+            "MainCategory",
+            "SubCategory",
             "IsRegular",
         ]
 
         if csv.exists():
-            existing = pd.read_csv(csv, parse_dates=["dateOp", "dateVal"])
+            existing = pd.read_csv(csv, parse_dates=["Date"])
             df = df.append(existing, sort=False)
 
-        df = df.drop_duplicates(subset=["dateOp", "Label", "Amount"], keep="last")
-        df = df.sort_values(by=["dateOp", "brsMainCategory", "brsSubCategory", "Label"])
-
+        df = df.drop_duplicates(subset=["Date", "Label", "Amount"], keep="last")
+        df = df.sort_values(by=["Date", "Label"])
         df.to_csv(csv, columns=cols, index=None, date_format="%Y-%m-%d")
 
     def read_new_transactions(self, path: Path):
