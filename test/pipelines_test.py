@@ -12,13 +12,13 @@ from tx.accounts import (
     FortuneoAccount,
 )
 from tx.pipelines import (
-    BalancePipeline,
     BnpPipeline,
     BnpBalancePipeline,
     BnpTransactionPipeline,
     BoursoramaBalancePipeline,
     BoursoramaTransactionPipeline,
     FortuneoTransactionPipeline,
+    NoopBalancePipeline,
     PipelineFactory,
     TransactionPipeline,
 )
@@ -61,7 +61,7 @@ def test_new_balance_pipeline(cfg):
 
     assert isinstance(p1, BnpBalancePipeline)
     assert isinstance(p2, BoursoramaBalancePipeline)
-    assert isinstance(p3, BalancePipeline)
+    assert isinstance(p3, NoopBalancePipeline)
 
 
 # ---------- Class: BnpPipeline ----------
@@ -137,26 +137,26 @@ def test_bnp_balance_pipeline_write_balances(cfg):
     csv = cfg.root_dir / "balance.xxx.csv"
     csv.write_text(
         """\
-mainCategory,subCategory,accountNum,Date,Amount
-main,sub,****1234,2018-08-02,724.37
-main,sub,****1234,2018-07-04,189.29
+Date,Amount
+2018-08-02,724.37
+2018-07-04,189.29
 """
     )
 
     # When writing new row into the CSV file
-    cols = ["mainCategory", "subCategory", "accountNum", "Date", "Amount"]
-    data = [("main", "sub", "****1234", pd.Timestamp("2018-09-02"), 924.37)]
-    new_lines = pd.DataFrame(columns=cols, data=data)
+    new_lines = pd.DataFrame(
+        columns=["Date", "Amount"], data=[(pd.Timestamp("2018-09-02"), 924.37)]
+    )
     BnpBalancePipeline.write_balances(csv, new_lines)
 
     # Then rows are available and sorted
     assert (
         csv.read_text()
         == """\
-mainCategory,subCategory,accountNum,Date,Amount
-main,sub,****1234,2018-07-04,189.29
-main,sub,****1234,2018-08-02,724.37
-main,sub,****1234,2018-09-02,924.37
+Date,Amount
+2018-07-04,189.29
+2018-08-02,724.37
+2018-09-02,924.37
 """
     )
 
@@ -168,17 +168,9 @@ def test_bnp_pipeline_read_raw(location):
     actual_balances, actual_transactions = BnpPipeline.read_raw(csv)
 
     # Then the balances DataFrame is read correctly
-    b_cols = ["mainCategory", "subCategory", "accountNum", "Date", "Amount"]
-    b_data = [
-        (
-            "Crédit immobilier",
-            "Crédit immobilier",
-            "****1234",
-            pd.Timestamp("2019-07-03"),
-            -123456.78,
-        )
-    ]
-    expected_balances = pd.DataFrame(columns=b_cols, data=b_data)
+    expected_balances = pd.DataFrame(
+        columns=["Date", "Amount"], data=[(pd.Timestamp("2019-07-03"), -123456.78)]
+    )
     assert_frame_equal(actual_balances, expected_balances)
 
     # And the transactions DataFrame is read correctly
