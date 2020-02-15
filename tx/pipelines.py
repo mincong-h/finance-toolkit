@@ -123,8 +123,7 @@ class BnpTransactionPipeline(BnpPipeline, TransactionPipeline):
         # write
         for m in tx["month"].unique():
             d = dest_dir / m
-            if not d.exists():
-                d.mkdir()
+            d.mkdir(exist_ok=True)
             csv = d / f"{m}.{self.account.filename}"
             self.append_tx_file(csv, tx[tx["month"] == m])
             summary.add_target(csv)
@@ -250,8 +249,7 @@ class BoursoramaTransactionPipeline(BoursoramaPipeline, TransactionPipeline):
         # write
         for m in tx["month"].unique():
             d = dest_dir / m
-            if not d.exists():
-                d.mkdir()
+            d.mkdir(exist_ok=True)
             csv = d / f"{m}.{self.account.filename}"
             self.append_tx(csv, tx[tx["month"] == m])
             summary.add_target(csv)
@@ -340,8 +338,7 @@ class FortuneoTransactionPipeline(TransactionPipeline):
         # write
         for m in tx["Month"].unique():
             d = dest_dir / m
-            if not d.exists():
-                d.mkdir()
+            d.mkdir(exist_ok=True)
             csv = d / f"{m}.{self.account.filename}"
             self.append_transactions(csv, tx[tx["Month"] == m])
             summary.add_target(csv)
