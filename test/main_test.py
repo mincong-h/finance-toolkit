@@ -214,6 +214,11 @@ accounts:
     company: BNP
     type: CDI  # credit
     id: '****1234'
+  astark-FTN-CHQ:
+    company: Fortuneo
+    type: CHQ
+    id: '12345'
+    label: Arya Stark - Fortuneo (Compte de Chèque)
 
 categories:
 
@@ -232,6 +237,19 @@ Crédit immobilier;Crédit immobilier;****1234;03/07/2019;;-123 456,78
 """,
         encoding="ISO-8859-1",
     )
+    download_fortuneo = (
+        download_dir / "HistoriqueOperations_12345_du_14_01_2019_au_14_12_2019.csv"
+    )
+    download_fortuneo.write_text(
+        """\
+Date opération;Date valeur;libellé;Débit;Crédit;
+13/12/2019;13/12/2019;CARTE 12/12 FNAC METZ;-6,4;
+13/12/2019;13/12/2019;CARTE 12/12 BRIOCHE DOREE METZ;-10,9;
+13/12/2019;13/12/2019;CARTE 12/12 AMAZON EU SARL PAYLI2090401/;-45,59;
+12/12/2019;12/12/2019;CARTE 11/12 LECLERC MARLY;-15,75;
+30/04/2019;30/04/2019;VIR MALAKOFF MEDERIC PREVOYANCE;; 45;
+"""
+    )
 
     # When performing `move` command to copy the file into finance root
     sys.argv[1:] = ["--finance-root", str(root_dir), "move"]
@@ -239,8 +257,11 @@ Crédit immobilier;Crédit immobilier;****1234;03/07/2019;;-123 456,78
 
     # Then the data is copied
     assert (root_dir / "2019-06" / "2019-06.credit-BNP-P15.csv").exists()
+    assert (root_dir / "2019-04" / "2019-04.astark-FTN-CHQ.csv").exists()
+    assert (root_dir / "2019-12" / "2019-12.astark-FTN-CHQ.csv").exists()
     assert (root_dir / "balance.credit-BNP-P15.csv").exists()
     assert csv.exists()
+    assert download_fortuneo.exists()
     # And a summary is printed to standard output (stdout)
     captured = capsys.readouterr()
     assert (
@@ -248,12 +269,15 @@ Crédit immobilier;Crédit immobilier;****1234;03/07/2019;;-123 456,78
         == f"""\
 $$$ Summary $$$
 ---------------
-1 files copied.
+2 files copied.
 ---------------
 Sources:
 - {tmpdir.strpath}/download/E1851234.csv
+- {tmpdir.strpath}/download/HistoriqueOperations_12345_du_14_01_2019_au_14_12_2019.csv
 Targets:
+- {tmpdir.strpath}/finance/2019-04/2019-04.astark-FTN-CHQ.csv
 - {tmpdir.strpath}/finance/2019-06/2019-06.credit-BNP-P15.csv
+- {tmpdir.strpath}/finance/2019-12/2019-12.astark-FTN-CHQ.csv
 - {tmpdir.strpath}/finance/balance.credit-BNP-P15.csv
 Finished.
 """
