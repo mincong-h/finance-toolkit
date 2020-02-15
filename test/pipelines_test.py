@@ -254,16 +254,15 @@ def test_bnp_pipeline_guess_meta_transaction_label(cfg):
 
 def test_bnp_pipeline_append_tx_file_nonexistent_csv():
     df = pd.DataFrame(
-        columns=[
-            "Date",
-            "Label",
-            "Amount",
-            "Type",
-            "mainCategory",
-            "subCategory",
-            "IsRegular",
-        ],
-        data=[(pd.Timestamp("2019-08-01"), "myLabel", 10.0, "", "", "", "")],
+        {
+            "Date": [pd.Timestamp("2019-08-01")],
+            "Label": ["myLabel"],
+            "Amount": [10.0],
+            "Type": [None],
+            "MainCategory": [None],
+            "SubCategory": [None],
+            "IsRegular": [None],
+        }
     )
     with TemporaryDirectory() as root:
         csv = Path(root) / "my.csv"

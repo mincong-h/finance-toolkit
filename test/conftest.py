@@ -44,3 +44,18 @@ def cfg(tmpdir):
         download_dir=source_dir,
         root_dir=target_dir,
     )
+
+
+@pytest.fixture(autouse=True)
+def no_warnings(recwarn):
+    """Fail on warning."""
+
+    yield
+
+    warnings = []
+    for warning in recwarn:  # pragma: no cover
+        warn = f"{warning.filename}:{warning.lineno} {warning.message}"
+        warnings.append(warn)
+        print(warn)
+
+    assert not warnings
