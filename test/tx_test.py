@@ -19,7 +19,7 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
 2018-04-30,DU 270418 MC DONALDS PARIS 18 CARTE 4974,-4.95,expense,food,workfood,True
 """
     )
-    actual_df = tx.read_bnp_tx(csv, cfg)
+    actual_df = tx.read_transactions(csv, cfg)
     expected_df = pd.DataFrame(
         {
             "Date": pd.Timestamp("2018-04-30"),
@@ -49,7 +49,7 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
 2018-04-30,myLabel,-4.0,expense,,restaurant,True
 """
     )
-    actual_df = tx.read_bnp_tx(csv, cfg)
+    actual_df = tx.read_transactions(csv, cfg)
     expected_df = pd.DataFrame(
         {
             "Date": pd.Timestamp("2018-04-30"),
@@ -84,7 +84,7 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
 2019-06-26,CARTE 25/06/19 93 ROYAL PLAISANC CB*1234,-20.1,expense,food,restaurant,True
 """
     )
-    actual_df = tx.read_boursorama_tx(csv, cfg)
+    actual_df = tx.read_transactions(csv, cfg)
     expected_df = pd.DataFrame(
         {
             "Date": pd.Timestamp("2019-06-26"),
@@ -117,7 +117,7 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
 2019-06-26,myLabel,-4.0,expense,,restaurant,True
 """
     )
-    actual_df = tx.read_boursorama_tx(csv, cfg)
+    actual_df = tx.read_transactions(csv, cfg)
     expected_df = pd.DataFrame(
         {
             "Date": pd.Timestamp("2019-06-26"),

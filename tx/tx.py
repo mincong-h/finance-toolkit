@@ -165,22 +165,7 @@ def validate_tx(row: Series, cfg: Configuration) -> str:
     return ""
 
 
-def read_boursorama_tx(path: Path, cfg: Configuration) -> DataFrame:
-    df = pd.read_csv(path, parse_dates=["Date"])
-    errors = []
-    for idx, row in df.iterrows():
-        err = validate_tx(row, cfg)
-        if err:
-            df.drop(idx, inplace=True)
-            errors.append((idx + 2, err))  # base-1 (+1) and header (+1)
-    if errors:
-        print(f"{path}:")
-        for line, err in errors:
-            print(f"  - Line {line}: {err}")
-    return df
-
-
-def read_bnp_tx(path: Path, cfg: Configuration) -> DataFrame:
+def read_transactions(path: Path, cfg: Configuration) -> DataFrame:
     df = pd.read_csv(path, parse_dates=["Date"])
     errors = []
     for idx, row in df.iterrows():
@@ -247,15 +232,10 @@ def merge(cfg: Configuration):
         "IsRegular",
     ]
     for path in cfg.root_dir.glob("20[1-9]*/*.csv"):
-        a = AccountParser(cfg).parse(path)
-        if isinstance(a, BoursoramaAccount):
-            df = read_boursorama_tx(path, cfg)
-            df["Account"] = a.id
-            bank_transactions.append(df[cols])
-        elif a.type in {"CHQ", "LVA", "LDD", "CDI"}:
-            df = read_bnp_tx(path, cfg)
-            df["Account"] = a.id
-            bank_transactions.append(df[cols])
+        account = AccountParser(cfg).parse(path)
+        df = read_transactions(path, cfg)
+        df["Account"] = account.id
+        bank_transactions.append(df[cols])
 
     tx = merge_bank_tx(bank_transactions)
     tx = tx.sort_values(by=["Date", "Account", "Label", "Amount"])
