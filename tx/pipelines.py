@@ -44,21 +44,15 @@ class TransactionPipeline(Pipeline):
         """
         return df
 
-    def read_balance(self, path: Path) -> DataFrame:
-        df = pd.read_csv(path, parse_dates=["Date"])
-        df = df[["Date", "Amount"]]
-        df["Account"] = self.account.id
-        df["AccountId"] = self.account.num
-        df["AccountType"] = self.account.type
-        return df
 
-    def write_balances(self, path: Path, new_balances: DataFrame):
-        pass
+class BalancePipeline(Pipeline, metaclass=ABCMeta):
+    def run(self, path: Path, dest_dir: Path, summary: Summary):
+        balances = self.read_new_balances(path)
+        balance_file = dest_dir / f"balance.{self.account.filename}"
+        self.write_balances(balance_file, balances)
 
-
-class BalancePipeline(Pipeline):
-    def run(self, path: Path, dest_dir: Path, summary: Summary) -> None:
-        pass
+        summary.add_source(path)
+        summary.add_target(balance_file)
 
     def read_balance(self, path: Path) -> DataFrame:
         df = pd.read_csv(path, parse_dates=["Date"])
@@ -68,16 +62,40 @@ class BalancePipeline(Pipeline):
         df["AccountType"] = self.account.type
         return df
 
-    def write_balances(self, path: Path, new_balances: DataFrame):
+    @classmethod
+    def write_balances(cls, csv: Path, new_lines: DataFrame):
+        df = new_lines.copy()
+        if csv.exists():
+            existing = pd.read_csv(csv, parse_dates=["Date"])
+            df = df.append(existing, sort=False)
+        df = df.drop_duplicates(subset=["Date"], keep="last")
+        df = df.sort_values(by="Date")
+        df.to_csv(csv, index=None, columns=["Date", "Amount"])
+
+    @abstractmethod
+    def read_new_balances(self, csv: Path) -> DataFrame:
+        pass
+
+
+class NoopBalancePipeline(BalancePipeline):
+    def run(self, path: Path, dest_dir: Path, summary: Summary):
+        pass
+
+    def read_new_balances(self, csv: Path) -> DataFrame:
         pass
 
 
 class BnpPipeline(Pipeline, metaclass=ABCMeta):
     @classmethod
+    def parse_fr_float(cls, s: str) -> float:
+        v = s.replace(",", ".").replace(" ", "")
+        return float(v)
+
+    @classmethod
     def read_raw(cls, csv: Path) -> Tuple[DataFrame, DataFrame]:
+        # BNP Paribas stores the balance in the first line of the CSV
         with csv.open(encoding="ISO-8859-1") as f:
             first = next(f).strip()
-
         balances = pd.DataFrame.from_records(
             data=[first.split(";")],
             columns=[
@@ -90,10 +108,10 @@ class BnpPipeline(Pipeline, metaclass=ABCMeta):
             ],
         )
         balances["Date"] = pd.to_datetime(balances["Date"], format="%d/%m/%Y")
-        balances["Amount"] = balances["Amount"].apply(
-            lambda v: v.replace(",", ".").replace(" ", "")
-        )
-        balances["Amount"] = balances["Amount"].astype(float)
+        balances["Amount"] = balances["Amount"].apply(cls.parse_fr_float)
+        del balances["mainCategory"]
+        del balances["subCategory"]
+        del balances["accountNum"]
         del balances["unknown"]
 
         tx = pd.read_csv(
@@ -184,24 +202,6 @@ class BnpTransactionPipeline(BnpPipeline, TransactionPipeline):
 
 
 class BnpBalancePipeline(BnpPipeline, BalancePipeline):
-    def run(self, path: Path, dest_dir: Path, summary: Summary) -> None:
-        balances = self.read_new_balances(path)
-        b_path = dest_dir / f"balance.{self.account.filename}"
-        self.write_balances(b_path, balances)
-
-        summary.add_source(path)
-        summary.add_target(b_path)
-
-    @classmethod
-    def write_balances(cls, csv: Path, new_lines: DataFrame) -> None:
-        df = new_lines.copy()
-        if csv.exists():
-            existing = pd.read_csv(csv, parse_dates=["Date"])
-            df = df.append(existing, sort=False)
-        df = df.drop_duplicates(subset=["accountNum", "Date"], keep="last")
-        df = df.sort_values(by="Date")
-        df.to_csv(csv, index=None)
-
     def read_new_balances(self, csv: Path) -> DataFrame:
         balances, _ = self.read_raw(csv)
         return balances
@@ -305,22 +305,6 @@ class BoursoramaTransactionPipeline(BoursoramaPipeline, TransactionPipeline):
 
 
 class BoursoramaBalancePipeline(BoursoramaPipeline, BalancePipeline):
-    def run(self, path: Path, dest_dir: Path, summary: Summary):
-        balances = self.read_new_balances(path)
-        balance_file = dest_dir / f"balance.{self.account.filename}"
-        self.write_balances(balance_file, balances)
-
-        summary.add_source(path)
-        summary.add_target(balance_file)
-
-    @classmethod
-    def write_balances(cls, csv: Path, new_lines: DataFrame):
-        df = pd.read_csv(csv, parse_dates=["Date"])
-        df = df.append(new_lines, sort=False)
-        df = df.drop_duplicates(subset="Date", keep="last")
-        df = df.sort_values(by="Date")
-        df.to_csv(csv, index=None, columns=["Date", "Amount"])
-
     def read_new_balances(self, csv: Path) -> DataFrame:
         balances, _ = self.read_raw(csv)
         return balances
@@ -461,8 +445,8 @@ class PipelineFactory:
             return BnpBalancePipeline(account, self.cfg)
         if isinstance(account, BoursoramaAccount):
             return BoursoramaBalancePipeline(account, self.cfg)
-        return BalancePipeline(account, self.cfg)
+        return NoopBalancePipeline(account, self.cfg)
 
     def parse_balance_pipeline(self, path: Path):
         account = AccountParser(self.cfg).parse(path)
-        return self.new_transaction_pipeline(account)
+        return self.new_balance_pipeline(account)

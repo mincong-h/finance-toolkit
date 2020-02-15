@@ -189,17 +189,17 @@ def test_merge_bank_tx():
 def test_merge_balances(cfg):
     cfg.accounts.extend(
         [
-            BnpAccount("CHQ", "mhuang-BNP-CHQ", "****9413"),
-            BnpAccount("CHQ", "mhuang-BRS-CHQ", "****7485"),
+            BnpAccount("CHQ", "astark-BNP-CHQ", "123"),
+            BnpAccount("CHQ", "astark-BRS-CHQ", "456"),
         ]
     )
-    bnp = cfg.root_dir / "balance.mhuang-BNP-CHQ.csv"
-    brs = cfg.root_dir / "balance.mhuang-BRS-CHQ.csv"
+    bnp = cfg.root_dir / "balance.astark-BNP-CHQ.csv"
+    brs = cfg.root_dir / "balance.astark-BRS-CHQ.csv"
     bnp.write_text(
         """\
-mainCategory,subCategory,accountNum,Date,Amount
-Compte à Vue,Compte de chèques,****9413,2018-07-04,100.00
-Compte à Vue,Compte de chèques,****9413,2019-07-04,100.00
+Date,Amount
+2018-07-04,100.00
+2019-07-04,100.00
 """
     )
     brs.write_text(
@@ -213,10 +213,10 @@ Date,Amount
     actual_df = tx.merge_balances([bnp, brs], cfg)
     cols = ["Date", "Account", "AccountId", "Amount", "AccountType"]
     data = [
-        (pd.Timestamp("2018-07-04"), "mhuang-BNP-CHQ", "****9413", 100.0, "CHQ"),
-        (pd.Timestamp("2018-07-04"), "mhuang-BRS-CHQ", "****7485", 200.0, "CHQ"),
-        (pd.Timestamp("2019-07-04"), "mhuang-BNP-CHQ", "****9413", 100.0, "CHQ"),
-        (pd.Timestamp("2019-07-04"), "mhuang-BRS-CHQ", "****7485", 200.0, "CHQ"),
+        (pd.Timestamp("2018-07-04"), "astark-BNP-CHQ", "123", 100.0, "CHQ"),
+        (pd.Timestamp("2018-07-04"), "astark-BRS-CHQ", "456", 200.0, "CHQ"),
+        (pd.Timestamp("2019-07-04"), "astark-BNP-CHQ", "123", 100.0, "CHQ"),
+        (pd.Timestamp("2019-07-04"), "astark-BRS-CHQ", "456", 200.0, "CHQ"),
     ]
     expected_df = pd.DataFrame(columns=cols, data=data)
     assert_frame_equal(actual_df, expected_df)
