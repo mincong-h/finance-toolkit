@@ -8,8 +8,10 @@ from finance_toolkit.pipelines import FortuneoTransactionPipeline
 from finance_toolkit.utils import Summary
 
 
-def test_fortuneo_transaction_pipeline_read_new_transactions(location, cfg):
-    csv = location / "HistoriqueOperations_12345_du_14_01_2019_au_14_12_2019.csv"
+def test_fortuneo_transaction_pipeline_read_new_transactions(cfg):
+    csv = (
+        cfg.download_dir / "HistoriqueOperations_12345_du_14_01_2019_au_14_12_2019.csv"
+    )
 
     account = FortuneoAccount("aType", "anId", "12345")
     cfg.accounts.append(account)
@@ -139,12 +141,14 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
     assert csv.read_text() == content
 
 
-def test_run(location, cfg):
+def test_run(cfg):
     # given a Fortuneo account and data to be integrated
     account = FortuneoAccount("CHQ", "astark-FTN-CHQ", "12345")
     cfg.accounts.append(account)
-    csv = location / "HistoriqueOperations_12345_du_14_01_2019_au_14_12_2019.csv"
-    summary = Summary(location)
+    csv = (
+        cfg.download_dir / "HistoriqueOperations_12345_du_14_01_2019_au_14_12_2019.csv"
+    )
+    summary = Summary(cfg.download_dir)
     pipeline = FortuneoTransactionPipeline(account, cfg)
 
     # when running the pipeline
@@ -186,7 +190,7 @@ Finished."""
     )
 
 
-def test_guess_meta(location, cfg):
+def test_guess_meta(cfg):
     # Given a Fortuneo account
     account = FortuneoAccount("CHQ", "astark-FTN-CHQ", "12345")
     cfg.accounts.append(account)
@@ -196,7 +200,9 @@ def test_guess_meta(location, cfg):
         (("expense", "shopping", "offline", False), r".*FNAC METZ.*"),
         (("expense", "food", "supermarket", True), r".*LECLERC MARLY.*"),
     ]
-    csv = location / "HistoriqueOperations_12345_du_14_01_2019_au_14_12_2019.csv"
+    csv = (
+        cfg.download_dir / "HistoriqueOperations_12345_du_14_01_2019_au_14_12_2019.csv"
+    )
 
     # And transactions to be guessed
     transactions = pipeline.read_new_transactions(csv)

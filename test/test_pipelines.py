@@ -161,10 +161,10 @@ Date,Amount
     )
 
 
-def test_bnp_pipeline_read_raw(location):
+def test_bnp_pipeline_read_raw(cfg):
     # Given an existing CSV for BNP
     # When reading its content
-    csv = location / "E1851234.csv"
+    csv = cfg.download_dir / "E1851234.csv"
     actual_balances, actual_transactions = BnpPipeline.read_raw(csv)
 
     # Then the balances DataFrame is read correctly
@@ -419,8 +419,8 @@ Date,Amount
     assert b in summary.targets
 
 
-def test_boursorama_account_read_raw(location, cfg):
-    csv = location / "export-operations-30-03-2019_08-50-51.csv"
+def test_boursorama_account_read_raw(cfg):
+    csv = cfg.download_dir / "export-operations-30-03-2019_08-50-51.csv"
 
     account = BoursoramaAccount("type1", "name1", "001234")
     cfg.accounts.append(account)
@@ -470,8 +470,8 @@ def test_boursorama_account_read_raw(location, cfg):
     assert_frame_equal(expected_tx, tx)
 
 
-def test_boursorama_account_read_raw_account_2(location, cfg):
-    csv = location / "export-operations-30-03-2019_08-50-51.csv"
+def test_boursorama_account_read_raw_account_2(cfg):
+    csv = cfg.download_dir / "export-operations-30-03-2019_08-50-51.csv"
 
     account = BoursoramaAccount("type2", "name2", "003607")
     cfg.accounts.append(account)
