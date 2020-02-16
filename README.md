@@ -33,7 +33,6 @@ following lines:
 ```sh
 export FINANCE_ROOT="${HOME}/finance-data"
 export PYTHONPATH="${HOME}/github/finance-toolkit/"
-alias tx='finance-toolkit'
 ```
 
 Create a new configuration file for configuring your accounts (do not forget to
