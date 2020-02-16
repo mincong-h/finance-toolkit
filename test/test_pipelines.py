@@ -19,8 +19,8 @@ from finance_toolkit.pipelines import (
     BoursoramaTransactionPipeline,
     FortuneoTransactionPipeline,
     NoopBalancePipeline,
+    NoopTransactionPipeline,
     PipelineFactory,
-    TransactionPipeline,
 )
 from finance_toolkit.utils import Summary
 
@@ -45,7 +45,7 @@ def test_new_transaction_pipeline(cfg):
     assert isinstance(p1, BnpTransactionPipeline)
     assert isinstance(p2, BoursoramaTransactionPipeline)
     assert isinstance(p3, FortuneoTransactionPipeline)
-    assert isinstance(p4, TransactionPipeline)
+    assert isinstance(p4, NoopTransactionPipeline)
 
 
 def test_new_balance_pipeline(cfg):
@@ -101,11 +101,11 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
         f.write("02/09/2018;M;S;myLabel;-2,49\n")
 
     # When integrating new lines
-    summary = Summary(Path("/path/to/sources"))
+    summary = Summary(cfg)
     account = BnpAccount("CHQ", "xxx", "****1234")
     cfg.accounts.append(account)
-    BnpTransactionPipeline(account, cfg).run(new_file, cfg.root_dir, summary)
-    BnpBalancePipeline(account, cfg).run(new_file, cfg.root_dir, summary)
+    BnpTransactionPipeline(account, cfg).run(new_file, summary)
+    BnpBalancePipeline(account, cfg).run(new_file, summary)
 
     # Then the new lines are integrated
     assert (
@@ -161,10 +161,10 @@ Date,Amount
     )
 
 
-def test_bnp_pipeline_read_raw(location):
+def test_bnp_pipeline_read_raw(cfg):
     # Given an existing CSV for BNP
     # When reading its content
-    csv = location / "E1851234.csv"
+    csv = cfg.download_dir / "E1851234.csv"
     actual_balances, actual_transactions = BnpPipeline.read_raw(csv)
 
     # Then the balances DataFrame is read correctly
@@ -258,7 +258,7 @@ def test_bnp_pipeline_append_tx_file_nonexistent_csv():
     )
     with TemporaryDirectory() as root:
         csv = Path(root) / "my.csv"
-        BnpTransactionPipeline.append_tx_file(csv, df)
+        BnpTransactionPipeline.append_transactions(csv, df)
         assert (
             csv.read_text()
             == """\
@@ -289,7 +289,7 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
 2019-08-01,myLabel,10.0,myType,main,sub,True
 """
         )
-        BnpTransactionPipeline.append_tx_file(csv, df)
+        BnpTransactionPipeline.append_transactions(csv, df)
         assert (
             csv.read_text()
             == """\
@@ -321,7 +321,7 @@ def test_bnp_pipeline_append_tx_file_drop_duplicates():
     )
     with TemporaryDirectory() as root:
         csv = Path(root) / "my.csv"
-        BnpTransactionPipeline.append_tx_file(csv, df)
+        BnpTransactionPipeline.append_transactions(csv, df)
         assert (
             csv.read_text()
             == """\
@@ -377,10 +377,10 @@ dateOp;dateVal;Label;category;categoryParent;supplierFound;Amount;accountNum;acc
     )
 
     # When integrating new lines
-    summary = Summary(Path("/path/to/sources"))
+    summary = Summary(cfg)
     account = BoursoramaAccount("LVR", "xxx", "001234")
     cfg.accounts.append(account)
-    BoursoramaTransactionPipeline(account, cfg).run(new_file, cfg.root_dir, summary)
+    BoursoramaTransactionPipeline(account, cfg).run(new_file, summary)
 
     # Then the new lines are integrated
     assert (
@@ -401,7 +401,7 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
     )
 
     # And the balance is correct
-    BoursoramaBalancePipeline(account, cfg).run(new_file, cfg.root_dir, summary)
+    BoursoramaBalancePipeline(account, cfg).run(new_file, summary)
     assert (
         b.read_text()
         == """\
@@ -419,8 +419,8 @@ Date,Amount
     assert b in summary.targets
 
 
-def test_boursorama_account_read_raw(location, cfg):
-    csv = location / "export-operations-30-03-2019_08-50-51.csv"
+def test_boursorama_account_read_raw(cfg):
+    csv = cfg.download_dir / "export-operations-30-03-2019_08-50-51.csv"
 
     account = BoursoramaAccount("type1", "name1", "001234")
     cfg.accounts.append(account)
@@ -470,8 +470,8 @@ def test_boursorama_account_read_raw(location, cfg):
     assert_frame_equal(expected_tx, tx)
 
 
-def test_boursorama_account_read_raw_account_2(location, cfg):
-    csv = location / "export-operations-30-03-2019_08-50-51.csv"
+def test_boursorama_account_read_raw_account_2(cfg):
+    csv = cfg.download_dir / "export-operations-30-03-2019_08-50-51.csv"
 
     account = BoursoramaAccount("type2", "name2", "003607")
     cfg.accounts.append(account)
@@ -553,7 +553,7 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
         ]
         data = [(pd.Timestamp("2018-09-27"), "L", -10.0, "expense", "M", "S", True,)]
         new_lines = pd.DataFrame(columns=cols, data=data)
-        BoursoramaTransactionPipeline.append_tx(csv, new_lines)
+        BoursoramaTransactionPipeline.append_transactions(csv, new_lines)
 
         # Then rows are available and sorted
         assert (
@@ -599,7 +599,7 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
             )
         ]
         new_lines = pd.DataFrame(columns=cols, data=data)
-        BoursoramaTransactionPipeline.append_tx(csv, new_lines)
+        BoursoramaTransactionPipeline.append_transactions(csv, new_lines)
 
         # Then rows has no duplicates
         assert (

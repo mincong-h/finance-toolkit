@@ -4,41 +4,6 @@ from typing import List, Set, Tuple, Dict
 from .accounts import Account
 
 
-class Summary:
-    def __init__(self, source_dir: Path):
-        self.source_dir = source_dir
-        self.sources = set()
-        self.targets = set()
-
-    def add_target(self, target: Path) -> None:
-        self.targets.add(target)
-
-    def add_source(self, source: Path) -> None:
-        self.sources.add(source)
-
-    def __repr__(self) -> str:
-        if self.sources:
-            s = "\n".join([f"- {s}" for s in sorted(self.sources)])
-            t = "\n".join([f"- {t}" for t in sorted(self.targets)])
-            return f"""\
-$$$ Summary $$$
----------------
-{len(self.sources)} files copied.
----------------
-Sources:
-{s}
-Targets:
-{t}
-Finished."""
-        else:
-            return f"""\
-$$$ Summary $$$
----------------
-No CSV found in "{self.source_dir}".
----------------
-Finished."""
-
-
 class Configuration:
     """
     Type-safe representation of the user configuration.
@@ -69,3 +34,38 @@ class Configuration:
         :return: categories without duplicate, order is guaranteed
         """
         return sorted(c for c in filter(cat_filter, self.category_set))
+
+
+class Summary:
+    def __init__(self, cfg: Configuration):
+        self.source_dir = cfg.download_dir
+        self.sources = set()
+        self.targets = set()
+
+    def add_target(self, target: Path) -> None:
+        self.targets.add(target)
+
+    def add_source(self, source: Path) -> None:
+        self.sources.add(source)
+
+    def __repr__(self) -> str:
+        if self.sources:
+            s = "\n".join([f"- {s}" for s in sorted(self.sources)])
+            t = "\n".join([f"- {t}" for t in sorted(self.targets)])
+            return f"""\
+$$$ Summary $$$
+---------------
+{len(self.sources)} files copied.
+---------------
+Sources:
+{s}
+Targets:
+{t}
+Finished."""
+        else:
+            return f"""\
+$$$ Summary $$$
+---------------
+No CSV found in "{self.source_dir}".
+---------------
+Finished."""

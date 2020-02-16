@@ -27,14 +27,12 @@ def sample(location):
 
 
 @pytest.fixture()
-def cfg(tmpdir):
-    """Instantiate a Configuration class using temporary folders.
+def cfg(tmpdir, location):
+    """Instantiate a Configuration class using temporary folder and test folder.
     A new object is created for each and every test function.
     """
-    source_dir = Path(tmpdir) / "downloads"
+    source_dir = location / "download"
     target_dir = Path(tmpdir) / "finance"
-
-    source_dir.mkdir()
     target_dir.mkdir()
 
     return Configuration(
