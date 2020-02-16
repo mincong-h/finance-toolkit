@@ -1,9 +1,9 @@
 """Finance Tools
 
 Usage:
-  tx.py [options] (cat|categories) [<prefix>]
-  tx.py [options] merge
-  tx.py [options] move
+  finance-toolkit [options] (cat|categories) [<prefix>]
+  finance-toolkit [options] merge
+  finance-toolkit [options] move
 
 Arguments:
   cat|categories   Print all categories, or categories starting with the given prefix.

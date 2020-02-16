@@ -4,7 +4,7 @@ from tempfile import TemporaryDirectory
 
 import pytest
 
-from tx.tx import Configuration
+from finance_toolkit.tx import Configuration
 
 
 @pytest.fixture(scope="session")

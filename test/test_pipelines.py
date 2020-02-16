@@ -5,13 +5,13 @@ import pandas as pd
 import pytest
 from pandas.util.testing import assert_frame_equal
 
-from tx.accounts import (
+from finance_toolkit.accounts import (
     Account,
     BnpAccount,
     BoursoramaAccount,
     FortuneoAccount,
 )
-from tx.pipelines import (
+from finance_toolkit.pipelines import (
     BnpPipeline,
     BnpBalancePipeline,
     BnpTransactionPipeline,
@@ -22,7 +22,7 @@ from tx.pipelines import (
     PipelineFactory,
     TransactionPipeline,
 )
-from tx.utils import Summary
+from finance_toolkit.utils import Summary
 
 
 # ---------- Class: AccountPipeline ----------

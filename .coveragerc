@@ -1,5 +1,5 @@
 [run]
-source = tx
+source = finance_toolkit
 branch = True
 
 [report]

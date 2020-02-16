@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from tx.accounts import (
+from finance_toolkit.accounts import (
     Account,
     BnpAccount,
     BoursoramaAccount,

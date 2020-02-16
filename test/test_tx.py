@@ -1,9 +1,18 @@
 from unittest.mock import patch, call
 
+import pandas as pd
 from pandas.testing import assert_frame_equal
+import yaml
 
-from tx import tx
-from tx.tx import *
+from finance_toolkit import tx
+from finance_toolkit.tx import (
+    BnpAccount,
+    BoursoramaAccount,
+    Configurator,
+    DegiroAccount,
+    FortuneoAccount,
+    OctoberAccount,
+)
 
 
 # ---------- Top Level Functions ----------
