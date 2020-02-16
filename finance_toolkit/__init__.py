@@ -1,9 +1,9 @@
 """Finance Tools"""
 
 __version__ = "0.1.0"
-__author__ = "Mincong Huang"
+__author__ = "The Finance Toolkit Team"
 __copyright__ = """
-Copyright (c) 2019-2020, Mincong Huang
+Copyright (c) 2019-2020, The Finance Toolkit Team
 
 Permission to use, copy, modify, and distribute this software and its
 documentation for any purpose and without fee or royalty is hereby
