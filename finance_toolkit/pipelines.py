@@ -241,7 +241,6 @@ class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
         del transactions["dateVal"]
         del transactions["category"]
         del transactions["categoryParent"]
-        del transactions["supplierFound"]
 
         m = self.account.pattern.match(csv.name)
         balances = df.groupby("accountNum")["accountBalance"].max().to_frame()
