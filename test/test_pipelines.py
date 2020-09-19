@@ -369,9 +369,9 @@ Date,Amount
     new_file = cfg.root_dir / "export-operations-04-09-2019_23-17-18.csv"
     new_file.write_text(
         """\
-dateOp;dateVal;Label;category;categoryParent;supplierFound;Amount;accountNum;accountLabel;accountbalance
-2019-08-30;2019-08-30;"VIR Virement interne depuis BOURSORA";"Virements reçus de comptes à comptes";"Mouvements internes créditeurs";"virement interne depuis boursora";10,00;00001234;"COMPTE SUR LIVRET";"1 000,00"
-2019-09-02;2019-09-02;"VIR Virement interne depuis BOURSORA";"Virements reçus de comptes à comptes";"Mouvements internes créditeurs";"virement interne depuis boursora";11,00;00001234;"COMPTE SUR LIVRET";"1 000,00"
+dateOp;dateVal;Label;category;categoryParent;Amount;accountNum;accountLabel;accountbalance
+2019-08-30;2019-08-30;"VIR Virement interne depuis BOURSORA";"Virements reçus de comptes à comptes";"Mouvements internes créditeurs";10,00;00001234;"COMPTE SUR LIVRET";"1 000,00"
+2019-09-02;2019-09-02;"VIR Virement interne depuis BOURSORA";"Virements reçus de comptes à comptes";"Mouvements internes créditeurs";11,00;00001234;"COMPTE SUR LIVRET";"1 000,00"
 """,  # noqa: E501
         encoding="ISO-8859-1",
     )
