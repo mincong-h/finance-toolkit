@@ -108,3 +108,5 @@ Follow the steps below to download CSV files:
   - Start on: the start month
   - Ending on: the end month
 * Click "Get statement" and you will be redirected to your email app. Finish the remaining steps there.
+* An email will be sent with CSV attached
+* Download the CSV file from that email
