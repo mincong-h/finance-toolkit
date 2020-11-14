@@ -7,6 +7,7 @@ from finance_toolkit.accounts import (
     DegiroAccount,
     FortuneoAccount,
     OctoberAccount,
+    RevolutAccount,
 )
 
 
@@ -103,3 +104,11 @@ def test_fortuneo_account_match():
 def test_october_account_match():
     a = OctoberAccount("aType", "anId", "myLogin")
     assert a.match(Path("remboursements-myLogin.xlsx"))
+
+
+# ---------- Class: RevolutAccount ----------
+
+
+def test_revolut_account_match():
+    a = RevolutAccount("aType", "anId", "myLogin")
+    assert a.match(Path("Revolut-EUR-Statement-Oct – Nov 2020.csv"))

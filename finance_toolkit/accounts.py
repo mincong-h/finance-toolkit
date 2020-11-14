@@ -96,3 +96,13 @@ class OctoberAccount(Account):
             account_num=account_num,
             pattern=f"remboursements-{account_num}.xlsx",
         )
+
+
+class RevolutAccount(Account):
+    def __init__(self, account_type: str, account_id: str, account_num: str):
+        super().__init__(
+            account_type=account_type,
+            account_id=account_id,
+            account_num=account_num,
+            pattern=r"Revolut-(.*)-Statement-(.*)\.csv",
+        )
