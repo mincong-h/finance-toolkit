@@ -8,7 +8,7 @@ transactions from different companies:
 - Degiro (https://www.degiro.com)
 - Fortuneo (https://www.fortuneo.fr)
 - October (https://october.eu)
-- Revolut (https://www.revolut.com/)
+- Revolut (https://www.revolut.com)
 
 ## Install
 
