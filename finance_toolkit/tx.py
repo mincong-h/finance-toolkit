@@ -14,6 +14,7 @@ from .accounts import (
     DegiroAccount,
     FortuneoAccount,
     OctoberAccount,
+    RevolutAccount,
 )
 from .pipelines import PipelineFactory, AccountParser
 from .utils import Configuration, Summary
@@ -80,6 +81,19 @@ class Configurator:
                     )
                 accounts.append(
                     FortuneoAccount(
+                        account_type=fields["type"],
+                        account_id=symbolic_name,
+                        account_num=fields["id"],
+                    )
+                )
+            elif company == "Revolut":
+                if "expr" in fields:
+                    print(
+                        "Revolut has its own naming convention for downloaded files,"
+                        f" you cannot overwrite it: expr={fields['expr']!r}"
+                    )
+                accounts.append(
+                    RevolutAccount(
                         account_type=fields["type"],
                         account_id=symbolic_name,
                         account_num=fields["id"],
