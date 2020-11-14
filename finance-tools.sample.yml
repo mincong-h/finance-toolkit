@@ -52,6 +52,12 @@ accounts:
     id: 'astark'
     label: Arya Stark - October (CrowdLending)
 
+  astark-REV-CHQ:
+    company: Revolut
+    type: CHQ
+    id: 'astark'
+    label: Arya Stark - Revolut (Compte de Chèque)
+
 # Categories
 # ----------
 # Declare categories here. Format: `$mainCategory/$subCategory`. Order is not

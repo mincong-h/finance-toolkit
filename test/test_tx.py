@@ -12,6 +12,7 @@ from finance_toolkit.tx import (
     DegiroAccount,
     FortuneoAccount,
     OctoberAccount,
+    RevolutAccount,
 )
 
 
@@ -377,6 +378,11 @@ accounts:
     type: CWL
     id: 'astark'
     label: Arya Stark - October (CrowdLending)
+  astark-REV-CHQ:
+    company: Revolut
+    type: CHQ
+    id: 'astark'
+    label: Arya Stark - Revolut (Compte de Chèque)
 """
     )
     # results are sorted by lexicographical order on symbolic name
@@ -384,6 +390,7 @@ accounts:
         BoursoramaAccount("CHQ", "astark-BRS-CHQ", "****0001"),
         DegiroAccount("STK", "astark-DGR-STK", "****0002"),
         OctoberAccount("CWL", "astark-OCT-CWL", "astark"),
+        RevolutAccount("CHQ", "astark-REV-CHQ", "astark"),
         BnpAccount("CHQ", "sstark-BNP-CHQ", "****0001"),
         BnpAccount("LVA", "sstark-BNP-LVA", "****0002"),
     ]
@@ -513,5 +520,6 @@ def test_configurator_parse_yaml(sample):
         DegiroAccount("STK", "astark-DGR-STK", "00000003"),
         FortuneoAccount("CHQ", "astark-FTN-CHQ", "12345"),
         OctoberAccount("CWL", "astark-OCT-CWL", "astark"),
+        RevolutAccount("CHQ", "astark-REV-CHQ", "astark"),
         BnpAccount("LVA", "sstark-BNP-LVA", "00000001"),
     ]

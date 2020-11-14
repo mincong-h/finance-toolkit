@@ -8,6 +8,7 @@ transactions from different companies:
 - Degiro (https://www.degiro.com)
 - Fortuneo (https://www.fortuneo.fr)
 - October (https://october.eu)
+- Revolut (https://www.revolut.com/)
 
 ## Install
 
@@ -90,3 +91,22 @@ Run unit tests (at root level of the project directory):
 ```bash
 python -m pytest
 ```
+
+## Revolut
+
+### Download CSV File
+
+https://community.revolut.com/t/data-export/76631
+
+Follow the steps below to download CSV files:
+
+* Open mobile application
+* Go to "Accounts" tab
+* Click "..." (more) and select "Statement"
+* Enter parameters for export:
+  - Format: Excel (actually CSV will be sent)
+  - Start on: the start month
+  - Ending on: the end month
+* Click "Get statement" and you will be redirected to your email app. Finish the remaining steps there.
+* An email will be sent with CSV attached
+* Download the CSV file from that email
