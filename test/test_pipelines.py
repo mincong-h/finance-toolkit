@@ -18,7 +18,7 @@ from finance_toolkit.pipelines import (
     BoursoramaBalancePipeline,
     BoursoramaTransactionPipeline,
     FortuneoTransactionPipeline,
-    NoopBalancePipeline,
+    GeneralBalancePipeline,
     NoopTransactionPipeline,
     PipelineFactory,
 )
@@ -61,7 +61,7 @@ def test_new_balance_pipeline(cfg):
 
     assert isinstance(p1, BnpBalancePipeline)
     assert isinstance(p2, BoursoramaBalancePipeline)
-    assert isinstance(p3, NoopBalancePipeline)
+    assert isinstance(p3, GeneralBalancePipeline)
 
 
 # ---------- Class: BnpPipeline ----------
