@@ -5,6 +5,7 @@ from pandas.testing import assert_frame_equal
 import yaml
 
 from finance_toolkit import tx
+from finance_toolkit.accounts import Account
 from finance_toolkit.tx import (
     BnpAccount,
     BoursoramaAccount,
@@ -454,8 +455,7 @@ accounts:
     ]
 
 
-@patch("builtins.print")
-def test_configurator_load_accounts_unknown_account(mocked_print):
+def test_configurator_load_accounts_unknown_account():
     # language=yml
     cfg = yaml.safe_load(
         """\
@@ -466,11 +466,12 @@ accounts:
     id: '****0001'
 """
     )
-    assert Configurator.load_accounts(cfg["accounts"]) == []
-    assert mocked_print.mock_calls == [
-        call(
-            "Unknown account: rstark-???-CHQ,"
-            " fields={'company': 'unknown', 'type': 'CHQ', 'id': '****0001'}"
+    assert Configurator.load_accounts(cfg["accounts"]) == [
+        Account(
+            account_type="CHQ",
+            account_num="****0001",
+            account_id="rstark-???-CHQ",
+            pattern="unknown",
         )
     ]
 

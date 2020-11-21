@@ -113,7 +113,14 @@ class Configurator:
                     )
                 )
             else:
-                print(f"Unknown account: {symbolic_name}, fields={fields}")
+                accounts.append(
+                    Account(
+                        account_type=fields["type"],
+                        account_id=symbolic_name,
+                        account_num=fields["id"],
+                        pattern="unknown",
+                    )
+                )
         accounts.sort(key=lambda a: a.id)
         return accounts
 

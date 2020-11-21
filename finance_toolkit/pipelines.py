@@ -128,7 +128,7 @@ class BalancePipeline(Pipeline, metaclass=ABCMeta):
         pass
 
 
-class NoopBalancePipeline(BalancePipeline):
+class GeneralBalancePipeline(BalancePipeline):
     def run(self, path: Path, summary: Summary):
         pass
 
@@ -382,7 +382,7 @@ class PipelineFactory:
             return BnpBalancePipeline(account, self.cfg)
         if isinstance(account, BoursoramaAccount):
             return BoursoramaBalancePipeline(account, self.cfg)
-        return NoopBalancePipeline(account, self.cfg)
+        return GeneralBalancePipeline(account, self.cfg)
 
     def parse_balance_pipeline(self, path: Path) -> BalancePipeline:
         account = AccountParser(self.cfg).parse(path)
