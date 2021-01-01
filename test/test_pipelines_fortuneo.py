@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pandas as pd
-from pandas.util.testing import assert_frame_equal
+from pandas.testing import assert_frame_equal
 
 from finance_toolkit.accounts import FortuneoAccount
 from finance_toolkit.pipelines import FortuneoTransactionPipeline
@@ -18,7 +18,15 @@ def test_fortuneo_transaction_pipeline_read_new_transactions(cfg):
     actual = FortuneoTransactionPipeline(account, cfg).read_new_transactions(csv)
 
     data = [
-        (pd.Timestamp("2019-12-13"), "CARTE 12/12 FNAC METZ", -6.4, "", "", "", "",),
+        (
+            pd.Timestamp("2019-12-13"),
+            "CARTE 12/12 FNAC METZ",
+            -6.4,
+            "",
+            "",
+            "",
+            "",
+        ),
         (
             pd.Timestamp("2019-12-13"),
             "CARTE 12/12 BRIOCHE DOREE METZ",
