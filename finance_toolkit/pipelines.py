@@ -5,6 +5,7 @@ from typing import Tuple
 
 import pandas as pd
 from pandas import DataFrame
+from datetime import datetime
 
 from .accounts import (
     Account,
@@ -167,7 +168,7 @@ class BnpPipeline(Pipeline, metaclass=ABCMeta):
 
         tx = pd.read_csv(
             csv,
-            date_parser=lambda s: pd.datetime.strptime(s, "%d/%m/%Y"),
+            date_parser=lambda s: datetime.strptime(s, "%d/%m/%Y"),
             decimal=",",
             delimiter=";",
             encoding="ISO-8859-1",
@@ -245,7 +246,7 @@ class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
         m = self.account.pattern.match(csv.name)
         balances = df.groupby("accountNum")["accountBalance"].max().to_frame()
         balances.reset_index(inplace=True)
-        balances["Date"] = pd.datetime.strptime(m.group(1), "%d-%m-%Y") - pd.Timedelta(
+        balances["Date"] = datetime.strptime(m.group(1), "%d-%m-%Y") - pd.Timedelta(
             "1 day"
         )
         balances = balances[balances["accountNum"].map(self.account.is_account)]
