@@ -3,7 +3,7 @@ from tempfile import TemporaryDirectory
 
 import pandas as pd
 import pytest
-from pandas.util.testing import assert_frame_equal
+from pandas.testing import assert_frame_equal
 
 from finance_toolkit.accounts import (
     Account,
@@ -184,7 +184,15 @@ def test_bnp_pipeline_read_raw(cfg):
         "IsRegular",
     ]
     t_data = [
-        (pd.Timestamp("2019-06-05"), "AMORTISSEMENT PRET 1234", 67.97, "", "", "", "",)
+        (
+            pd.Timestamp("2019-06-05"),
+            "AMORTISSEMENT PRET 1234",
+            67.97,
+            "",
+            "",
+            "",
+            "",
+        )
     ]
     expected_transactions = pd.DataFrame(columns=t_cols, data=t_data)
     assert_frame_equal(actual_transactions, expected_transactions)
@@ -551,7 +559,17 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
             "SubCategory",
             "IsRegular",
         ]
-        data = [(pd.Timestamp("2018-09-27"), "L", -10.0, "expense", "M", "S", True,)]
+        data = [
+            (
+                pd.Timestamp("2018-09-27"),
+                "L",
+                -10.0,
+                "expense",
+                "M",
+                "S",
+                True,
+            )
+        ]
         new_lines = pd.DataFrame(columns=cols, data=data)
         BoursoramaTransactionPipeline.append_transactions(csv, new_lines)
 
