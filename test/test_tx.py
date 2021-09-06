@@ -233,6 +233,71 @@ Date,Amount
     assert_frame_equal(actual_df, expected_df)
 
 
+def test_rename_categories(cfg):
+    cols = [
+        "Date",
+        "Account",
+        "Label",
+        "Amount",
+        "Type",
+        "MainCategory",
+        "SubCategory",
+        "IsRegular",
+    ]
+    data = [
+        (
+            pd.Timestamp("2021-09-06"),
+            "astark-BNP-CHQ",
+            "MyLabel",
+            100.0,
+            "expense",
+            "MainCategoryToRename",
+            "SubCategoryToRename",
+            False,
+        ),
+        (
+            pd.Timestamp("2021-09-06"),
+            "astark-BNP-CHQ",
+            "MyLabel",
+            100.0,
+            "expense",
+            "MainCategoryToKeep",
+            "SubCategoryToKeep",
+            False,
+        ),
+    ]
+    origin_df = pd.DataFrame(columns=cols, data=data)
+
+    # When
+    actual_df = tx.rename_categories(origin_df, cfg)
+
+    # Then
+    expected_data = [
+        (
+            pd.Timestamp("2021-09-06"),
+            "astark-BNP-CHQ",
+            "MyLabel",
+            100.0,
+            "expense",
+            "AnotherMainCategory",
+            "AnotherSubCategory",
+            False,
+        ),
+        (
+            pd.Timestamp("2021-09-06"),
+            "astark-BNP-CHQ",
+            "MyLabel",
+            100.0,
+            "expense",
+            "MainCategoryToKeep",
+            "SubCategoryToKeep",
+            False,
+        ),
+    ]
+    expected_df = pd.DataFrame(columns=cols, data=expected_data)
+    assert_frame_equal(actual_df, expected_df)
+
+
 def test_validate_tx(cfg):
     cfg.category_set.add("food/workfood")
 
