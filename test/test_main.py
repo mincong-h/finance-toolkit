@@ -149,6 +149,8 @@ categories:
   - food/restaurant
 
 categories_to_rename:
+  tax/income-tax: gouv/tax
+  tax/property-tax: gouv/tax
 
 auto-complete:
 
