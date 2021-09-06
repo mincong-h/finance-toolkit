@@ -38,6 +38,7 @@ def cfg(tmpdir, location):
     return Configuration(
         accounts=[],
         categories=[],
+        categories_to_rename={},
         autocomplete=[],
         download_dir=source_dir,
         root_dir=target_dir,

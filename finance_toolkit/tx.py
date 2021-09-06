@@ -142,34 +142,19 @@ class Configurator:
                 patterns.append((columns, pattern["expr"]))
         return patterns
 
-    # FIXME Use List[Category] as return type
-    @classmethod
-    def load_categories_to_rename(
-        cls, raw: Dict[str, str]
-    ) -> List[Tuple[Tuple[str, str], Tuple[str, str]]]:
-        mappings = []
-        for source_category_str, target_category_str in raw.items():
-            source_main_category, source_sub_category = source_category_str.split("/")
-            target_main_category, target_sub_category = target_category_str.split("/")
-            mappings.append(
-                (
-                    (source_main_category, source_sub_category),
-                    (target_main_category, target_sub_category),
-                )
-            )
-        return mappings
-
     @classmethod
     def parse_yaml(cls, path: Path) -> Configuration:
         data = yaml.safe_load(path.read_text())
         accounts = cls.load_accounts(data["accounts"])
         categories = cls.load_categories(data["categories"])
+        categories_to_rename = data["categories_to_rename"]
         autocomplete = cls.load_autocomplete(data["auto-complete"])
         download_dir = Path(data["download-dir"]).expanduser()
         root_dir = path.parent
         return Configuration(
             accounts=accounts,
             categories=categories,
+            categories_to_rename=categories_to_rename,
             autocomplete=autocomplete,
             download_dir=download_dir,
             root_dir=root_dir,
@@ -218,25 +203,11 @@ def read_transactions(path: Path, cfg: Configuration) -> DataFrame:
 
 
 def rename_categories(df: DataFrame, cfg: Configuration) -> DataFrame:
-    # TODO Do not hard code categories
-    reroutes = [
-        (("gouv", "amende"), ("other", "gouv-amende")),
-        (("gouv", "sejour"), ("other", "gouv-tax")),
-        (("gouv", "taxe-fonciere"), ("other", "gouv-tax")),
-        (("gouv", "taxe-habitation"), ("other", "gouv-tax")),
-        (("gouv", "taxe-revenue"), ("other", "gouv-tax")),
-        (("health", "parent"), ("family", "parent")),
-        (("house144", "assurance"), ("house", "assurance")),
-        (("house144", "charges"), ("house", "charges")),
-        (("house144", "credit"), ("house", "credit")),
-        (("house144", "transaction"), ("other", "house-purchase")),
-        (("house144", "decoration"), ("other", "house-decoration")),
-        (("house144", "electrical-equipment"), ("other", "house-equipment")),
-        (("house144", "furniture"), ("other", "house-furniture")),
-    ]
-    for (old_m, old_s), (new_m, new_s) in reroutes:
-        selection = (df["MainCategory"] == old_m) & (df["SubCategory"] == old_s)
-        df.loc[selection, ["MainCategory", "SubCategory"]] = new_m, new_s
+    for old_category, new_category in cfg.categories_to_rename.items():
+        old_main, old_sub = old_category.split("/")
+        new_main, new_sub = new_category.split("/")
+        selection = (df["MainCategory"] == old_main) & (df["SubCategory"] == old_sub)
+        df.loc[selection, ["MainCategory", "SubCategory"]] = new_main, new_sub
     return df
 
 

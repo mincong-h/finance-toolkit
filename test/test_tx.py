@@ -15,6 +15,7 @@ from finance_toolkit.tx import (
     OctoberAccount,
     RevolutAccount,
 )
+from finance_toolkit.utils import Configuration
 
 
 # ---------- Top Level Functions ----------
@@ -233,7 +234,8 @@ Date,Amount
     assert_frame_equal(actual_df, expected_df)
 
 
-def test_rename_categories(cfg):
+def test_rename_categories(cfg: Configuration):
+    # Given
     cols = [
         "Date",
         "Account",
@@ -267,6 +269,10 @@ def test_rename_categories(cfg):
         ),
     ]
     origin_df = pd.DataFrame(columns=cols, data=data)
+
+    cfg.categories_to_rename[
+        "MainCategoryToRename/SubCategoryToRename"
+    ] = "AnotherMainCategory/AnotherSubCategory"
 
     # When
     actual_df = tx.rename_categories(origin_df, cfg)
@@ -550,10 +556,10 @@ categories_to_rename:
   gouv/taxe-habitation: other/gouv-tax
 """
     )
-    assert Configurator.load_categories_to_rename(cfg["categories_to_rename"]) == [
-        (("gouv", "taxe-fonciere"), ("other", "gouv-tax")),
-        (("gouv", "taxe-habitation"), ("other", "gouv-tax")),
-    ]
+    assert Configurator.load_categories_to_rename(cfg["categories_to_rename"]) == {
+        "gouv/taxe-fonciere": "other/gouv-tax",
+        "gouv/taxe-habitation": "other/gouv-tax",
+    }
 
 
 def test_configurator_autocomplete_with_content():
