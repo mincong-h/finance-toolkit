@@ -148,7 +148,7 @@ class Configurator:
         cls, raw: Dict[str, str]
     ) -> List[Tuple[Tuple[str, str], Tuple[str, str]]]:
         mappings = []
-        for source_category_str, target_category_str in raw:
+        for source_category_str, target_category_str in raw.items():
             source_main_category, source_sub_category = source_category_str.split("/")
             target_main_category, target_sub_category = target_category_str.split("/")
             mappings.append(
