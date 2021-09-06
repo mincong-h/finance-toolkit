@@ -541,6 +541,21 @@ accounts:
     ]
 
 
+def test_configurator_load_categories_to_rename():
+    # language=yml
+    cfg = yaml.safe_load(
+        """\
+categories_to_rename:
+  gouv/taxe-fonciere: other/gouv-tax
+  gouv/taxe-habitation: other/gouv-tax
+"""
+    )
+    assert Configurator.load_categories_to_rename(cfg["categories_to_rename"]) == [
+        (("gouv", "taxe-fonciere"), ("other", "gouv-tax")),
+        (("gouv", "taxe-habitation"), ("other", "gouv-tax")),
+    ]
+
+
 def test_configurator_autocomplete_with_content():
     # language=yml
     cfg = yaml.safe_load(
