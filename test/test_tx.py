@@ -151,7 +151,7 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
     ]
 
 
-def test_merge_bank_tx():
+def test_merge_bank_tx(cfg):
     df1 = pd.DataFrame(
         {
             "Date": pd.Timestamp("2019-06-26"),
@@ -181,7 +181,7 @@ def test_merge_bank_tx():
         index=[0],
     )
 
-    actual_df = tx.merge_bank_tx([df1, df2])
+    actual_df = tx.merge_bank_tx([df1, df2], cfg)
     expected_df = pd.DataFrame(
         {
             "Date": [pd.Timestamp("2019-06-26"), pd.Timestamp("2019-06-27")],
