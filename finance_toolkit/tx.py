@@ -211,11 +211,14 @@ def rename_categories(df: DataFrame, cfg: Configuration) -> DataFrame:
     return df
 
 
-def merge_bank_tx(dfs: List[DataFrame]) -> DataFrame:
-    m = dfs[0]
+def merge_bank_tx(dfs: List[DataFrame], cfg: Configuration) -> DataFrame:
+    merged_df = dfs[0]
     for df in dfs[1:]:
-        m = m.append(df, sort=False)
-    return m.reset_index(drop=True)
+        merged_df = merged_df.append(df, sort=False)
+
+    merged_df = rename_categories(merged_df, cfg)
+
+    return merged_df.reset_index(drop=True)
 
 
 def merge_balances(paths: List[Path], cfg: Configuration) -> DataFrame:
@@ -266,7 +269,7 @@ def merge(cfg: Configuration):
         df["Account"] = account.id
         bank_transactions.append(df[cols])
 
-    tx = merge_bank_tx(bank_transactions)
+    tx = merge_bank_tx(bank_transactions, cfg)
     tx = tx.sort_values(by=["Date", "Account", "Label", "Amount"])
     tx.to_csv(cfg.root_dir / "total.csv", columns=cols, index=False)
     # TODO export results
