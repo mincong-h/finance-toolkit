@@ -147,12 +147,14 @@ class Configurator:
         data = yaml.safe_load(path.read_text())
         accounts = cls.load_accounts(data["accounts"])
         categories = cls.load_categories(data["categories"])
+        categories_to_rename = data["categories_to_rename"]
         autocomplete = cls.load_autocomplete(data["auto-complete"])
         download_dir = Path(data["download-dir"]).expanduser()
         root_dir = path.parent
         return Configuration(
             accounts=accounts,
             categories=categories,
+            categories_to_rename=categories_to_rename,
             autocomplete=autocomplete,
             download_dir=download_dir,
             root_dir=root_dir,
@@ -200,11 +202,23 @@ def read_transactions(path: Path, cfg: Configuration) -> DataFrame:
     return df
 
 
-def merge_bank_tx(dfs: List[DataFrame]) -> DataFrame:
-    m = dfs[0]
+def rename_categories(df: DataFrame, cfg: Configuration) -> DataFrame:
+    for old_category, new_category in cfg.categories_to_rename.items():
+        old_main, old_sub = old_category.split("/")
+        new_main, new_sub = new_category.split("/")
+        selection = (df["MainCategory"] == old_main) & (df["SubCategory"] == old_sub)
+        df.loc[selection, ["MainCategory", "SubCategory"]] = new_main, new_sub
+    return df
+
+
+def merge_bank_tx(dfs: List[DataFrame], cfg: Configuration) -> DataFrame:
+    merged_df = dfs[0]
     for df in dfs[1:]:
-        m = m.append(df, sort=False)
-    return m.reset_index(drop=True)
+        merged_df = merged_df.append(df, sort=False)
+
+    merged_df = rename_categories(merged_df, cfg)
+
+    return merged_df.reset_index(drop=True)
 
 
 def merge_balances(paths: List[Path], cfg: Configuration) -> DataFrame:
@@ -255,7 +269,7 @@ def merge(cfg: Configuration):
         df["Account"] = account.id
         bank_transactions.append(df[cols])
 
-    tx = merge_bank_tx(bank_transactions)
+    tx = merge_bank_tx(bank_transactions, cfg)
     tx = tx.sort_values(by=["Date", "Account", "Label", "Amount"])
     tx.to_csv(cfg.root_dir / "total.csv", columns=cols, index=False)
     # TODO export results

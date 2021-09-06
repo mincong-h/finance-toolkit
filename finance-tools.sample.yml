@@ -70,6 +70,15 @@ categories:
   - food/work
   - gouv/tax
 
+# Categories to rename
+# --------------------
+# Declare categories that you can rename. Order is not important, but it
+# is recommended to declare your list in alphabetic order for better
+# readability.
+categories_to_rename:
+  tax/income-tax: gouv/tax
+  tax/property-tax: gouv/tax
+
 # Auto-Completion
 # ---------------
 # Auto-completion for data enrichment. Finance tools add additional metadata to

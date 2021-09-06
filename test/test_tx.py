@@ -15,6 +15,7 @@ from finance_toolkit.tx import (
     OctoberAccount,
     RevolutAccount,
 )
+from finance_toolkit.utils import Configuration
 
 
 # ---------- Top Level Functions ----------
@@ -150,7 +151,7 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
     ]
 
 
-def test_merge_bank_tx():
+def test_merge_bank_tx(cfg):
     df1 = pd.DataFrame(
         {
             "Date": pd.Timestamp("2019-06-26"),
@@ -180,7 +181,7 @@ def test_merge_bank_tx():
         index=[0],
     )
 
-    actual_df = tx.merge_bank_tx([df1, df2])
+    actual_df = tx.merge_bank_tx([df1, df2], cfg)
     expected_df = pd.DataFrame(
         {
             "Date": [pd.Timestamp("2019-06-26"), pd.Timestamp("2019-06-27")],
@@ -230,6 +231,76 @@ Date,Amount
         (pd.Timestamp("2019-07-04"), "astark-BRS-CHQ", "456", 200.0, "CHQ"),
     ]
     expected_df = pd.DataFrame(columns=cols, data=data)
+    assert_frame_equal(actual_df, expected_df)
+
+
+def test_rename_categories(cfg: Configuration):
+    # Given
+    cols = [
+        "Date",
+        "Account",
+        "Label",
+        "Amount",
+        "Type",
+        "MainCategory",
+        "SubCategory",
+        "IsRegular",
+    ]
+    data = [
+        (
+            pd.Timestamp("2021-09-06"),
+            "astark-BNP-CHQ",
+            "MyLabel",
+            100.0,
+            "expense",
+            "MainCategoryToRename",
+            "SubCategoryToRename",
+            False,
+        ),
+        (
+            pd.Timestamp("2021-09-06"),
+            "astark-BNP-CHQ",
+            "MyLabel",
+            100.0,
+            "expense",
+            "MainCategoryToKeep",
+            "SubCategoryToKeep",
+            False,
+        ),
+    ]
+    origin_df = pd.DataFrame(columns=cols, data=data)
+
+    cfg.categories_to_rename[
+        "MainCategoryToRename/SubCategoryToRename"
+    ] = "AnotherMainCategory/AnotherSubCategory"
+
+    # When
+    actual_df = tx.rename_categories(origin_df, cfg)
+
+    # Then
+    expected_data = [
+        (
+            pd.Timestamp("2021-09-06"),
+            "astark-BNP-CHQ",
+            "MyLabel",
+            100.0,
+            "expense",
+            "AnotherMainCategory",
+            "AnotherSubCategory",
+            False,
+        ),
+        (
+            pd.Timestamp("2021-09-06"),
+            "astark-BNP-CHQ",
+            "MyLabel",
+            100.0,
+            "expense",
+            "MainCategoryToKeep",
+            "SubCategoryToKeep",
+            False,
+        ),
+    ]
+    expected_df = pd.DataFrame(columns=cols, data=expected_data)
     assert_frame_equal(actual_df, expected_df)
 
 

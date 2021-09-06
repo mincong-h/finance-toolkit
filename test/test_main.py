@@ -148,6 +148,10 @@ accounts:
 categories:
   - food/restaurant
 
+categories_to_rename:
+  tax/income-tax: gouv/tax
+  tax/property-tax: gouv/tax
+
 auto-complete:
 
 download-dir: {download_dir}
@@ -189,7 +193,7 @@ Date,Account,Label,Amount,Type,MainCategory,SubCategory,IsRegular
     captured = capsys.readouterr()
     assert (
         captured.out
-        == f"""\
+        == """\
 Merge done
 """
     )
@@ -221,6 +225,8 @@ accounts:
     label: Arya Stark - Fortuneo (Compte de Chèque)
 
 categories:
+
+categories_to_rename:
 
 auto-complete:
 
