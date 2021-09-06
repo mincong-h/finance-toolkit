@@ -200,6 +200,29 @@ def read_transactions(path: Path, cfg: Configuration) -> DataFrame:
     return df
 
 
+def rename_categories(df: DataFrame, cfg: Configuration) -> DataFrame:
+    # TODO Do not hard code categories
+    reroutes = [
+        (("gouv", "amende"), ("other", "gouv-amende")),
+        (("gouv", "sejour"), ("other", "gouv-tax")),
+        (("gouv", "taxe-fonciere"), ("other", "gouv-tax")),
+        (("gouv", "taxe-habitation"), ("other", "gouv-tax")),
+        (("gouv", "taxe-revenue"), ("other", "gouv-tax")),
+        (("health", "parent"), ("family", "parent")),
+        (("house144", "assurance"), ("house", "assurance")),
+        (("house144", "charges"), ("house", "charges")),
+        (("house144", "credit"), ("house", "credit")),
+        (("house144", "transaction"), ("other", "house-purchase")),
+        (("house144", "decoration"), ("other", "house-decoration")),
+        (("house144", "electrical-equipment"), ("other", "house-equipment")),
+        (("house144", "furniture"), ("other", "house-furniture")),
+    ]
+    for (old_m, old_s), (new_m, new_s) in reroutes:
+        selection = (df["MainCategory"] == old_m) & (df["SubCategory"] == old_s)
+        df.loc[selection, ["MainCategory", "SubCategory"]] = new_m, new_s
+    return df
+
+
 def merge_bank_tx(dfs: List[DataFrame]) -> DataFrame:
     m = dfs[0]
     for df in dfs[1:]:
