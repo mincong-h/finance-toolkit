@@ -184,9 +184,9 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
     assert (
         tx_merged.read_text()
         == """\
-Date,Account,Label,Amount,Type,MainCategory,SubCategory,IsRegular
-2019-08-01,userA-BNP-CHQ,myLabel,-10.0,expense,food,restaurant,False
-2019-08-02,userB-BRS-CHQ,myLabel,-11.0,transfer,,,False
+Date,Month,Account,Label,Amount,Type,MainCategory,SubCategory,IsRegular
+2019-08-01,2019-08,userA-BNP-CHQ,myLabel,-10.0,expense,food,restaurant,False
+2019-08-02,2019-08,userB-BRS-CHQ,myLabel,-11.0,transfer,,,False
 """
     )
     # And a summary is printed to standard output (stdout)

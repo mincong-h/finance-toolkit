@@ -271,7 +271,24 @@ def merge(cfg: Configuration):
 
     tx = merge_bank_tx(bank_transactions, cfg)
     tx = tx.sort_values(by=["Date", "Account", "Label", "Amount"])
-    tx.to_csv(cfg.root_dir / "total.csv", columns=cols, index=False)
+    tx["Month"] = tx["Date"].apply(lambda d: d.strftime("%Y-%m"))
+
+    tx.to_csv(
+        cfg.root_dir / "total.csv",
+        columns=[
+            "Date",
+            "Month",
+            "Account",
+            "Label",
+            "Amount",
+            "Type",
+            "MainCategory",
+            "SubCategory",
+            "IsRegular",
+        ],
+        index=False,
+    )
+
     # TODO export results
     b = merge_balances([p for p in cfg.root_dir.glob("balance.*.csv")], cfg)
     b.to_csv(cfg.root_dir / "balance.csv", index=False)
