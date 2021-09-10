@@ -185,7 +185,6 @@ def test_merge_bank_tx(cfg):
     expected_df = pd.DataFrame(
         {
             "Date": [pd.Timestamp("2019-06-26"), pd.Timestamp("2019-06-27")],
-            "Month": ["2019-06", "2019-06"],
             "ShortType": ["aShortType", "aShortType"],
             "LongType": ["aLongType", "aLongType"],
             "Label": ["aLabel", "aLabel"],
