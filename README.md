@@ -19,8 +19,8 @@ transactions from different companies:
 ./bin/docker-build.sh
 
 # Run Commands, such as:
-docker run finance-toolkit move
-docker run finance-toolkit merge
+./bin/docker-finance.sh move
+./bin/docker-finance.sh merge
 ```
 
 ### Install Without Docker (Deprecated)
