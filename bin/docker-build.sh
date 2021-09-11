@@ -8,5 +8,5 @@ docker_dir="${script_dir}/.."
 
 docker build \
   --tag "${IMAGE_NAME}:${tag}" \
-  --tag "latest" \
+  --tag "${IMAGE_NAME}:latest" \
   "$docker_dir"
