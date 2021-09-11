@@ -2,4 +2,9 @@
 .git
 
 # Python
+dist
+test
 venv
+
+# Finance Toolkit
+bin
