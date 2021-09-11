@@ -43,7 +43,7 @@ def main():
         root = Path(finance_root).expanduser()
 
     cfg_path = root / "finance-tools.yml"
-    cfg = Configurator.parse_yaml(cfg_path)
+    cfg = Configurator.load(cfg_path)
 
     if args["cat"] or args["categories"]:
         prefix = args["<prefix>"] or ""

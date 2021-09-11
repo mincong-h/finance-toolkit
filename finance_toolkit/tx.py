@@ -1,4 +1,5 @@
 """Finance Tools"""
+import os
 from pathlib import Path
 from typing import List, Tuple, Dict
 
@@ -159,6 +160,14 @@ class Configurator:
             download_dir=download_dir,
             root_dir=root_dir,
         )
+
+    @classmethod
+    def load(cls, path: Path) -> Configuration:
+        cfg = cls.parse_yaml(path)
+        # override download directory
+        if os.getenv("DOWNLOAD_DIR"):
+            cfg.download_dir = Path(os.getenv("DOWNLOAD_DIR")).expanduser()
+        return cfg
 
 
 LABELS = {
