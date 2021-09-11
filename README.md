@@ -21,8 +21,20 @@ git clone https://github.com/mincong-h/finance-toolkit.git
 # go to project
 cd finance-toolkit
 
-# install Finance Toolkit and its dependencies (the finance-toolkit executable will be created)
+# Create a new directory called "venv" as virtual environment
+python3 -m venv venv
+
+# Enable virtual environment
+source venv/bin/activate
+
+# Install requirements for tests
+pip3 install -r requirements-tests.txt
+
+# Install Finance Toolkit and its dependencies (the finance-toolkit executable will be created)
 python setup.py install
+
+# Disable virtual environment
+deactivate
 ```
 
 Create a new directory for storing your finance data. It's recommended to store
