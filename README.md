@@ -12,6 +12,19 @@ transactions from different companies:
 
 ## Install
 
+### Install With Docker
+
+```sh
+# Build Docker Image
+./bin/docker-build.sh
+
+# Run Commands, such as:
+docker run finance-toolkit move
+docker run finance-toolkit merge
+```
+
+### Install Without Docker (Deprecated)
+
 Ensure module `finance-tookit` is ready to be used:
 
 ```sh
