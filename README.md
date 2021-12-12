@@ -17,7 +17,9 @@ transactions from different companies:
 ```sh
 # Build Docker Image
 ./bin/docker-build.sh
+```
 
+```sh
 # Run Commands, such as:
 ./bin/docker-finance.sh move
 ./bin/docker-finance.sh merge
