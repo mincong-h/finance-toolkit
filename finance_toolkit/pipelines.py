@@ -59,7 +59,6 @@ class TransactionPipeline(Pipeline, metaclass=ABCMeta):
             "Type",
             "MainCategory",
             "SubCategory",
-            "IsRegular",
         ]
 
         if csv.exists():
@@ -185,16 +184,15 @@ class BnpPipeline(Pipeline, metaclass=ABCMeta):
         tx["Type"] = ""
         tx["MainCategory"] = ""
         tx["SubCategory"] = ""
-        tx["IsRegular"] = ""
         return balances, tx
 
 
 class BnpTransactionPipeline(BnpPipeline, TransactionPipeline):
     def guess_meta(self, df: DataFrame) -> DataFrame:
         if self.account.type == "CDI":
-            df["Type"], df["IsRegular"] = "credit", True
+            df["Type"] = "credit"
         elif self.account.type in ["LVA", "LDD"]:
-            df["Type"], df["IsRegular"] = "transfer", True
+            df["Type"] = "transfer"
         elif self.account.type == "CHQ":
             df["Type"] = "expense"
 
@@ -205,7 +203,6 @@ class BnpTransactionPipeline(BnpPipeline, TransactionPipeline):
                         df.loc[i, "Type"],
                         df.loc[i, "MainCategory"],
                         df.loc[i, "SubCategory"],
-                        df.loc[i, "IsRegular"],
                     ) = values
                     break
         return df
@@ -258,9 +255,9 @@ class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
 class BoursoramaTransactionPipeline(BoursoramaPipeline, TransactionPipeline):
     def guess_meta(self, df: DataFrame) -> DataFrame:
         if self.account.type == "LVR":
-            df["Type"], df["IsRegular"] = "transfer", False
+            df["Type"] = "transfer"
         elif self.account.type == "CHQ":
-            df["Type"], df["IsRegular"] = "expense", False
+            df["Type"] = "expense"
 
         for i, row in df.iterrows():
             for values, regex in self.cfg.autocomplete:
@@ -269,7 +266,6 @@ class BoursoramaTransactionPipeline(BoursoramaPipeline, TransactionPipeline):
                         df.loc[i, "Type"],
                         df.loc[i, "MainCategory"],
                         df.loc[i, "SubCategory"],
-                        df.loc[i, "IsRegular"],
                     ) = values
                     break
         return df
@@ -294,7 +290,6 @@ class FortuneoTransactionPipeline(TransactionPipeline):
                         df.loc[i, "Type"],
                         df.loc[i, "MainCategory"],
                         df.loc[i, "SubCategory"],
-                        df.loc[i, "IsRegular"],
                     ) = values
                     break
         return df
@@ -331,7 +326,6 @@ class FortuneoTransactionPipeline(TransactionPipeline):
         tx["Type"] = ""
         tx["MainCategory"] = ""
         tx["SubCategory"] = ""
-        tx["IsRegular"] = ""
 
         del tx["Date valeur"]
         del tx["empty"]
@@ -347,7 +341,6 @@ class FortuneoTransactionPipeline(TransactionPipeline):
                 "Type",
                 "MainCategory",
                 "SubCategory",
-                "IsRegular",
             ]
         ]
         return tx

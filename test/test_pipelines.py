@@ -76,14 +76,14 @@ def test_bnp_pipeline_integrate(cfg):
     tx09 = cfg.root_dir / "2018-09" / "2018-09.xxx.csv"
     tx08.write_text(
         """\
-Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
-2018-08-30,myLabel,-0.49,expense,main,sub,True
+Date,Label,Amount,Type,MainCategory,SubCategory
+2018-08-30,myLabel,-0.49,expense,main,sub
 """
     )
     tx09.write_text(
         """\
-Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
-2018-09-01,myLabel,-1.49,expense,main,sub,True
+Date,Label,Amount,Type,MainCategory,SubCategory
+2018-09-01,myLabel,-1.49,expense,main,sub
 """
     )
 
@@ -111,17 +111,17 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
     assert (
         tx08.read_text()
         == """\
-Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
-2018-08-30,myLabel,-0.49,expense,main,sub,True
-2018-08-31,myLabel,-0.99,expense,,,
+Date,Label,Amount,Type,MainCategory,SubCategory
+2018-08-30,myLabel,-0.49,expense,main,sub
+2018-08-31,myLabel,-0.99,expense,,
 """
     )
     assert (
         tx09.read_text()
         == """\
-Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
-2018-09-01,myLabel,-1.49,expense,main,sub,True
-2018-09-02,myLabel,-2.49,expense,,,
+Date,Label,Amount,Type,MainCategory,SubCategory
+2018-09-01,myLabel,-1.49,expense,main,sub
+2018-09-02,myLabel,-2.49,expense,,
 """
     )
 
@@ -181,14 +181,12 @@ def test_bnp_pipeline_read_raw(cfg):
         "Type",
         "MainCategory",
         "SubCategory",
-        "IsRegular",
     ]
     t_data = [
         (
             pd.Timestamp("2019-06-05"),
             "AMORTISSEMENT PRET 1234",
             67.97,
-            "",
             "",
             "",
             "",
@@ -199,44 +197,44 @@ def test_bnp_pipeline_read_raw(cfg):
 
 
 @pytest.mark.parametrize(
-    "cat, label, value",
+    "cat, label",
     [
         # case 0: Crédit Immobilier (CDI)
-        ("CDI", "credit", True),
+        ("CDI", "credit"),
         # case 1: Livret A (LVA)
-        ("LVA", "transfer", True),
+        ("LVA", "transfer"),
         # case 2: Livret Développement Durable (LDD)
-        ("LDD", "transfer", True),
+        ("LDD", "transfer"),
         # case 3: Compte de Chèque (CHQ)
-        ("CHQ", "expense", ""),
+        ("CHQ", "expense"),
     ],
 )
-def test_bnp_pipeline_guess_meta_account_type(cat, label, value, cfg):
-    cols = ["Label", "Type", "mainCategory", "subCategory", "IsRegular"]
+def test_bnp_pipeline_guess_meta_account_type(cat, label, cfg):
+    cols = ["Label", "Type", "mainCategory", "subCategory"]
 
     account = BnpAccount(cat, "xxx", "****1234")
     cfg.accounts.append(account)
     pipeline = BnpTransactionPipeline(account=account, cfg=cfg)
-    raw = pd.DataFrame(columns=cols, data=[("Label", "", "", "", "")])
-    expected = pd.DataFrame(columns=cols, data=[("Label", label, "", "", value)])
+    raw = pd.DataFrame(columns=cols, data=[("Label", "", "", "")])
+    expected = pd.DataFrame(columns=cols, data=[("Label", label, "", "")])
     actual = pipeline.guess_meta(raw)
     assert_frame_equal(actual, expected)
 
 
 def test_bnp_pipeline_guess_meta_transaction_label(cfg):
-    cols = ["Label", "Type", "MainCategory", "SubCategory", "IsRegular"]
+    cols = ["Label", "Type", "MainCategory", "SubCategory"]
     raw = pd.DataFrame(
         columns=cols,
         data=[
-            ("FOUJITA", "", "", "", False),  # find
-            ("FOUJITA LEETCODE", "", "", "", False),  # find first
+            ("FOUJITA", "", "", ""),  # find
+            ("FOUJITA LEETCODE", "", "", ""),  # find first
         ],
     )
     expected = pd.DataFrame(
         columns=cols,
         data=[
-            ("FOUJITA", "expense", "food", "resto", True),
-            ("FOUJITA LEETCODE", "expense", "food", "resto", True),
+            ("FOUJITA", "expense", "food", "resto"),
+            ("FOUJITA LEETCODE", "expense", "food", "resto"),
         ],
     )
 
@@ -244,8 +242,8 @@ def test_bnp_pipeline_guess_meta_transaction_label(cfg):
     cfg.accounts.append(account)
     cfg.autocomplete.extend(
         [
-            (("expense", "food", "resto", True), r".*FOUJITA.*"),
-            (("expense", "util", "tech", False), r".*LEETCODE.*"),
+            (("expense", "food", "resto"), r".*FOUJITA.*"),
+            (("expense", "util", "tech"), r".*LEETCODE.*"),
         ]
     )
     actual = BnpTransactionPipeline(account, cfg).guess_meta(raw)
@@ -261,7 +259,6 @@ def test_bnp_pipeline_append_tx_file_nonexistent_csv():
             "Type": [None],
             "MainCategory": [None],
             "SubCategory": [None],
-            "IsRegular": [None],
         }
     )
     with TemporaryDirectory() as root:
@@ -270,8 +267,8 @@ def test_bnp_pipeline_append_tx_file_nonexistent_csv():
         assert (
             csv.read_text()
             == """\
-Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
-2019-08-01,myLabel,10.0,,,,
+Date,Label,Amount,Type,MainCategory,SubCategory
+2019-08-01,myLabel,10.0,,,
 """
         )
 
@@ -285,24 +282,23 @@ def test_bnp_pipeline_append_tx_file_existing_csv():
             "Type",
             "MainCategory",
             "SubCategory",
-            "IsRegular",
         ],
-        data=[(pd.Timestamp("2019-08-01"), "myLabel", 10.0, "", "", "", "")],
+        data=[(pd.Timestamp("2019-08-01"), "myLabel", 10.0, "", "", "")],
     )
     with TemporaryDirectory() as root:
         csv = Path(root) / "my.csv"
         csv.write_text(
             """\
-Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
-2019-08-01,myLabel,10.0,myType,main,sub,True
+Date,Label,Amount,Type,MainCategory,SubCategory
+2019-08-01,myLabel,10.0,myType,main,sub
 """
         )
         BnpTransactionPipeline.append_transactions(csv, df)
         assert (
             csv.read_text()
             == """\
-Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
-2019-08-01,myLabel,10.0,myType,main,sub,True
+Date,Label,Amount,Type,MainCategory,SubCategory
+2019-08-01,myLabel,10.0,myType,main,sub
 """
         )
 
@@ -320,11 +316,10 @@ def test_bnp_pipeline_append_tx_file_drop_duplicates():
             "Type",
             "MainCategory",
             "SubCategory",
-            "IsRegular",
         ],
         data=[
-            (pd.Timestamp("2019-08-01"), "myLabel", 10.0, "", "", "", ""),
-            (pd.Timestamp("2019-08-01"), "myLabel", 11.0, "", "", "", ""),
+            (pd.Timestamp("2019-08-01"), "myLabel", 10.0, "", "", ""),
+            (pd.Timestamp("2019-08-01"), "myLabel", 11.0, "", "", ""),
         ],
     )
     with TemporaryDirectory() as root:
@@ -333,9 +328,9 @@ def test_bnp_pipeline_append_tx_file_drop_duplicates():
         assert (
             csv.read_text()
             == """\
-Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
-2019-08-01,myLabel,10.0,,,,
-2019-08-01,myLabel,11.0,,,,
+Date,Label,Amount,Type,MainCategory,SubCategory
+2019-08-01,myLabel,10.0,,,
+2019-08-01,myLabel,11.0,,,
 """
         )
 
@@ -352,14 +347,14 @@ def test_boursorama_pipeline_integrate(cfg):
     tx09 = cfg.root_dir / "2019-09" / "2019-09.xxx.csv"
     tx08.write_text(
         """\
-Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
-2019-08-29,VIR Virement interne depuis BOURSORA,30.0,transfer,,,False
+Date,Label,Amount,Type,MainCategory,SubCategory
+2019-08-29,VIR Virement interne depuis BOURSORA,30.0,transfer,,
 """
     )
     tx09.write_text(
         """\
-Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
-2019-09-01,VIR Virement interne depuis BOURSORA,40.0,transfer,,,False
+Date,Label,Amount,Type,MainCategory,SubCategory
+2019-09-01,VIR Virement interne depuis BOURSORA,40.0,transfer,,
 """
     )
 
@@ -394,17 +389,17 @@ dateOp;dateVal;Label;category;categoryParent;Amount;accountNum;accountLabel;acco
     assert (
         tx08.read_text()
         == """\
-Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
-2019-08-29,VIR Virement interne depuis BOURSORA,30.0,transfer,,,False
-2019-08-30,VIR Virement interne depuis BOURSORA,10.0,transfer,,,False
+Date,Label,Amount,Type,MainCategory,SubCategory
+2019-08-29,VIR Virement interne depuis BOURSORA,30.0,transfer,,
+2019-08-30,VIR Virement interne depuis BOURSORA,10.0,transfer,,
 """
     )
     assert (
         tx09.read_text()
         == """\
-Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
-2019-09-01,VIR Virement interne depuis BOURSORA,40.0,transfer,,,False
-2019-09-02,VIR Virement interne depuis BOURSORA,11.0,transfer,,,False
+Date,Label,Amount,Type,MainCategory,SubCategory
+2019-09-01,VIR Virement interne depuis BOURSORA,40.0,transfer,,
+2019-09-02,VIR Virement interne depuis BOURSORA,11.0,transfer,,
 """
     )
 
@@ -544,8 +539,8 @@ def test_boursorama_pipeline_append_tx():
         csv = Path(d) / "2018-09.xxx.csv"
         csv.write_text(
             """\
-Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
-2018-09-26,CARTE 25/09/18 93 LABEL,-20.1,expense,food,resto,True
+Date,Label,Amount,Type,MainCategory,SubCategory
+2018-09-26,CARTE 25/09/18 93 LABEL,-20.1,expense,food,resto
 """
         )
 
@@ -557,7 +552,6 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
             "Type",
             "MainCategory",
             "SubCategory",
-            "IsRegular",
         ]
         data = [
             (
@@ -567,7 +561,6 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
                 "expense",
                 "M",
                 "S",
-                True,
             )
         ]
         new_lines = pd.DataFrame(columns=cols, data=data)
@@ -577,9 +570,9 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
         assert (
             csv.read_text()
             == """\
-Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
-2018-09-26,CARTE 25/09/18 93 LABEL,-20.1,expense,food,resto,True
-2018-09-27,L,-10.0,expense,M,S,True
+Date,Label,Amount,Type,MainCategory,SubCategory
+2018-09-26,CARTE 25/09/18 93 LABEL,-20.1,expense,food,resto
+2018-09-27,L,-10.0,expense,M,S
 """
         )
 
@@ -590,8 +583,8 @@ def test_boursorama_pipeline_append_tx_drop_duplicates():
         csv = Path(d) / "my.csv"
         csv.write_text(
             """\
-Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
-2018-09-26,myLabel,-20.1,expense,food,resto,True
+Date,Label,Amount,Type,MainCategory,SubCategory
+2018-09-26,myLabel,-20.1,expense,food,resto
 """
         )
 
@@ -603,7 +596,6 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
             "Type",
             "MainCategory",
             "SubCategory",
-            "IsRegular",
         ]
         data = [
             (
@@ -613,7 +605,6 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
                 "expense",
                 "food",
                 "resto",
-                True,
             )
         ]
         new_lines = pd.DataFrame(columns=cols, data=data)
@@ -623,14 +614,14 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
         assert (
             csv.read_text()
             == """\
-Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
-2018-09-26,myLabel,-20.1,expense,food,resto,True
+Date,Label,Amount,Type,MainCategory,SubCategory
+2018-09-26,myLabel,-20.1,expense,food,resto
 """
         )
 
 
 @pytest.mark.parametrize(
-    "cat, label",
+    "cat, tx_type",
     [
         # case 0: Livret (LVR)
         ("LVR", "transfer"),
@@ -638,40 +629,48 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
         ("CHQ", "expense"),
     ],
 )
-def test_boursorama_pipeline_guess_meta_account_type(cat, label, cfg):
-    cols = ["Label", "Type", "mainCategory", "subCategory", "IsRegular"]
-
+def test_boursorama_pipeline_guess_meta_account_type(cat, tx_type, cfg):
     account = BoursoramaAccount(cat, "xxx", "****1234")
     cfg.accounts.append(account)
-    raw_df = pd.DataFrame(columns=cols, data=[("Label", "", "", "", "")])
-    expected_df = pd.DataFrame(columns=cols, data=[("Label", label, "", "", False)])
+    raw_df = pd.DataFrame({
+        "Label": ["Label"],
+        "Type": [""],
+        "mainCategory": [""],
+        "subCategory": [""],
+    })
+    expected_df = pd.DataFrame({
+        "Label": ["Label"],
+        "Type": [tx_type],
+        "mainCategory": [""],
+        "subCategory": [""],
+    })
     actual_df = BoursoramaTransactionPipeline(account, cfg).guess_meta(raw_df)
     assert_frame_equal(actual_df, expected_df)
 
 
 def test_boursorama_account_guess_mata_transaction_label(cfg):
-    cols = ["Label", "Type", "MainCategory", "SubCategory", "IsRegular"]
+    cols = ["Label", "Type", "MainCategory", "SubCategory"]
 
     account = BoursoramaAccount("LVR", "xxx", "****1234")
     cfg.accounts.append(account)
     cfg.autocomplete.extend(
         [
-            (("expense", "food", "resto", True), r".*FOUJITA.*"),
-            (("expense", "util", "tech", False), r".*LEETCODE.*"),
+            (("expense", "food", "resto"), r".*FOUJITA.*"),
+            (("expense", "util", "tech"), r".*LEETCODE.*"),
         ]
     )
     raw = pd.DataFrame(
         columns=cols,
         data=[
-            ("FOUJITA", "", "", "", ""),  # find
-            ("FOUJITA LEETCODE", "", "", "", ""),  # find first
+            ("FOUJITA", "", "", ""),  # find
+            ("FOUJITA LEETCODE", "", "", ""),  # find first
         ],
     )
     expected = pd.DataFrame(
         columns=cols,
         data=[
-            ("FOUJITA", "expense", "food", "resto", True),
-            ("FOUJITA LEETCODE", "expense", "food", "resto", True),
+            ("FOUJITA", "expense", "food", "resto"),
+            ("FOUJITA LEETCODE", "expense", "food", "resto"),
         ],
     )
     actual = BoursoramaTransactionPipeline(account, cfg).guess_meta(raw)

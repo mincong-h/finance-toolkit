@@ -82,7 +82,7 @@ categories_to_rename:
 # Auto-Completion
 # ---------------
 # Auto-completion for data enrichment. Finance tools add additional metadata to
-# your transactions: type, category, regularity. Declaring auto-completions
+# your transactions: type, and category. Declaring auto-completions
 # makes the enrichment process automatic: when a transaction label matches the
 # declared regular expression, the declared information (type, category,
 # regularity) will be added to the transaction.
@@ -91,17 +91,14 @@ auto-complete:
   - expr: '.*FLUNCH.*'
     type: expense
     cat: food/restaurant
-    regular: True
     desc: Optional description about this matching pattern. We go to Flunch regularly.
   - expr: '.*FOUJITA.*'
     type: expense
     cat: food/restaurant
-    regular: False
     desc: Foujita is a nice Japanese restaurant near l'Opéra, we go there sometimes.
   - expr: '.*FRANPRIX 5584.*'
     type: expense
     cat: food/restaurant
-    regular: True
 
 # Download Directory
 # ------------------

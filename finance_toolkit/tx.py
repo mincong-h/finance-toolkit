@@ -129,6 +129,7 @@ class Configurator:
     def load_categories(cls, raw: List[str]) -> List[str]:
         return [] if raw is None else raw
 
+    # TODO(mincong.huang) we should replace Tuple by data class
     @classmethod
     def load_autocomplete(cls, raw: List) -> List[Tuple]:
         patterns = []
@@ -138,7 +139,6 @@ class Configurator:
                     pattern["type"],
                     pattern["cat"].split("/")[0],  # main category
                     pattern["cat"].split("/")[1],  # sub category
-                    pattern["regular"],
                 )
                 patterns.append((columns, pattern["expr"]))
         return patterns
@@ -190,10 +190,7 @@ def validate_tx(row: Series, cfg: Configuration) -> str:
     if row.Type == "expense" and category not in cfg.categories():
         return f"Category {category!r} does not exist."
 
-    if row.IsRegular not in [True, False]:
-        return f"Unknown regularity: {row.IsRegular}"
-
-    return ""
+    return ""  # no error
 
 
 def read_transactions(path: Path, cfg: Configuration) -> DataFrame:
@@ -270,7 +267,6 @@ def merge(cfg: Configuration):
         "Type",
         "MainCategory",
         "SubCategory",
-        "IsRegular",
     ]
     for path in cfg.root_dir.glob("20[1-9]*/*.csv"):
         account = AccountParser(cfg).parse(path)
@@ -293,7 +289,6 @@ def merge(cfg: Configuration):
             "Type",
             "MainCategory",
             "SubCategory",
-            "IsRegular",
         ],
         index=False,
     )
