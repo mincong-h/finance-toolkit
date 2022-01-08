@@ -197,26 +197,26 @@ def test_bnp_pipeline_read_raw(cfg):
 
 
 @pytest.mark.parametrize(
-    "cat, label, value",
+    "cat, label",
     [
         # case 0: Crédit Immobilier (CDI)
-        ("CDI", "credit", True),
+        ("CDI", "credit"),
         # case 1: Livret A (LVA)
-        ("LVA", "transfer", True),
+        ("LVA", "transfer"),
         # case 2: Livret Développement Durable (LDD)
-        ("LDD", "transfer", True),
+        ("LDD", "transfer"),
         # case 3: Compte de Chèque (CHQ)
-        ("CHQ", "expense", ""),
+        ("CHQ", "expense"),
     ],
 )
-def test_bnp_pipeline_guess_meta_account_type(cat, label, value, cfg):
+def test_bnp_pipeline_guess_meta_account_type(cat, label, cfg):
     cols = ["Label", "Type", "mainCategory", "subCategory"]
 
     account = BnpAccount(cat, "xxx", "****1234")
     cfg.accounts.append(account)
     pipeline = BnpTransactionPipeline(account=account, cfg=cfg)
-    raw = pd.DataFrame(columns=cols, data=[("Label", "", "", "", "")])
-    expected = pd.DataFrame(columns=cols, data=[("Label", label, "", "", value)])
+    raw = pd.DataFrame(columns=cols, data=[("Label", "", "", "")])
+    expected = pd.DataFrame(columns=cols, data=[("Label", label, "", "")])
     actual = pipeline.guess_meta(raw)
     assert_frame_equal(actual, expected)
 
@@ -233,8 +233,8 @@ def test_bnp_pipeline_guess_meta_transaction_label(cfg):
     expected = pd.DataFrame(
         columns=cols,
         data=[
-            ("FOUJITA", "expense", "food", "resto", True),
-            ("FOUJITA LEETCODE", "expense", "food", "resto", True),
+            ("FOUJITA", "expense", "food", "resto"),
+            ("FOUJITA LEETCODE", "expense", "food", "resto"),
         ],
     )
 
@@ -242,8 +242,8 @@ def test_bnp_pipeline_guess_meta_transaction_label(cfg):
     cfg.accounts.append(account)
     cfg.autocomplete.extend(
         [
-            (("expense", "food", "resto", True), r".*FOUJITA.*"),
-            (("expense", "util", "tech", False), r".*LEETCODE.*"),
+            (("expense", "food", "resto"), r".*FOUJITA.*"),
+            (("expense", "util", "tech"), r".*LEETCODE.*"),
         ]
     )
     actual = BnpTransactionPipeline(account, cfg).guess_meta(raw)
