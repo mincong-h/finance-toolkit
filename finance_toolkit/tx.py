@@ -129,6 +129,7 @@ class Configurator:
     def load_categories(cls, raw: List[str]) -> List[str]:
         return [] if raw is None else raw
 
+    # TODO(mincong.huang) we should replace Tuple by data class
     @classmethod
     def load_autocomplete(cls, raw: List) -> List[Tuple]:
         patterns = []
@@ -138,7 +139,6 @@ class Configurator:
                     pattern["type"],
                     pattern["cat"].split("/")[0],  # main category
                     pattern["cat"].split("/")[1],  # sub category
-                    pattern["regular"],
                 )
                 patterns.append((columns, pattern["expr"]))
         return patterns

@@ -523,17 +523,14 @@ auto-complete:
   - expr: '.*FLUNCH.*'
     type: expense
     cat: food/restaurant
-    regular: True
     desc: Optional description about this matching pattern. We go to Flunch regularly.
   - expr: '.*FOUJITA.*'
     type: expense
     cat: food/restaurant
-    regular: False
     desc: Foujita is a nice Japanese restaurant near l'Opéra, we go there sometimes.
   - expr: '.*FRANPRIX 5584.*'
     type: expense
     cat: food/restaurant
-    regular: True
 """
     )
     assert Configurator.load_autocomplete(cfg["auto-complete"]) == [
