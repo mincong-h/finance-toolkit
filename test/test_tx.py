@@ -85,13 +85,12 @@ Date,Label,Amount,Type,MainCategory,SubCategory
 
 
 def test_read_boursorama_tx_ok(cfg):
-    cfg.autocomplete.extend(
+    cfg.autocomplete.append(
         TxCompletion(
             tx_type="expense",
             main_category="food",
             sub_category="restaurant",
             regex=r".*ROYAL PLAISANC.*",
-            description="",
         )
     )
     cfg.category_set.add("food/restaurant")
@@ -543,9 +542,24 @@ auto-complete:
 """
     )
     assert Configurator.load_autocomplete(cfg["auto-complete"]) == [
-        (("expense", "food", "restaurant"), r".*FLUNCH.*"),
-        (("expense", "food", "restaurant"), r".*FOUJITA.*"),
-        (("expense", "food", "restaurant"), r".*FRANPRIX 5584.*"),
+        TxCompletion(
+            tx_type="expense",
+            main_category="food",
+            sub_category="restaurant",
+            regex=r".*FLUNCH.*",
+        ),
+        TxCompletion(
+            tx_type="expense",
+            main_category="food",
+            sub_category="restaurant",
+            regex=r".*FOUJITA.*",
+        ),
+        TxCompletion(
+            tx_type="expense",
+            main_category="food",
+            sub_category="restaurant",
+            regex=r".*FRANPRIX 5584.*",
+        ),
     ]
 
 

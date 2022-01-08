@@ -202,21 +202,18 @@ def test_guess_meta(cfg):
             main_category="shopping",
             sub_category="online",
             regex=r".*AMAZON.*",
-            description="",
         ),
         TxCompletion(
             tx_type="expense",
             main_category="shopping",
             sub_category="offline",
             regex=r".*FNAC METZ.*",
-            description="",
         ),
         TxCompletion(
             tx_type="expense",
             main_category="food",
             sub_category="supermarket",
             regex=r".*LECLERC MARLY.*",
-            description="",
         ),
     ]
     csv = (

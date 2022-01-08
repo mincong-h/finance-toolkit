@@ -248,14 +248,12 @@ def test_bnp_pipeline_guess_meta_transaction_label(cfg):
                 main_category="food",
                 sub_category="resto",
                 regex=r".*FOUJITA.*",
-                description="",
             ),
             TxCompletion(
                 tx_type="expense",
                 main_category="util",
                 sub_category="tech",
                 regex=r".*LEETCODE.*",
-                description="",
             ),
         ]
     )
@@ -673,14 +671,12 @@ def test_boursorama_account_guess_mata_transaction_label(cfg):
                 main_category="food",
                 sub_category="resto",
                 regex=r".*FOUJITA.*",
-                description="",
             ),
             TxCompletion(
                 tx_type="expense",
                 main_category="util",
                 sub_category="tech",
                 regex=r".*LEETCODE.*",
-                description="",
             ),
         ]
     )

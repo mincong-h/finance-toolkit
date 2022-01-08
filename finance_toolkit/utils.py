@@ -12,7 +12,6 @@ class TxCompletion:
     tx_type: str
     main_category: str
     sub_category: str
-    description: str
 
     @staticmethod
     def load(pattern: Dict) -> 'TxCompletion':
@@ -34,7 +33,6 @@ class TxCompletion:
             tx_type=pattern["type"],
             main_category=pattern["cat"].split("/")[0],
             sub_category=pattern["cat"].split("/")[1],
-            description=pattern["desc"]
         )
 
 
