@@ -25,13 +25,11 @@ def test_fortuneo_transaction_pipeline_read_new_transactions(cfg):
             "",
             "",
             "",
-            "",
         ),
         (
             pd.Timestamp("2019-12-13"),
             "CARTE 12/12 BRIOCHE DOREE METZ",
             -10.9,
-            "",
             "",
             "",
             "",
@@ -43,7 +41,6 @@ def test_fortuneo_transaction_pipeline_read_new_transactions(cfg):
             "",
             "",
             "",
-            "",
         ),
         (
             pd.Timestamp("2019-12-12"),
@@ -52,13 +49,11 @@ def test_fortuneo_transaction_pipeline_read_new_transactions(cfg):
             "",
             "",
             "",
-            "",
         ),
         (
             pd.Timestamp("2019-04-30"),
             "VIR MALAKOFF MEDERIC PREVOYANCE",
             45.0,
-            "",
             "",
             "",
             "",
@@ -72,7 +67,6 @@ def test_fortuneo_transaction_pipeline_read_new_transactions(cfg):
             "Type",
             "MainCategory",
             "SubCategory",
-            "IsRegular",
         ],
         data=data,
     )
@@ -87,10 +81,10 @@ def test_append_transactions_existing_target(cfg, tmpdir):
     csv = Path(tmpdir) / "my.csv"
     csv.write_text(
         """\
-Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
-2020-02-12,Label A,20.0,expense,foo,bar,True
-2020-02-13,Label B,30.0,expense,foo,bar,True
-2020-02-14,Label C,40.0,expense,foo,bar,True
+Date,Label,Amount,Type,MainCategory,SubCategory
+2020-02-12,Label A,20.0,expense,foo,bar
+2020-02-13,Label B,30.0,expense,foo,bar
+2020-02-14,Label C,40.0,expense,foo,bar
 """
     )
 
@@ -108,10 +102,10 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
 
     # then they are appended successfully
     content = """\
-Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
-2020-02-12,Label A,20.0,expense,foo,bar,True
-2020-02-13,Label B,30.0,expense,foo,bar,True
-2020-02-14,Label C,40.0,expense,foo,bar,True
+Date,Label,Amount,Type,MainCategory,SubCategory
+2020-02-12,Label A,20.0,expense,foo,bar
+2020-02-13,Label B,30.0,expense,foo,bar
+2020-02-14,Label C,40.0,expense,foo,bar
 2020-02-14,Label D,40.0,,,,
 """
     assert csv.read_text() == content
@@ -135,16 +129,15 @@ def test_append_transactions_nonexistent_target(cfg, tmpdir):
                 "Type": None,
                 "MainCategory": None,
                 "SubCategory": None,
-                "IsRegular": None,
             }
         ),
     )
 
     # then they are appended successfully
     content = """\
-Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
-2020-02-13,Label B,30.0,,,,
-2020-02-14,Label D,40.0,,,,
+Date,Label,Amount,Type,MainCategory,SubCategory
+2020-02-13,Label B,30.0,,,
+2020-02-14,Label D,40.0,,,
 """
     assert csv.read_text() == content
 
@@ -167,19 +160,19 @@ def test_run(cfg):
     assert (
         tx201904.read_text()
         == """\
-Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
-2019-04-30,VIR MALAKOFF MEDERIC PREVOYANCE,45.0,,,,
+Date,Label,Amount,Type,MainCategory,SubCategory
+2019-04-30,VIR MALAKOFF MEDERIC PREVOYANCE,45.0,,,
 """
     )
     tx201912 = cfg.root_dir / "2019-12" / "2019-12.astark-FTN-CHQ.csv"
     assert (
         tx201912.read_text()
         == """\
-Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
-2019-12-12,CARTE 11/12 LECLERC MARLY,-15.75,,,,
-2019-12-13,CARTE 12/12 AMAZON EU SARL PAYLI2090401/,-45.59,,,,
-2019-12-13,CARTE 12/12 BRIOCHE DOREE METZ,-10.9,,,,
-2019-12-13,CARTE 12/12 FNAC METZ,-6.4,,,,
+Date,Label,Amount,Type,MainCategory,SubCategory
+2019-12-12,CARTE 11/12 LECLERC MARLY,-15.75,,,
+2019-12-13,CARTE 12/12 AMAZON EU SARL PAYLI2090401/,-45.59,,,
+2019-12-13,CARTE 12/12 BRIOCHE DOREE METZ,-10.9,,,
+2019-12-13,CARTE 12/12 FNAC METZ,-6.4,,,
 """
     )
     assert (
@@ -227,7 +220,6 @@ def test_guess_meta(cfg):
             "Type",
             "MainCategory",
             "SubCategory",
-            "IsRegular",
         ],
         data=[
             (
@@ -237,13 +229,11 @@ def test_guess_meta(cfg):
                 "expense",
                 "shopping",
                 "offline",
-                False,
             ),
             (
                 pd.Timestamp("2019-12-13"),
                 "CARTE 12/12 BRIOCHE DOREE METZ",
                 -10.9,
-                "",
                 "",
                 "",
                 "",
@@ -255,7 +245,6 @@ def test_guess_meta(cfg):
                 "expense",
                 "shopping",
                 "online",
-                False,
             ),
             (
                 pd.Timestamp("2019-12-12"),
@@ -264,13 +253,11 @@ def test_guess_meta(cfg):
                 "expense",
                 "food",
                 "supermarket",
-                True,
             ),
             (
                 pd.Timestamp("2019-04-30"),
                 "VIR MALAKOFF MEDERIC PREVOYANCE",
                 45.0,
-                "",
                 "",
                 "",
                 "",

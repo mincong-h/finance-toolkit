@@ -27,8 +27,8 @@ def test_read_bnp_tx_ok(cfg):
     csv = cfg.root_dir / "2019-03.mhuang-CHQ.csv"
     csv.write_text(
         """\
-Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
-2018-04-30,DU 270418 MC DONALDS PARIS 18 CARTE 4974,-4.95,expense,food,workfood,True
+Date,Label,Amount,Type,MainCategory,SubCategory
+2018-04-30,DU 270418 MC DONALDS PARIS 18 CARTE 4974,-4.95,expense,food,workfood
 """
     )
     actual_df = tx.read_transactions(csv, cfg)
@@ -40,7 +40,6 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
             "Type": "expense",
             "MainCategory": "food",
             "SubCategory": "workfood",
-            "IsRegular": True,
         },
         index=[0],
     )
@@ -54,11 +53,11 @@ def test_read_bnp_tx_validate_errors(mocked_print, cfg):
     csv = cfg.root_dir / "2019-03.mhuang-CHQ.csv"
     csv.write_text(
         """\
-Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
-2018-04-30,myLabel,-1.0,expense,food,restaurant,True
-2018-04-30,myLabel,-2.0,expense,,,True
-2018-04-30,myLabel,-3.0,expense,food,,True
-2018-04-30,myLabel,-4.0,expense,,restaurant,True
+Date,Label,Amount,Type,MainCategory,SubCategory
+2018-04-30,myLabel,-1.0,expense,food,restaurant
+2018-04-30,myLabel,-2.0,expense,,
+2018-04-30,myLabel,-3.0,expense,food,
+2018-04-30,myLabel,-4.0,expense,,restaurant
 """
     )
     actual_df = tx.read_transactions(csv, cfg)
@@ -70,7 +69,6 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
             "Type": "expense",
             "MainCategory": "food",
             "SubCategory": "restaurant",
-            "IsRegular": True,
         },
         index=[0],
     )
@@ -92,8 +90,8 @@ def test_read_boursorama_tx_ok(cfg):
     csv = cfg.root_dir / "2019-06.mhuang-BRS-CHQ.csv"
     csv.write_text(
         """\
-Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
-2019-06-26,CARTE 25/06/19 93 ROYAL PLAISANC CB*1234,-20.1,expense,food,restaurant,True
+Date,Label,Amount,Type,MainCategory,SubCategory
+2019-06-26,CARTE 25/06/19 93 ROYAL PLAISANC CB*1234,-20.1,expense,food,restaurant
 """
     )
     actual_df = tx.read_transactions(csv, cfg)
@@ -105,7 +103,6 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
             "Type": "expense",
             "MainCategory": "food",
             "SubCategory": "restaurant",
-            "IsRegular": True,
         },
         index=[0],
     )
@@ -122,11 +119,11 @@ def test_read_boursorama_tx_validation_errors(mocked_print, cfg):
     csv = cfg.root_dir / "2019-06.mhuang-BRS-CHQ.csv"
     csv.write_text(
         """\
-Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
-2019-06-26,myLabel,-1.0,expense,food,restaurant,True
-2019-06-26,myLabel,-2.0,expense,,,True
-2019-06-26,myLabel,-3.0,expense,food,,True
-2019-06-26,myLabel,-4.0,expense,,restaurant,True
+Date,Label,Amount,Type,MainCategory,SubCategory
+2019-06-26,myLabel,-1.0,expense,food,restaurant
+2019-06-26,myLabel,-2.0,expense,,
+2019-06-26,myLabel,-3.0,expense,food,
+2019-06-26,myLabel,-4.0,expense,,restaurant
 """
     )
     actual_df = tx.read_transactions(csv, cfg)
@@ -138,7 +135,6 @@ Date,Label,Amount,Type,MainCategory,SubCategory,IsRegular
             "Type": "expense",
             "MainCategory": "food",
             "SubCategory": "restaurant",
-            "IsRegular": True,
         },
         index=[0],
     )
@@ -162,7 +158,6 @@ def test_merge_bank_tx(cfg):
             "Type": "expense",
             "Category": "food",
             "SubCategory": "resto",
-            "IsRegular": True,
         },
         index=[0],
     )
@@ -176,7 +171,6 @@ def test_merge_bank_tx(cfg):
             "Type": "expense",
             "Category": "food",
             "SubCategory": "resto",
-            "IsRegular": True,
         },
         index=[0],
     )
@@ -192,7 +186,6 @@ def test_merge_bank_tx(cfg):
             "Type": ["expense", "expense"],
             "Category": ["food", "food"],
             "SubCategory": ["resto", "resto"],
-            "IsRegular": [True, True],
         }
     )
     assert_frame_equal(actual_df, expected_df)
@@ -244,7 +237,6 @@ def test_rename_categories(cfg: Configuration):
         "Type",
         "MainCategory",
         "SubCategory",
-        "IsRegular",
     ]
     data = [
         (
@@ -255,7 +247,6 @@ def test_rename_categories(cfg: Configuration):
             "expense",
             "MainCategoryToRename",
             "SubCategoryToRename",
-            False,
         ),
         (
             pd.Timestamp("2021-09-06"),
@@ -265,7 +256,6 @@ def test_rename_categories(cfg: Configuration):
             "expense",
             "MainCategoryToKeep",
             "SubCategoryToKeep",
-            False,
         ),
     ]
     origin_df = pd.DataFrame(columns=cols, data=data)
@@ -287,7 +277,6 @@ def test_rename_categories(cfg: Configuration):
             "expense",
             "AnotherMainCategory",
             "AnotherSubCategory",
-            False,
         ),
         (
             pd.Timestamp("2021-09-06"),
@@ -297,7 +286,6 @@ def test_rename_categories(cfg: Configuration):
             "expense",
             "MainCategoryToKeep",
             "SubCategoryToKeep",
-            False,
         ),
     ]
     expected_df = pd.DataFrame(columns=cols, data=expected_data)
@@ -316,7 +304,6 @@ def test_validate_tx(cfg):
                 "Type": "X",
                 "MainCategory": "food",
                 "SubCategory": "workfood",
-                "IsRegular": True,
             }
         ),
         cfg,
@@ -332,7 +319,6 @@ def test_validate_tx(cfg):
                 "Type": "expense",
                 "MainCategory": "X",
                 "SubCategory": "workfood",
-                "IsRegular": True,
             }
         ),
         cfg,
@@ -348,7 +334,6 @@ def test_validate_tx(cfg):
                 "Type": "expense",
                 "MainCategory": "food",
                 "SubCategory": "X",
-                "IsRegular": True,
             }
         ),
         cfg,
@@ -364,7 +349,6 @@ def test_validate_tx(cfg):
                 "Type": "expense",
                 "MainCategory": "food",
                 "SubCategory": "workfood",
-                "IsRegular": "X",
             }
         ),
         cfg,
@@ -380,7 +364,6 @@ def test_validate_tx(cfg):
                 "Type": "expense",
                 "MainCategory": "food",
                 "SubCategory": "workfood",
-                "IsRegular": True,
             }
         ),
         cfg,

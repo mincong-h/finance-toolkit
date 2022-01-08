@@ -190,10 +190,7 @@ def validate_tx(row: Series, cfg: Configuration) -> str:
     if row.Type == "expense" and category not in cfg.categories():
         return f"Category {category!r} does not exist."
 
-    if row.IsRegular not in [True, False]:
-        return f"Unknown regularity: {row.IsRegular}"
-
-    return ""
+    return ""  # no error
 
 
 def read_transactions(path: Path, cfg: Configuration) -> DataFrame:
@@ -270,7 +267,6 @@ def merge(cfg: Configuration):
         "Type",
         "MainCategory",
         "SubCategory",
-        "IsRegular",
     ]
     for path in cfg.root_dir.glob("20[1-9]*/*.csv"):
         account = AccountParser(cfg).parse(path)
@@ -293,7 +289,6 @@ def merge(cfg: Configuration):
             "Type",
             "MainCategory",
             "SubCategory",
-            "IsRegular",
         ],
         index=False,
     )
