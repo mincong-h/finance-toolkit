@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -22,7 +23,8 @@ from finance_toolkit.pipelines import (
     NoopTransactionPipeline,
     PipelineFactory,
 )
-from finance_toolkit.utils import Summary
+from finance_toolkit.tx import TxCompletion
+from finance_toolkit.models import Summary
 
 
 # ---------- Class: AccountPipeline ----------
@@ -242,8 +244,18 @@ def test_bnp_pipeline_guess_meta_transaction_label(cfg):
     cfg.accounts.append(account)
     cfg.autocomplete.extend(
         [
-            (("expense", "food", "resto"), r".*FOUJITA.*"),
-            (("expense", "util", "tech"), r".*LEETCODE.*"),
+            TxCompletion(
+                tx_type="expense",
+                main_category="food",
+                sub_category="resto",
+                regex=re.compile(r".*FOUJITA.*"),
+            ),
+            TxCompletion(
+                tx_type="expense",
+                main_category="util",
+                sub_category="tech",
+                regex=re.compile(r".*LEETCODE.*"),
+            ),
         ]
     )
     actual = BnpTransactionPipeline(account, cfg).guess_meta(raw)
@@ -632,18 +644,22 @@ Date,Label,Amount,Type,MainCategory,SubCategory
 def test_boursorama_pipeline_guess_meta_account_type(cat, tx_type, cfg):
     account = BoursoramaAccount(cat, "xxx", "****1234")
     cfg.accounts.append(account)
-    raw_df = pd.DataFrame({
-        "Label": ["Label"],
-        "Type": [""],
-        "mainCategory": [""],
-        "subCategory": [""],
-    })
-    expected_df = pd.DataFrame({
-        "Label": ["Label"],
-        "Type": [tx_type],
-        "mainCategory": [""],
-        "subCategory": [""],
-    })
+    raw_df = pd.DataFrame(
+        {
+            "Label": ["Label"],
+            "Type": [""],
+            "mainCategory": [""],
+            "subCategory": [""],
+        }
+    )
+    expected_df = pd.DataFrame(
+        {
+            "Label": ["Label"],
+            "Type": [tx_type],
+            "mainCategory": [""],
+            "subCategory": [""],
+        }
+    )
     actual_df = BoursoramaTransactionPipeline(account, cfg).guess_meta(raw_df)
     assert_frame_equal(actual_df, expected_df)
 
@@ -655,8 +671,18 @@ def test_boursorama_account_guess_mata_transaction_label(cfg):
     cfg.accounts.append(account)
     cfg.autocomplete.extend(
         [
-            (("expense", "food", "resto"), r".*FOUJITA.*"),
-            (("expense", "util", "tech"), r".*LEETCODE.*"),
+            TxCompletion(
+                tx_type="expense",
+                main_category="food",
+                sub_category="resto",
+                regex=re.compile(r".*FOUJITA.*"),
+            ),
+            TxCompletion(
+                tx_type="expense",
+                main_category="util",
+                sub_category="tech",
+                regex=re.compile(r".*LEETCODE.*"),
+            ),
         ]
     )
     raw = pd.DataFrame(

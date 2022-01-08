@@ -1,3 +1,4 @@
+import re
 from unittest.mock import patch, call
 
 import pandas as pd
@@ -15,7 +16,10 @@ from finance_toolkit.tx import (
     OctoberAccount,
     RevolutAccount,
 )
-from finance_toolkit.utils import Configuration
+from finance_toolkit.models import (
+    Configuration,
+    TxCompletion,
+)
 
 
 # ---------- Top Level Functions ----------
@@ -82,8 +86,13 @@ Date,Label,Amount,Type,MainCategory,SubCategory
 
 
 def test_read_boursorama_tx_ok(cfg):
-    cfg.autocomplete.extend(
-        (("expense", "food", "restaurant", True), r".*ROYAL PLAISANC.*")
+    cfg.autocomplete.append(
+        TxCompletion(
+            tx_type="expense",
+            main_category="food",
+            sub_category="restaurant",
+            regex=re.compile(r".*ROYAL PLAISANC.*"),
+        )
     )
     cfg.category_set.add("food/restaurant")
 
@@ -534,9 +543,24 @@ auto-complete:
 """
     )
     assert Configurator.load_autocomplete(cfg["auto-complete"]) == [
-        (("expense", "food", "restaurant"), r".*FLUNCH.*"),
-        (("expense", "food", "restaurant"), r".*FOUJITA.*"),
-        (("expense", "food", "restaurant"), r".*FRANPRIX 5584.*"),
+        TxCompletion(
+            tx_type="expense",
+            main_category="food",
+            sub_category="restaurant",
+            regex=re.compile(r".*FLUNCH.*"),
+        ),
+        TxCompletion(
+            tx_type="expense",
+            main_category="food",
+            sub_category="restaurant",
+            regex=re.compile(r".*FOUJITA.*"),
+        ),
+        TxCompletion(
+            tx_type="expense",
+            main_category="food",
+            sub_category="restaurant",
+            regex=re.compile(r".*FRANPRIX 5584.*"),
+        ),
     ]
 
 

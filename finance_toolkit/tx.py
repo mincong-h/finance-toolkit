@@ -1,7 +1,7 @@
 """Finance Tools"""
 import os
 from pathlib import Path
-from typing import List, Tuple, Dict
+from typing import List, Dict
 
 import pandas as pd
 import yaml
@@ -18,7 +18,7 @@ from .accounts import (
     RevolutAccount,
 )
 from .pipelines import PipelineFactory, AccountParser
-from .utils import Configuration, Summary
+from .models import Configuration, Summary, TxCompletion
 
 
 class Configurator:
@@ -129,19 +129,9 @@ class Configurator:
     def load_categories(cls, raw: List[str]) -> List[str]:
         return [] if raw is None else raw
 
-    # TODO(mincong.huang) we should replace Tuple by data class
     @classmethod
-    def load_autocomplete(cls, raw: List) -> List[Tuple]:
-        patterns = []
-        if raw is not None:
-            for pattern in raw:
-                columns = (
-                    pattern["type"],
-                    pattern["cat"].split("/")[0],  # main category
-                    pattern["cat"].split("/")[1],  # sub category
-                )
-                patterns.append((columns, pattern["expr"]))
-        return patterns
+    def load_autocomplete(cls, raw: List) -> List[TxCompletion]:
+        return [] if raw is None else [TxCompletion.load(p) for p in raw]
 
     @classmethod
     def parse_yaml(cls, path: Path) -> Configuration:

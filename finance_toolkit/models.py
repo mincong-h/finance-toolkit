@@ -1,7 +1,40 @@
+import re
 from pathlib import Path
-from typing import List, Set, Tuple, Dict
+from typing import List, Set, Dict, Pattern
+
+from dataclasses import dataclass
 
 from .accounts import Account
+
+
+@dataclass
+class TxCompletion:
+    regex: Pattern
+    tx_type: str
+    main_category: str
+    sub_category: str
+
+    @staticmethod
+    def load(pattern: Dict) -> "TxCompletion":
+        """
+        Load pattern from configuration. A pattern is a dictionary, declared in YAML as follows:
+
+        .. code-block:: yaml
+
+            expr: '.*FLUNCH.*'
+            type: expense
+            cat: food/restaurant
+            desc: Optional description about this matching pattern. We go to Flunch regularly.
+
+        :param pattern: dictionary for the auto-completion
+        :return: a new completion
+        """
+        return TxCompletion(
+            regex=re.compile(pattern["expr"]),
+            tx_type=pattern["type"],
+            main_category=pattern["cat"].split("/")[0],
+            sub_category=pattern["cat"].split("/")[1],
+        )
 
 
 class Configuration:
@@ -14,14 +47,14 @@ class Configuration:
         accounts: List[Account],
         categories: List[str],
         categories_to_rename: Dict[str, str],
-        autocomplete: List[Tuple],
+        autocomplete: List[TxCompletion],
         download_dir: Path,
         root_dir: Path,
     ):
         self.accounts: List[Account] = accounts
         self.category_set: Set[str] = set(categories)
         self.categories_to_rename = categories_to_rename
-        self.autocomplete: List[Tuple] = autocomplete
+        self.autocomplete: List[TxCompletion] = autocomplete
         self.download_dir: Path = download_dir
         self.root_dir: Path = root_dir
 
