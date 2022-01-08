@@ -621,7 +621,7 @@ Date,Label,Amount,Type,MainCategory,SubCategory
 
 
 @pytest.mark.parametrize(
-    "cat, label",
+    "cat, tx_type",
     [
         # case 0: Livret (LVR)
         ("LVR", "transfer"),
@@ -629,13 +629,21 @@ Date,Label,Amount,Type,MainCategory,SubCategory
         ("CHQ", "expense"),
     ],
 )
-def test_boursorama_pipeline_guess_meta_account_type(cat, label, cfg):
-    cols = ["Label", "Type", "mainCategory", "subCategory"]
-
+def test_boursorama_pipeline_guess_meta_account_type(cat, tx_type, cfg):
     account = BoursoramaAccount(cat, "xxx", "****1234")
     cfg.accounts.append(account)
-    raw_df = pd.DataFrame(columns=cols, data=[("Label", "", "", "", "")])
-    expected_df = pd.DataFrame(columns=cols, data=[("Label", label, "", "", False)])
+    raw_df = pd.DataFrame({
+        "Label": ["Label"],
+        "Type": [""],
+        "mainCategory": [""],
+        "subCategory": [""],
+    })
+    expected_df = pd.DataFrame({
+        "Label": ["Label"],
+        "Type": [tx_type],
+        "mainCategory": [""],
+        "subCategory": [""],
+    })
     actual_df = BoursoramaTransactionPipeline(account, cfg).guess_meta(raw_df)
     assert_frame_equal(actual_df, expected_df)
 
@@ -647,22 +655,22 @@ def test_boursorama_account_guess_mata_transaction_label(cfg):
     cfg.accounts.append(account)
     cfg.autocomplete.extend(
         [
-            (("expense", "food", "resto", True), r".*FOUJITA.*"),
-            (("expense", "util", "tech", False), r".*LEETCODE.*"),
+            (("expense", "food", "resto"), r".*FOUJITA.*"),
+            (("expense", "util", "tech"), r".*LEETCODE.*"),
         ]
     )
     raw = pd.DataFrame(
         columns=cols,
         data=[
-            ("FOUJITA", "", "", "", ""),  # find
-            ("FOUJITA LEETCODE", "", "", "", ""),  # find first
+            ("FOUJITA", "", "", ""),  # find
+            ("FOUJITA LEETCODE", "", "", ""),  # find first
         ],
     )
     expected = pd.DataFrame(
         columns=cols,
         data=[
-            ("FOUJITA", "expense", "food", "resto", True),
-            ("FOUJITA LEETCODE", "expense", "food", "resto", True),
+            ("FOUJITA", "expense", "food", "resto"),
+            ("FOUJITA LEETCODE", "expense", "food", "resto"),
         ],
     )
     actual = BoursoramaTransactionPipeline(account, cfg).guess_meta(raw)
