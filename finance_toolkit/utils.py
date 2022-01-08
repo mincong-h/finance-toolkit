@@ -15,7 +15,7 @@ class TxCompletion:
     sub_category: str
 
     @staticmethod
-    def load(pattern: Dict) -> 'TxCompletion':
+    def load(pattern: Dict) -> "TxCompletion":
         """
         Load pattern from configuration. A pattern is a dictionary, declared in YAML as follows:
 

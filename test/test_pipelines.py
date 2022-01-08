@@ -643,18 +643,22 @@ Date,Label,Amount,Type,MainCategory,SubCategory
 def test_boursorama_pipeline_guess_meta_account_type(cat, tx_type, cfg):
     account = BoursoramaAccount(cat, "xxx", "****1234")
     cfg.accounts.append(account)
-    raw_df = pd.DataFrame({
-        "Label": ["Label"],
-        "Type": [""],
-        "mainCategory": [""],
-        "subCategory": [""],
-    })
-    expected_df = pd.DataFrame({
-        "Label": ["Label"],
-        "Type": [tx_type],
-        "mainCategory": [""],
-        "subCategory": [""],
-    })
+    raw_df = pd.DataFrame(
+        {
+            "Label": ["Label"],
+            "Type": [""],
+            "mainCategory": [""],
+            "subCategory": [""],
+        }
+    )
+    expected_df = pd.DataFrame(
+        {
+            "Label": ["Label"],
+            "Type": [tx_type],
+            "mainCategory": [""],
+            "subCategory": [""],
+        }
+    )
     actual_df = BoursoramaTransactionPipeline(account, cfg).guess_meta(raw_df)
     assert_frame_equal(actual_df, expected_df)
 
