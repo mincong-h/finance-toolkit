@@ -1,5 +1,6 @@
+import re
 from pathlib import Path
-from typing import List, Set, Dict
+from typing import List, Set, Dict, Pattern
 
 from dataclasses import dataclass
 
@@ -8,7 +9,7 @@ from .accounts import Account
 
 @dataclass
 class TxCompletion:
-    regex: str
+    regex: Pattern
     tx_type: str
     main_category: str
     sub_category: str
@@ -29,7 +30,7 @@ class TxCompletion:
         :return: a new completion
         """
         return TxCompletion(
-            regex=pattern["expr"],
+            regex=re.compile(pattern["expr"]),
             tx_type=pattern["type"],
             main_category=pattern["cat"].split("/")[0],
             sub_category=pattern["cat"].split("/")[1],
