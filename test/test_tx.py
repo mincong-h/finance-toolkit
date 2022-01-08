@@ -534,9 +534,9 @@ auto-complete:
 """
     )
     assert Configurator.load_autocomplete(cfg["auto-complete"]) == [
-        (("expense", "food", "restaurant", True), r".*FLUNCH.*"),
-        (("expense", "food", "restaurant", False), r".*FOUJITA.*"),
-        (("expense", "food", "restaurant", True), r".*FRANPRIX 5584.*"),
+        (("expense", "food", "restaurant"), r".*FLUNCH.*"),
+        (("expense", "food", "restaurant"), r".*FOUJITA.*"),
+        (("expense", "food", "restaurant"), r".*FRANPRIX 5584.*"),
     ]
 
 
