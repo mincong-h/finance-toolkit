@@ -5,6 +5,7 @@ from typing import List, Tuple, Dict
 
 import pandas as pd
 import yaml
+from attr import dataclass
 from pandas import DataFrame, Series
 
 from .accounts import (
@@ -19,6 +20,38 @@ from .accounts import (
 )
 from .pipelines import PipelineFactory, AccountParser
 from .utils import Configuration, Summary
+
+
+@dataclass
+class TxCompletion:
+    regex: str
+    tx_type: str
+    main_category: str
+    sub_category: str
+    description: str
+
+    @staticmethod
+    def load(pattern: Dict) -> 'TxCompletion':
+        """
+        Load pattern from configuration. A pattern is a dictionary, declared in YAML as follows:
+
+        .. code-block:: yaml
+
+            expr: '.*FLUNCH.*'
+            type: expense
+            cat: food/restaurant
+            desc: Optional description about this matching pattern. We go to Flunch regularly.
+
+        :param pattern: dictionary for the auto-completion
+        :return: a new completion
+        """
+        return TxCompletion(
+            regex=pattern["expr"],
+            tx_type=pattern["type"],
+            main_category=pattern["cat"].split("/")[0],
+            sub_category=pattern["cat"].split("/")[1],
+            description=pattern["desc"]
+        )
 
 
 class Configurator:
@@ -129,19 +162,9 @@ class Configurator:
     def load_categories(cls, raw: List[str]) -> List[str]:
         return [] if raw is None else raw
 
-    # TODO(mincong.huang) we should replace Tuple by data class
     @classmethod
-    def load_autocomplete(cls, raw: List) -> List[Tuple]:
-        patterns = []
-        if raw is not None:
-            for pattern in raw:
-                columns = (
-                    pattern["type"],
-                    pattern["cat"].split("/")[0],  # main category
-                    pattern["cat"].split("/")[1],  # sub category
-                )
-                patterns.append((columns, pattern["expr"]))
-        return patterns
+    def load_autocomplete(cls, raw: List) -> List[TxCompletion]:
+        return [] if raw is None else [TxCompletion.load(p) for p in raw]
 
     @classmethod
     def parse_yaml(cls, path: Path) -> Configuration:

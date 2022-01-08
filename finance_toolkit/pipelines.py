@@ -197,13 +197,12 @@ class BnpTransactionPipeline(BnpPipeline, TransactionPipeline):
             df["Type"] = "expense"
 
         for i, row in df.iterrows():
-            for values, regex in self.cfg.autocomplete:
-                if re.compile(regex).match(row.Label):
-                    (
-                        df.loc[i, "Type"],
-                        df.loc[i, "MainCategory"],
-                        df.loc[i, "SubCategory"],
-                    ) = values
+            for c in self.cfg.autocomplete:
+                # TODO compile before
+                if re.compile(c.regex).match(row.Label):
+                    df.loc[i, "Type"] = c.tx_type
+                    df.loc[i, "MainCategory"] = c.main_category
+                    df.loc[i, "SubCategory"] = c.sub_category
                     break
         return df
 
@@ -260,13 +259,12 @@ class BoursoramaTransactionPipeline(BoursoramaPipeline, TransactionPipeline):
             df["Type"] = "expense"
 
         for i, row in df.iterrows():
-            for values, regex in self.cfg.autocomplete:
-                if re.compile(regex).match(row.Label):
-                    (
-                        df.loc[i, "Type"],
-                        df.loc[i, "MainCategory"],
-                        df.loc[i, "SubCategory"],
-                    ) = values
+            for c in self.cfg.autocomplete:
+                # TODO compile before
+                if re.compile(c.regex).match(row.Label):
+                    df.loc[i, "Type"] = c.tx_type
+                    df.loc[i, "MainCategory"] = c.main_category
+                    df.loc[i, "SubCategory"] = c.sub_category
                     break
         return df
 
@@ -284,13 +282,12 @@ class BoursoramaBalancePipeline(BoursoramaPipeline, BalancePipeline):
 class FortuneoTransactionPipeline(TransactionPipeline):
     def guess_meta(self, df: DataFrame) -> DataFrame:
         for i, row in df.iterrows():
-            for values, regex in self.cfg.autocomplete:
-                if re.compile(regex).match(row.Label):
-                    (
-                        df.loc[i, "Type"],
-                        df.loc[i, "MainCategory"],
-                        df.loc[i, "SubCategory"],
-                    ) = values
+            for c in self.cfg.autocomplete:
+                # TODO compile before
+                if re.compile(c.regex).match(row.Label):
+                    df.loc[i, "Type"] = c.tx_type
+                    df.loc[i, "MainCategory"] = c.main_category
+                    df.loc[i, "SubCategory"] = c.sub_category
                     break
         return df
 

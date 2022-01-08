@@ -2,6 +2,7 @@ from pathlib import Path
 from typing import List, Set, Tuple, Dict
 
 from .accounts import Account
+from .tx import TxCompletion
 
 
 class Configuration:
@@ -14,14 +15,14 @@ class Configuration:
         accounts: List[Account],
         categories: List[str],
         categories_to_rename: Dict[str, str],
-        autocomplete: List[Tuple],
+        autocomplete: List[TxCompletion],
         download_dir: Path,
         root_dir: Path,
     ):
         self.accounts: List[Account] = accounts
         self.category_set: Set[str] = set(categories)
         self.categories_to_rename = categories_to_rename
-        self.autocomplete: List[Tuple] = autocomplete
+        self.autocomplete: List[TxCompletion] = autocomplete
         self.download_dir: Path = download_dir
         self.root_dir: Path = root_dir
 

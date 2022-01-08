@@ -13,7 +13,7 @@ from finance_toolkit.tx import (
     DegiroAccount,
     FortuneoAccount,
     OctoberAccount,
-    RevolutAccount,
+    RevolutAccount, TxCompletion,
 )
 from finance_toolkit.utils import Configuration
 
@@ -83,7 +83,13 @@ Date,Label,Amount,Type,MainCategory,SubCategory
 
 def test_read_boursorama_tx_ok(cfg):
     cfg.autocomplete.extend(
-        (("expense", "food", "restaurant", True), r".*ROYAL PLAISANC.*")
+        TxCompletion(
+            tx_type="expense",
+            main_category="food",
+            sub_category="restaurant",
+            regex=r".*ROYAL PLAISANC.*",
+            description="",
+        )
     )
     cfg.category_set.add("food/restaurant")
 

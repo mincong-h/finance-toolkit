@@ -22,6 +22,7 @@ from finance_toolkit.pipelines import (
     NoopTransactionPipeline,
     PipelineFactory,
 )
+from finance_toolkit.tx import TxCompletion
 from finance_toolkit.utils import Summary
 
 
@@ -242,8 +243,20 @@ def test_bnp_pipeline_guess_meta_transaction_label(cfg):
     cfg.accounts.append(account)
     cfg.autocomplete.extend(
         [
-            (("expense", "food", "resto"), r".*FOUJITA.*"),
-            (("expense", "util", "tech"), r".*LEETCODE.*"),
+            TxCompletion(
+                tx_type="expense",
+                main_category="food",
+                sub_category="resto",
+                regex=r".*FOUJITA.*",
+                description="",
+            ),
+            TxCompletion(
+                tx_type="expense",
+                main_category="util",
+                sub_category="tech",
+                regex=r".*LEETCODE.*",
+                description="",
+            ),
         ]
     )
     actual = BnpTransactionPipeline(account, cfg).guess_meta(raw)
@@ -655,8 +668,20 @@ def test_boursorama_account_guess_mata_transaction_label(cfg):
     cfg.accounts.append(account)
     cfg.autocomplete.extend(
         [
-            (("expense", "food", "resto"), r".*FOUJITA.*"),
-            (("expense", "util", "tech"), r".*LEETCODE.*"),
+            TxCompletion(
+                tx_type="expense",
+                main_category="food",
+                sub_category="resto",
+                regex=r".*FOUJITA.*",
+                description="",
+            ),
+            TxCompletion(
+                tx_type="expense",
+                main_category="util",
+                sub_category="tech",
+                regex=r".*LEETCODE.*",
+                description="",
+            ),
         ]
     )
     raw = pd.DataFrame(

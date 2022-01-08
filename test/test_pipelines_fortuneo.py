@@ -5,6 +5,7 @@ from pandas.testing import assert_frame_equal
 
 from finance_toolkit.accounts import FortuneoAccount
 from finance_toolkit.pipelines import FortuneoTransactionPipeline
+from finance_toolkit.tx import TxCompletion
 from finance_toolkit.utils import Summary
 
 
@@ -197,9 +198,27 @@ def test_guess_meta(cfg):
     cfg.accounts.append(account)
     pipeline = FortuneoTransactionPipeline(account, cfg)
     cfg.autocomplete = [
-        (("expense", "shopping", "online"), r".*AMAZON.*"),
-        (("expense", "shopping", "offline"), r".*FNAC METZ.*"),
-        (("expense", "food", "supermarket"), r".*LECLERC MARLY.*"),
+        TxCompletion(
+            tx_type="expense",
+            main_category="shopping",
+            sub_category="online",
+            regex=r".*AMAZON.*",
+            description="",
+        ),
+        TxCompletion(
+            tx_type="expense",
+            main_category="shopping",
+            sub_category="offline",
+            regex=r".*FNAC METZ.*",
+            description="",
+        ),
+        TxCompletion(
+            tx_type="expense",
+            main_category="food",
+            sub_category="supermarket",
+            regex=r".*LECLERC MARLY.*",
+            description="",
+        ),
     ]
     csv = (
         cfg.download_dir / "HistoriqueOperations_12345_du_14_01_2019_au_14_12_2019.csv"
