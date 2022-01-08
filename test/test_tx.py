@@ -353,22 +353,7 @@ def test_validate_tx(cfg):
         ),
         cfg,
     )
-    assert "Unknown regularity: X" == err4
-
-    err5 = tx.validate_tx(
-        pd.Series(
-            {
-                "Date": pd.Timestamp("2018-04-30"),
-                "Label": "aLabel",
-                "Amount": -4.95,
-                "Type": "expense",
-                "MainCategory": "food",
-                "SubCategory": "workfood",
-            }
-        ),
-        cfg,
-    )
-    assert "" == err5
+    assert "" == err4
 
 
 # ---------- Class: Configurator ----------
