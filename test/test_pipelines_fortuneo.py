@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 
 import pandas as pd
@@ -201,19 +202,19 @@ def test_guess_meta(cfg):
             tx_type="expense",
             main_category="shopping",
             sub_category="online",
-            regex=r".*AMAZON.*",
+            regex=re.compile(r".*AMAZON.*"),
         ),
         TxCompletion(
             tx_type="expense",
             main_category="shopping",
             sub_category="offline",
-            regex=r".*FNAC METZ.*",
+            regex=re.compile(r".*FNAC METZ.*"),
         ),
         TxCompletion(
             tx_type="expense",
             main_category="food",
             sub_category="supermarket",
-            regex=r".*LECLERC MARLY.*",
+            regex=re.compile(r".*LECLERC MARLY.*"),
         ),
     ]
     csv = (
