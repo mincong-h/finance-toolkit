@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Set, Tuple, Dict
+from typing import List, Set, Dict
 
 from .accounts import Account
 from .tx import TxCompletion

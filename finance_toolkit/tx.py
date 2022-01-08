@@ -1,7 +1,7 @@
 """Finance Tools"""
 import os
 from pathlib import Path
-from typing import List, Tuple, Dict
+from typing import List, Dict
 
 import pandas as pd
 import yaml
