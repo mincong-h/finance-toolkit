@@ -13,9 +13,12 @@ from finance_toolkit.tx import (
     DegiroAccount,
     FortuneoAccount,
     OctoberAccount,
-    RevolutAccount, TxCompletion,
+    RevolutAccount,
 )
-from finance_toolkit.utils import Configuration
+from finance_toolkit.utils import (
+    Configuration,
+    TxCompletion,
+)
 
 
 # ---------- Top Level Functions ----------

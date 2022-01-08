@@ -5,7 +5,6 @@ from typing import List, Dict
 
 import pandas as pd
 import yaml
-from attr import dataclass
 from pandas import DataFrame, Series
 
 from .accounts import (
@@ -19,39 +18,7 @@ from .accounts import (
     RevolutAccount,
 )
 from .pipelines import PipelineFactory, AccountParser
-from .utils import Configuration, Summary
-
-
-@dataclass
-class TxCompletion:
-    regex: str
-    tx_type: str
-    main_category: str
-    sub_category: str
-    description: str
-
-    @staticmethod
-    def load(pattern: Dict) -> 'TxCompletion':
-        """
-        Load pattern from configuration. A pattern is a dictionary, declared in YAML as follows:
-
-        .. code-block:: yaml
-
-            expr: '.*FLUNCH.*'
-            type: expense
-            cat: food/restaurant
-            desc: Optional description about this matching pattern. We go to Flunch regularly.
-
-        :param pattern: dictionary for the auto-completion
-        :return: a new completion
-        """
-        return TxCompletion(
-            regex=pattern["expr"],
-            tx_type=pattern["type"],
-            main_category=pattern["cat"].split("/")[0],
-            sub_category=pattern["cat"].split("/")[1],
-            description=pattern["desc"]
-        )
+from .utils import Configuration, Summary, TxCompletion
 
 
 class Configurator:

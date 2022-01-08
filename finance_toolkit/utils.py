@@ -1,8 +1,41 @@
 from pathlib import Path
 from typing import List, Set, Dict
 
+from dataclasses import dataclass
+
 from .accounts import Account
-from .tx import TxCompletion
+
+
+@dataclass
+class TxCompletion:
+    regex: str
+    tx_type: str
+    main_category: str
+    sub_category: str
+    description: str
+
+    @staticmethod
+    def load(pattern: Dict) -> 'TxCompletion':
+        """
+        Load pattern from configuration. A pattern is a dictionary, declared in YAML as follows:
+
+        .. code-block:: yaml
+
+            expr: '.*FLUNCH.*'
+            type: expense
+            cat: food/restaurant
+            desc: Optional description about this matching pattern. We go to Flunch regularly.
+
+        :param pattern: dictionary for the auto-completion
+        :return: a new completion
+        """
+        return TxCompletion(
+            regex=pattern["expr"],
+            tx_type=pattern["type"],
+            main_category=pattern["cat"].split("/")[0],
+            sub_category=pattern["cat"].split("/")[1],
+            description=pattern["desc"]
+        )
 
 
 class Configuration:
