@@ -1,3 +1,4 @@
+import re
 from unittest.mock import patch, call
 
 import pandas as pd
@@ -90,7 +91,7 @@ def test_read_boursorama_tx_ok(cfg):
             tx_type="expense",
             main_category="food",
             sub_category="restaurant",
-            regex=r".*ROYAL PLAISANC.*",
+            regex=re.compile(r".*ROYAL PLAISANC.*"),
         )
     )
     cfg.category_set.add("food/restaurant")
@@ -546,19 +547,19 @@ auto-complete:
             tx_type="expense",
             main_category="food",
             sub_category="restaurant",
-            regex=r".*FLUNCH.*",
+            regex=re.compile(r".*FLUNCH.*"),
         ),
         TxCompletion(
             tx_type="expense",
             main_category="food",
             sub_category="restaurant",
-            regex=r".*FOUJITA.*",
+            regex=re.compile(r".*FOUJITA.*"),
         ),
         TxCompletion(
             tx_type="expense",
             main_category="food",
             sub_category="restaurant",
-            regex=r".*FRANPRIX 5584.*",
+            regex=re.compile(r".*FRANPRIX 5584.*"),
         ),
     ]
 

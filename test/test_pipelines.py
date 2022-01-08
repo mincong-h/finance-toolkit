@@ -1,3 +1,4 @@
+import re
 from pathlib import Path
 from tempfile import TemporaryDirectory
 
@@ -247,13 +248,13 @@ def test_bnp_pipeline_guess_meta_transaction_label(cfg):
                 tx_type="expense",
                 main_category="food",
                 sub_category="resto",
-                regex=r".*FOUJITA.*",
+                regex=re.compile(r".*FOUJITA.*"),
             ),
             TxCompletion(
                 tx_type="expense",
                 main_category="util",
                 sub_category="tech",
-                regex=r".*LEETCODE.*",
+                regex=re.compile(r".*LEETCODE.*"),
             ),
         ]
     )
@@ -674,13 +675,13 @@ def test_boursorama_account_guess_mata_transaction_label(cfg):
                 tx_type="expense",
                 main_category="food",
                 sub_category="resto",
-                regex=r".*FOUJITA.*",
+                regex=re.compile(r".*FOUJITA.*"),
             ),
             TxCompletion(
                 tx_type="expense",
                 main_category="util",
                 sub_category="tech",
-                regex=r".*LEETCODE.*",
+                regex=re.compile(r".*LEETCODE.*"),
             ),
         ]
     )
