@@ -106,7 +106,7 @@ Date,Label,Amount,Type,MainCategory,SubCategory
 2020-02-12,Label A,20.0,expense,foo,bar
 2020-02-13,Label B,30.0,expense,foo,bar
 2020-02-14,Label C,40.0,expense,foo,bar
-2020-02-14,Label D,40.0,,,,
+2020-02-14,Label D,40.0,,,
 """
     assert csv.read_text() == content
 
