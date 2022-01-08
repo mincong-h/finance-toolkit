@@ -197,9 +197,9 @@ def test_guess_meta(cfg):
     cfg.accounts.append(account)
     pipeline = FortuneoTransactionPipeline(account, cfg)
     cfg.autocomplete = [
-        (("expense", "shopping", "online", False), r".*AMAZON.*"),
-        (("expense", "shopping", "offline", False), r".*FNAC METZ.*"),
-        (("expense", "food", "supermarket", True), r".*LECLERC MARLY.*"),
+        (("expense", "shopping", "online"), r".*AMAZON.*"),
+        (("expense", "shopping", "offline"), r".*FNAC METZ.*"),
+        (("expense", "food", "supermarket"), r".*LECLERC MARLY.*"),
     ]
     csv = (
         cfg.download_dir / "HistoriqueOperations_12345_du_14_01_2019_au_14_12_2019.csv"
