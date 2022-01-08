@@ -12,7 +12,7 @@ from .accounts import (
     BoursoramaAccount,
     FortuneoAccount,
 )
-from .utils import Configuration, Summary
+from .models import Configuration, Summary
 
 
 class Pipeline(metaclass=ABCMeta):

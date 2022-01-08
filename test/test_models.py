@@ -1,4 +1,4 @@
-from finance_toolkit.utils import Summary
+from finance_toolkit.models import Summary
 
 
 # ---------- Class: Summary ----------

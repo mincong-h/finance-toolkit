@@ -18,7 +18,7 @@ from .accounts import (
     RevolutAccount,
 )
 from .pipelines import PipelineFactory, AccountParser
-from .utils import Configuration, Summary, TxCompletion
+from .models import Configuration, Summary, TxCompletion
 
 
 class Configurator:

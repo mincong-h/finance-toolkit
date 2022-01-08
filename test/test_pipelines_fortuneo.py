@@ -5,7 +5,7 @@ from pandas.testing import assert_frame_equal
 
 from finance_toolkit.accounts import FortuneoAccount
 from finance_toolkit.pipelines import FortuneoTransactionPipeline
-from finance_toolkit.utils import Summary, TxCompletion
+from finance_toolkit.models import Summary, TxCompletion
 
 
 def test_fortuneo_transaction_pipeline_read_new_transactions(cfg):

@@ -15,7 +15,7 @@ from finance_toolkit.tx import (
     OctoberAccount,
     RevolutAccount,
 )
-from finance_toolkit.utils import (
+from finance_toolkit.models import (
     Configuration,
     TxCompletion,
 )

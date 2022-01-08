@@ -23,7 +23,7 @@ from finance_toolkit.pipelines import (
     PipelineFactory,
 )
 from finance_toolkit.tx import TxCompletion
-from finance_toolkit.utils import Summary
+from finance_toolkit.models import Summary
 
 
 # ---------- Class: AccountPipeline ----------
