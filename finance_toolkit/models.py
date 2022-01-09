@@ -37,7 +37,7 @@ class TxType(str, Enum):
 
     @staticmethod
     def values() -> Set[str]:
-        return {m.name for m in TxType.enum_members}
+        return {m.value for m in TxType}
 
 
 @dataclass
