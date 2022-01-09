@@ -1,4 +1,5 @@
 import re
+from enum import Enum
 from pathlib import Path
 from typing import List, Set, Dict, Pattern
 
@@ -7,12 +8,47 @@ from dataclasses import dataclass
 from .accounts import Account
 
 
+class TxType(str, Enum):
+    # Income is a compensation obtained via different activities, e.g.
+    # work (salary, wage), investment. Usually, an income increases the asset
+    # of the portfolio.
+    INCOME = "income"
+
+    # Expense is a transaction for purchases. Usually, an expense decreases
+    # the asset of the portfolio.
+    EXPENSE = "expense"
+
+    # Transfer is a transaction for transferring money from one account to
+    # another internally in the portfolio. In a family (multi-user) portfolio,
+    # transferring money from one user's account to another is considered as
+    # "transfer" because the family asset remains the same.
+    TRANSFER = "transfer"
+
+    # Tax is a transaction for paying tax. Usually, such transaction decreases
+    # the asset of the portfolio.
+    #
+    # Tax is not considered as an "expense" because paying tax is an obligation
+    # and not an option. Also because some income taxes are invisible in our
+    # system since they had been deducted before the salary arrived
+    # (prélèvement à la source). Tax is not considered as a (negative) "income"
+    # because it may not be related to income, such as property tax and
+    # residence tax. So the best choice is to use a dedicated type right now.
+    TAX = "tax"
+
+    @staticmethod
+    def values() -> Set[str]:
+        return {m.value for m in TxType}
+
+
 @dataclass
 class TxCompletion:
     regex: Pattern
     tx_type: str
     main_category: str
     sub_category: str
+
+    def match(self, label: str):
+        return self.regex.match(label)
 
     @staticmethod
     def load(pattern: Dict) -> "TxCompletion":

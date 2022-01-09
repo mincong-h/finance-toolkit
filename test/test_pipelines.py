@@ -24,7 +24,7 @@ from finance_toolkit.pipelines import (
     PipelineFactory,
 )
 from finance_toolkit.tx import TxCompletion
-from finance_toolkit.models import Summary
+from finance_toolkit.models import Summary, TxType
 
 
 # ---------- Class: AccountPipeline ----------
@@ -199,26 +199,26 @@ def test_bnp_pipeline_read_raw(cfg):
 
 
 @pytest.mark.parametrize(
-    "cat, label",
+    "cat, tx_type",
     [
         # case 0: Crédit Immobilier (CDI)
-        ("CDI", "credit"),
+        ("CDI", TxType.EXPENSE),
         # case 1: Livret A (LVA)
-        ("LVA", "transfer"),
+        ("LVA", TxType.TRANSFER),
         # case 2: Livret Développement Durable (LDD)
-        ("LDD", "transfer"),
+        ("LDD", TxType.TRANSFER),
         # case 3: Compte de Chèque (CHQ)
-        ("CHQ", "expense"),
+        ("CHQ", TxType.EXPENSE),
     ],
 )
-def test_bnp_pipeline_guess_meta_account_type(cat, label, cfg):
+def test_bnp_pipeline_guess_meta_account_type(cat, tx_type, cfg):
     cols = ["Label", "Type", "mainCategory", "subCategory"]
 
     account = BnpAccount(cat, "xxx", "****1234")
     cfg.accounts.append(account)
     pipeline = BnpTransactionPipeline(account=account, cfg=cfg)
     raw = pd.DataFrame(columns=cols, data=[("Label", "", "", "")])
-    expected = pd.DataFrame(columns=cols, data=[("Label", label, "", "")])
+    expected = pd.DataFrame(columns=cols, data=[("Label", tx_type.value, "", "")])
     actual = pipeline.guess_meta(raw)
     assert_frame_equal(actual, expected)
 
@@ -698,6 +698,72 @@ def test_boursorama_account_guess_mata_transaction_label(cfg):
             ("FOUJITA", "expense", "food", "resto"),
             ("FOUJITA LEETCODE", "expense", "food", "resto"),
         ],
+    )
+    actual = BoursoramaTransactionPipeline(account, cfg).guess_meta(raw)
+    assert_frame_equal(actual, expected)
+
+
+def test_boursorama_account_guess_mata_transaction_label_for_tax(cfg):
+    account = BoursoramaAccount("LVR", "xxx", "****1234")
+    cfg.accounts.append(account)
+    cfg.autocomplete.extend(
+        [
+            TxCompletion(
+                tx_type="tax",
+                main_category="tax",
+                sub_category="residence-tax",
+                regex=re.compile(".*IMPOT TH.*"),
+            ),
+            TxCompletion(
+                tx_type="tax",
+                main_category="tax",
+                sub_category="property-tax",
+                regex=re.compile(".*IMPOT TF.*"),
+            ),
+            TxCompletion(
+                tx_type="tax",
+                main_category="tax",
+                sub_category="income-tax",
+                regex=re.compile(".*IMPOT REVENUS.*"),
+            ),
+            TxCompletion(
+                tx_type="tax",
+                main_category="tax",
+                sub_category="social-charges",
+                regex=re.compile(".*PRELEVEMENT SOCIAUX.*"),
+            ),
+        ]
+    )
+    raw = pd.DataFrame(
+        {
+            "Label": [
+                "PRLV SEPA D.G.F.I.P. IMPOT x ECH/x ID EMETTEUR/x MDT/x REF/x LIB/x x                      x  IMPOT TH",  # noqa
+                "PRLV SEPA D.G.F.I.P. IMPOT x ECH/x ID EMETTEUR/x MDT/x REF/x LIB/x x                      x  IMPOT TF",  # noqa
+                "PRLV SEPA DGFIP IMPOT x ECH/x ID EMETTEUR/x MDT/x REF/x x 01 LIB/SOLDE IMPOT REVENUS 2020 N DE FACTURE x",  # noqa
+                "PRELEVEMENT SOCIAUX/FISCAUX",
+            ],
+            "Type": [""] * 4,
+            "MainCategory": [""] * 4,
+            "SubCategory": [""] * 4,
+        }
+    )
+    expected = pd.DataFrame(
+        {
+            "Label": [
+                "PRLV SEPA D.G.F.I.P. IMPOT x ECH/x ID EMETTEUR/x MDT/x REF/x LIB/x x                      x  IMPOT TH",  # noqa
+                "PRLV SEPA D.G.F.I.P. IMPOT x ECH/x ID EMETTEUR/x MDT/x REF/x LIB/x x                      x  IMPOT TF",  # noqa
+                "PRLV SEPA DGFIP IMPOT x ECH/x ID EMETTEUR/x MDT/x REF/x x 01 LIB/SOLDE IMPOT REVENUS 2020 N DE FACTURE x",  # noqa
+                "PRELEVEMENT SOCIAUX/FISCAUX",
+            ],
+            "Type": [TxType.TAX.value] * 4,
+            "MainCategory": ["tax"] * 4,
+            "SubCategory": [
+                "residence-tax",
+                "property-tax",
+                "income-tax",
+                "social-charges",
+            ],
+        }
     )
     actual = BoursoramaTransactionPipeline(account, cfg).guess_meta(raw)
     assert_frame_equal(actual, expected)

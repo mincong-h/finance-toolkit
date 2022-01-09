@@ -18,7 +18,7 @@ from .accounts import (
     RevolutAccount,
 )
 from .pipelines import PipelineFactory, AccountParser
-from .models import Configuration, Summary, TxCompletion
+from .models import Configuration, Summary, TxCompletion, TxType
 
 
 class Configurator:
@@ -169,15 +169,14 @@ LABELS = {
     "AV1": "Assurant Vie (sans risque)",
     "STK": "Stock",
 }
-TX_TYPES = {"income", "expense", "transfer", "credit"}
 
 
 def validate_tx(row: Series, cfg: Configuration) -> str:
-    if row.Type not in TX_TYPES:
+    if row.Type not in TxType.values():
         return f"Unknown transaction type: {row.Type}"
 
     category = f"{row.MainCategory}/{row.SubCategory}"
-    if row.Type == "expense" and category not in cfg.categories():
+    if row.Type == TxType.EXPENSE.value and category not in cfg.categories():
         return f"Category {category!r} does not exist."
 
     return ""  # no error

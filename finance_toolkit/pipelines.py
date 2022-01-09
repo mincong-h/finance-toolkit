@@ -12,7 +12,7 @@ from .accounts import (
     BoursoramaAccount,
     FortuneoAccount,
 )
-from .models import Configuration, Summary
+from .models import Configuration, Summary, TxType
 
 
 class Pipeline(metaclass=ABCMeta):
@@ -188,16 +188,14 @@ class BnpPipeline(Pipeline, metaclass=ABCMeta):
 
 class BnpTransactionPipeline(BnpPipeline, TransactionPipeline):
     def guess_meta(self, df: DataFrame) -> DataFrame:
-        if self.account.type == "CDI":
-            df["Type"] = "credit"
-        elif self.account.type in ["LVA", "LDD"]:
-            df["Type"] = "transfer"
-        elif self.account.type == "CHQ":
-            df["Type"] = "expense"
+        if self.account.type in ["LVA", "LDD"]:
+            df["Type"] = TxType.TRANSFER.value
+        elif self.account.type in ["CHQ", "CDI"]:
+            df["Type"] = TxType.EXPENSE.value
 
         for i, row in df.iterrows():
             for c in self.cfg.autocomplete:
-                if c.regex.match(row.Label):
+                if c.match(row.Label):
                     df.loc[i, "Type"] = c.tx_type
                     df.loc[i, "MainCategory"] = c.main_category
                     df.loc[i, "SubCategory"] = c.sub_category
@@ -252,13 +250,13 @@ class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
 class BoursoramaTransactionPipeline(BoursoramaPipeline, TransactionPipeline):
     def guess_meta(self, df: DataFrame) -> DataFrame:
         if self.account.type == "LVR":
-            df["Type"] = "transfer"
+            df["Type"] = TxType.TRANSFER.value
         elif self.account.type == "CHQ":
-            df["Type"] = "expense"
+            df["Type"] = TxType.EXPENSE.value
 
         for i, row in df.iterrows():
             for c in self.cfg.autocomplete:
-                if c.regex.match(row.Label):
+                if c.match(row.Label):
                     df.loc[i, "Type"] = c.tx_type
                     df.loc[i, "MainCategory"] = c.main_category
                     df.loc[i, "SubCategory"] = c.sub_category
@@ -280,7 +278,7 @@ class FortuneoTransactionPipeline(TransactionPipeline):
     def guess_meta(self, df: DataFrame) -> DataFrame:
         for i, row in df.iterrows():
             for c in self.cfg.autocomplete:
-                if c.regex.match(row.Label):
+                if c.match(row.Label):
                     df.loc[i, "Type"] = c.tx_type
                     df.loc[i, "MainCategory"] = c.main_category
                     df.loc[i, "SubCategory"] = c.sub_category
