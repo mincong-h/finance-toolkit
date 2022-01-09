@@ -188,9 +188,11 @@ class BnpPipeline(Pipeline, metaclass=ABCMeta):
 
 class BnpTransactionPipeline(BnpPipeline, TransactionPipeline):
     def guess_meta(self, df: DataFrame) -> DataFrame:
+        if self.account.type == "CDI":
+            df["Type"] = TxType.CREDIT.value
         if self.account.type in ["LVA", "LDD"]:
             df["Type"] = TxType.TRANSFER.value
-        elif self.account.type in ["CHQ", "CDI"]:
+        elif self.account.type == "CHQ":
             df["Type"] = TxType.EXPENSE.value
 
         for i, row in df.iterrows():

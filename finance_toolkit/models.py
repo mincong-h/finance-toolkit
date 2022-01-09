@@ -9,6 +9,11 @@ from .accounts import Account
 
 
 class TxType(str, Enum):
+    # Credit is a trust provided by the bank which requires a reimbursement for
+    # the totality of the amount and the associated interests. For example, it
+    # can be a home mortgage loan.
+    CREDIT = "credit"
+
     # Income is a compensation obtained via different activities, e.g.
     # work (salary, wage), investment. Usually, an income increases the asset
     # of the portfolio.
@@ -34,6 +39,7 @@ class TxType(str, Enum):
     # because it may not be related to income, such as property tax and
     # residence tax. So the best choice is to use a dedicated type right now.
     TAX = "tax"
+
 
     @staticmethod
     def values() -> Set[str]:

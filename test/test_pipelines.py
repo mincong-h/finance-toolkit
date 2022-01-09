@@ -202,7 +202,7 @@ def test_bnp_pipeline_read_raw(cfg):
     "cat, tx_type",
     [
         # case 0: Crédit Immobilier (CDI)
-        ("CDI", TxType.EXPENSE),
+        ("CDI", TxType.CREDIT),
         # case 1: Livret A (LVA)
         ("LVA", TxType.TRANSFER),
         # case 2: Livret Développement Durable (LDD)
