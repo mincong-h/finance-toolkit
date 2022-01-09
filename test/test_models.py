@@ -89,7 +89,7 @@ def test_tx_completion_for_property_tax():
     completion = TxCompletion(
         tx_type="tax",
         main_category="tax",
-        sub_category="residence-tax",
+        sub_category="property-tax",
         regex=re.compile(".*IMPOT TF.*"),
     )
     assert completion.match(
