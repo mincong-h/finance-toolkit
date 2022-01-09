@@ -81,7 +81,7 @@ def test_tx_completion_for_residence_tax():
         regex=re.compile(".*IMPOT TH.*"),
     )
     assert completion.match(
-        "PRLV SEPA D.G.F.I.P. IMPOT x ECH/x ID EMETTEUR/x MDT/x REF/x LIB/x x                      x  IMPOT TH"
+        "PRLV SEPA D.G.F.I.P. IMPOT x ECH/x ID EMETTEUR/x MDT/x REF/x LIB/x x                      x  IMPOT TH"  # noqa
     )
 
 
@@ -93,7 +93,7 @@ def test_tx_completion_for_property_tax():
         regex=re.compile(".*IMPOT TF.*"),
     )
     assert completion.match(
-        "PRLV SEPA D.G.F.I.P. IMPOT x ECH/x ID EMETTEUR/x MDT/x REF/x LIB/x x                      x  IMPOT TF"
+        "PRLV SEPA D.G.F.I.P. IMPOT x ECH/x ID EMETTEUR/x MDT/x REF/x LIB/x x                      x  IMPOT TF"  # noqa
     )
 
 
@@ -115,5 +115,5 @@ def test_tx_completion_for_income_tax():
         regex=re.compile(".*IMPOT REVENUS.*"),
     )
     assert completion.match(
-        "PRLV SEPA DGFIP IMPOT x ECH/x ID EMETTEUR/x MDT/x REF/x x 01 LIB/SOLDE IMPOT REVENUS 2020 N DE FACTURE x"
+        "PRLV SEPA DGFIP IMPOT x ECH/x ID EMETTEUR/x MDT/x REF/x x 01 LIB/SOLDE IMPOT REVENUS 2020 N DE FACTURE x"  # noqa
     )
