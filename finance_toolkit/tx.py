@@ -169,22 +169,31 @@ LABELS = {
     "AV1": "Assurant Vie (sans risque)",
     "STK": "Stock",
 }
+
+# TODO move to enum
 TX_TYPES = {
     # Income is a compensation obtained via different activities, e.g.
     # work (salary, wage), investment. Usually, an income increases the asset
     # of the portfolio.
     "income",
-
     # Expense is a transaction for purchases. Usually, an expense decreases
     # the asset of the portfolio.
     "expense",
-
     # Transfer is a transaction for transferring money from one account to
     # another internally in the portfolio. In a family (multi-user) portfolio,
     # transferring money from one user's account to another is considered as
     # "transfer" because the family asset remains the same.
     "transfer",
-
+    # Tax is a transaction for paying tax. Usually, such transaction decreases
+    # the asset of the portfolio.
+    #
+    # Tax is not considered as an "expense" because paying tax is an obligation
+    # and not an option. Also because some income taxes are invisible in our
+    # system since they had been deducted before the salary arrived
+    # (prélèvement à la source). Tax is not considered as a (negative) "income"
+    # because it includes income-unrelated items, such as property tax and
+    # residence tax. So the best choice is to use a dedicated type right now.
+    "tax",
     # TODO remove. We never use this
     "credit",
 }
