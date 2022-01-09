@@ -218,7 +218,7 @@ def test_bnp_pipeline_guess_meta_account_type(cat, tx_type, cfg):
     cfg.accounts.append(account)
     pipeline = BnpTransactionPipeline(account=account, cfg=cfg)
     raw = pd.DataFrame(columns=cols, data=[("Label", "", "", "")])
-    expected = pd.DataFrame(columns=cols, data=[("Label", tx_type.name, "", "")])
+    expected = pd.DataFrame(columns=cols, data=[("Label", tx_type.value, "", "")])
     actual = pipeline.guess_meta(raw)
     assert_frame_equal(actual, expected)
 

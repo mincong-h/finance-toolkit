@@ -189,9 +189,9 @@ class BnpPipeline(Pipeline, metaclass=ABCMeta):
 class BnpTransactionPipeline(BnpPipeline, TransactionPipeline):
     def guess_meta(self, df: DataFrame) -> DataFrame:
         if self.account.type in ["LVA", "LDD"]:
-            df["Type"] = TxType.TRANSFER.name
+            df["Type"] = TxType.TRANSFER.value
         elif self.account.type in ["CHQ", "CDI"]:
-            df["Type"] = TxType.EXPENSE.name
+            df["Type"] = TxType.EXPENSE.value
 
         for i, row in df.iterrows():
             for c in self.cfg.autocomplete:
@@ -250,9 +250,9 @@ class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
 class BoursoramaTransactionPipeline(BoursoramaPipeline, TransactionPipeline):
     def guess_meta(self, df: DataFrame) -> DataFrame:
         if self.account.type == "LVR":
-            df["Type"] = TxType.TRANSFER.name
+            df["Type"] = TxType.TRANSFER.value
         elif self.account.type == "CHQ":
-            df["Type"] = TxType.EXPENSE.name
+            df["Type"] = TxType.EXPENSE.value
 
         for i, row in df.iterrows():
             for c in self.cfg.autocomplete:

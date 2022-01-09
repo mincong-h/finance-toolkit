@@ -176,7 +176,7 @@ def validate_tx(row: Series, cfg: Configuration) -> str:
         return f"Unknown transaction type: {row.Type}"
 
     category = f"{row.MainCategory}/{row.SubCategory}"
-    if row.Type == TxType.EXPENSE.name and category not in cfg.categories():
+    if row.Type == TxType.EXPENSE.value and category not in cfg.categories():
         return f"Category {category!r} does not exist."
 
     return ""  # no error
