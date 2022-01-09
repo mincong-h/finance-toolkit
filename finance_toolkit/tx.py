@@ -169,7 +169,25 @@ LABELS = {
     "AV1": "Assurant Vie (sans risque)",
     "STK": "Stock",
 }
-TX_TYPES = {"income", "expense", "transfer", "credit"}
+TX_TYPES = {
+    # Income is a compensation obtained via different activities, e.g.
+    # work (salary, wage), investment. Usually, an income increases the asset
+    # of the portfolio.
+    "income",
+
+    # Expense is a transaction for purchases. Usually, an expense decreases
+    # the asset of the portfolio.
+    "expense",
+
+    # Transfer is a transaction for transferring money from one account to
+    # another internally in the portfolio. In a family (multi-user) portfolio,
+    # transferring money from one user's account to another is considered as
+    # "transfer" because the family asset remains the same.
+    "transfer",
+
+    # TODO remove. We never use this
+    "credit",
+}
 
 
 def validate_tx(row: Series, cfg: Configuration) -> str:
