@@ -197,7 +197,7 @@ class BnpTransactionPipeline(BnpPipeline, TransactionPipeline):
 
         for i, row in df.iterrows():
             for c in self.cfg.autocomplete:
-                if c.regex.match(row.Label):
+                if c.match(row.Label):
                     df.loc[i, "Type"] = c.tx_type
                     df.loc[i, "MainCategory"] = c.main_category
                     df.loc[i, "SubCategory"] = c.sub_category
@@ -258,7 +258,7 @@ class BoursoramaTransactionPipeline(BoursoramaPipeline, TransactionPipeline):
 
         for i, row in df.iterrows():
             for c in self.cfg.autocomplete:
-                if c.regex.match(row.Label):
+                if c.match(row.Label):
                     df.loc[i, "Type"] = c.tx_type
                     df.loc[i, "MainCategory"] = c.main_category
                     df.loc[i, "SubCategory"] = c.sub_category
@@ -280,7 +280,7 @@ class FortuneoTransactionPipeline(TransactionPipeline):
     def guess_meta(self, df: DataFrame) -> DataFrame:
         for i, row in df.iterrows():
             for c in self.cfg.autocomplete:
-                if c.regex.match(row.Label):
+                if c.match(row.Label):
                     df.loc[i, "Type"] = c.tx_type
                     df.loc[i, "MainCategory"] = c.main_category
                     df.loc[i, "SubCategory"] = c.sub_category

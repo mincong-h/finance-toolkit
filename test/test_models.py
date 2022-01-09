@@ -1,4 +1,6 @@
-from finance_toolkit.models import Summary
+import re
+
+from finance_toolkit.models import Summary, TxCompletion
 
 
 # ---------- Class: Summary ----------
@@ -66,3 +68,52 @@ def test_configuration_categories(cfg):
         "food/supermarket",
         "food/work",
     ]
+
+
+# ---------- Class: TxCompletion ----------
+
+
+def test_tx_completion_for_residence_tax():
+    completion = TxCompletion(
+        tx_type="tax",
+        main_category="tax",
+        sub_category="residence-tax",
+        regex=re.compile(".*IMPOT TH.*"),
+    )
+    assert completion.match(
+        "PRLV SEPA D.G.F.I.P. IMPOT x ECH/x ID EMETTEUR/x MDT/x REF/x LIB/x x                      x  IMPOT TH"
+    )
+
+
+def test_tx_completion_for_property_tax():
+    completion = TxCompletion(
+        tx_type="tax",
+        main_category="tax",
+        sub_category="residence-tax",
+        regex=re.compile(".*IMPOT TF.*"),
+    )
+    assert completion.match(
+        "PRLV SEPA D.G.F.I.P. IMPOT x ECH/x ID EMETTEUR/x MDT/x REF/x LIB/x x                      x  IMPOT TF"
+    )
+
+
+def test_tx_completion_for_social_charges():
+    completion = TxCompletion(
+        tx_type="tax",
+        main_category="tax",
+        sub_category="social-charges",
+        regex=re.compile(".*PRELEVEMENT SOCIAUX.*"),
+    )
+    assert completion.match("PRELEVEMENT SOCIAUX/FISCAUX")
+
+
+def test_tx_completion_for_income_tax():
+    completion = TxCompletion(
+        tx_type="tax",
+        main_category="tax",
+        sub_category="income-tax",
+        regex=re.compile(".*IMPOT REVENUS.*"),
+    )
+    assert completion.match(
+        "PRLV SEPA DGFIP IMPOT x ECH/x ID EMETTEUR/x MDT/x REF/x x 01 LIB/SOLDE IMPOT REVENUS 2020 N DE FACTURE x"
+    )

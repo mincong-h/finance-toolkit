@@ -14,6 +14,9 @@ class TxCompletion:
     main_category: str
     sub_category: str
 
+    def match(self, label: str):
+        return self.regex.match(label)
+
     @staticmethod
     def load(pattern: Dict) -> "TxCompletion":
         """
