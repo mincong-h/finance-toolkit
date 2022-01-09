@@ -701,3 +701,69 @@ def test_boursorama_account_guess_mata_transaction_label(cfg):
     )
     actual = BoursoramaTransactionPipeline(account, cfg).guess_meta(raw)
     assert_frame_equal(actual, expected)
+
+
+def test_boursorama_account_guess_mata_transaction_label_for_tax(cfg):
+    account = BoursoramaAccount("LVR", "xxx", "****1234")
+    cfg.accounts.append(account)
+    cfg.autocomplete.extend(
+        [
+            TxCompletion(
+                tx_type="tax",
+                main_category="tax",
+                sub_category="residence-tax",
+                regex=re.compile(".*IMPOT TH.*"),
+            ),
+            TxCompletion(
+                tx_type="tax",
+                main_category="tax",
+                sub_category="property-tax",
+                regex=re.compile(".*IMPOT TF.*"),
+            ),
+            TxCompletion(
+                tx_type="tax",
+                main_category="tax",
+                sub_category="income-tax",
+                regex=re.compile(".*IMPOT REVENUS.*"),
+            ),
+            TxCompletion(
+                tx_type="tax",
+                main_category="tax",
+                sub_category="social-charges",
+                regex=re.compile(".*PRELEVEMENT SOCIAUX.*"),
+            ),
+        ]
+    )
+    raw = pd.DataFrame(
+        {
+            "Label": [
+                "PRLV SEPA D.G.F.I.P. IMPOT x ECH/x ID EMETTEUR/x MDT/x REF/x LIB/x x                      x  IMPOT TH",  # noqa
+                "PRLV SEPA D.G.F.I.P. IMPOT x ECH/x ID EMETTEUR/x MDT/x REF/x LIB/x x                      x  IMPOT TF",  # noqa
+                "PRLV SEPA DGFIP IMPOT x ECH/x ID EMETTEUR/x MDT/x REF/x x 01 LIB/SOLDE IMPOT REVENUS 2020 N DE FACTURE x",  # noqa
+                "PRELEVEMENT SOCIAUX/FISCAUX",
+            ],
+            "Type": [""] * 4,
+            "MainCategory": [""] * 4,
+            "SubCategory": [""] * 4,
+        }
+    )
+    expected = pd.DataFrame(
+        {
+            "Label": [
+                "PRLV SEPA D.G.F.I.P. IMPOT x ECH/x ID EMETTEUR/x MDT/x REF/x LIB/x x                      x  IMPOT TH",  # noqa
+                "PRLV SEPA D.G.F.I.P. IMPOT x ECH/x ID EMETTEUR/x MDT/x REF/x LIB/x x                      x  IMPOT TF",  # noqa
+                "PRLV SEPA DGFIP IMPOT x ECH/x ID EMETTEUR/x MDT/x REF/x x 01 LIB/SOLDE IMPOT REVENUS 2020 N DE FACTURE x",  # noqa
+                "PRELEVEMENT SOCIAUX/FISCAUX",
+            ],
+            "Type": [TxType.TAX.value] * 4,
+            "MainCategory": ["tax"] * 4,
+            "SubCategory": [
+                "residence-tax",
+                "property-tax",
+                "income-tax",
+                "social-charges",
+            ],
+        }
+    )
+    actual = BoursoramaTransactionPipeline(account, cfg).guess_meta(raw)
+    assert_frame_equal(actual, expected)
