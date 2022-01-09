@@ -1,6 +1,4 @@
-import re
-
-from finance_toolkit.models import Summary, TxCompletion
+from finance_toolkit.models import Summary
 
 
 # ---------- Class: Summary ----------
