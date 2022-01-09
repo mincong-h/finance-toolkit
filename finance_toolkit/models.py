@@ -31,7 +31,7 @@ class TxType(str, Enum):
     # and not an option. Also because some income taxes are invisible in our
     # system since they had been deducted before the salary arrived
     # (prélèvement à la source). Tax is not considered as a (negative) "income"
-    # because it includes income-unrelated items, such as property tax and
+    # because it may not be related to income, such as property tax and
     # residence tax. So the best choice is to use a dedicated type right now.
     TAX = "tax"
 
