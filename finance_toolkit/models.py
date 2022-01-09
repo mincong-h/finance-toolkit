@@ -40,7 +40,6 @@ class TxType(str, Enum):
     # residence tax. So the best choice is to use a dedicated type right now.
     TAX = "tax"
 
-
     @staticmethod
     def values() -> Set[str]:
         return {m.value for m in TxType}
