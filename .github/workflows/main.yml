@@ -1,0 +1,57 @@
+name: Actions
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v3
+      with:
+        python-version: '3.7'
+    - uses: actions/cache@v1
+      with:
+        path: ~/.venv
+        key: v1-dependencies-{{ hashFiles("setup.cfg") }}
+        restore-keys: v1-dependencies-
+    - name: Check style (Flake 8)
+      run: |
+        . venv/bin/activate
+        flake8
+    - name: Run tests with coverage
+      run: |
+        . venv/bin/activate
+        coverage run -m pytest -vv --strict
+    - name: Coverage report
+      run: |
+        . venv/bin/activate
+        coverage report
+
+  release:
+    if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/docker' }}
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v3
+      with:
+        python-version: '3.7'
+    - uses: actions/cache@v1
+      with:
+        path: ~/.venv
+        key: v1-dependencies-{{ hashFiles("setup.cfg") }}
+        restore-keys: v1-dependencies-
+    - name: Login to Aliyun Container Registry (ACR)
+      uses: aliyun/acr-login@v1
+      with:
+        login-server: https://registry-intl.cn-hongkong.aliyuncs.com
+        region-id: cn-hongkong
+        username: "${{ secrets.ACR_USERNAME }}"
+        password: "${{ secrets.ACR_PASSWORD }}"
+    #- name: Build JAR
+    #  run: mvn install -DskipTests
+    #- name: Build Docker Image
+    #  run: bash bin/blogsearch-server-docker-build.sh
+    #- name: Push Docker Image
+    #  run: bash bin/blogsearch-server-docker-push.sh
