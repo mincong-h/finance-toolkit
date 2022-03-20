@@ -55,9 +55,7 @@ jobs:
         region-id: cn-hongkong
         username: "${{ secrets.ACR_USERNAME }}"
         password: "${{ secrets.ACR_PASSWORD }}"
-    #- name: Build JAR
-    #  run: mvn install -DskipTests
-    #- name: Build Docker Image
-    #  run: bash bin/blogsearch-server-docker-build.sh
-    #- name: Push Docker Image
-    #  run: bash bin/blogsearch-server-docker-push.sh
+    - name: Build Docker image
+      run: bin/docker-build.sh
+    - name: Push Docker image
+      run: bin/docker-push.sh
