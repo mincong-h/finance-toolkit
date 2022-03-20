@@ -163,7 +163,7 @@ Date,Amount
     )
 
 
-def test_bnp_pipeline_read_raw(cfg):
+def test_bnp_pipeline_read_raw_20190703(cfg):
     # Given an existing CSV for BNP
     # When reading its content
     csv = cfg.download_dir / "E1851234.csv"
@@ -193,6 +193,57 @@ def test_bnp_pipeline_read_raw(cfg):
             "",
             "",
         )
+    ]
+    expected_transactions = pd.DataFrame(columns=t_cols, data=t_data)
+    assert_frame_equal(actual_transactions, expected_transactions)
+
+
+def test_bnp_pipeline_read_raw_20220318(cfg):
+    # Given an existing CSV for BNP
+    # When reading its content
+    csv = cfg.download_dir / "E0790170.csv"
+    actual_balances, actual_transactions = BnpPipeline.read_raw(csv)
+
+    # Then the balances DataFrame is read correctly
+    expected_balances = pd.DataFrame(
+        columns=["Date", "Amount"], data=[(pd.Timestamp("2022-03-18"), -123456.78)]
+    )
+    assert_frame_equal(actual_balances, expected_balances)
+
+    # And the transactions DataFrame is read correctly
+    t_cols = [
+        "Date",
+        "Label",
+        "Amount",
+        "Type",
+        "MainCategory",
+        "SubCategory",
+    ]
+    t_data = [
+        (
+            pd.Timestamp("2022-01-05"),
+            "AMORTISSEMENT PRET 1234",
+            70.93,
+            "",
+            "",
+            "",
+        ),
+        (
+            pd.Timestamp("2022-02-05"),
+            "AMORTISSEMENT PRET 1234",
+            71.03,
+            "",
+            "",
+            "",
+        ),
+        (
+            pd.Timestamp("2022-03-05"),
+            "AMORTISSEMENT PRET 1234",
+            71.13,
+            "",
+            "",
+            "",
+        ),
     ]
     expected_transactions = pd.DataFrame(columns=t_cols, data=t_data)
     assert_frame_equal(actual_transactions, expected_transactions)
