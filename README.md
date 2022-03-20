@@ -14,10 +14,9 @@ transactions from different companies:
 
 ### Install With Docker
 
-```sh
-# Build Docker Image
-./bin/docker-build.sh
-```
+The Docker images are built by CI (GitHub Actions), to use the script with
+Docker, you just need to run the commands directly with wrapper script
+`docker-finance.sh`:
 
 ```sh
 # Run Commands, such as:
