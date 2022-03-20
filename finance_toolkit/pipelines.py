@@ -148,9 +148,9 @@ class BnpPipeline(Pipeline, metaclass=ABCMeta):
         with csv.open(encoding="ISO-8859-1") as f:
             first = next(f).strip()
             # We need to unescape twice because BNP double-escaped the line
-            # Origin: '"Cr&eacute;dit immobilier";"Cr&amp;eacute;dit immobilier";****0170;18/03/2022;;-113 095,26'
-            #    1st: '"Crédit immobilier";"Cr&eacute;dit immobilier";****0170;18/03/2022;;-113 095,26'
-            #    2nd: '"Crédit immobilier";"Crédit immobilier";****0170;18/03/2022;;-113 095,26'
+            # Origin: '"Cr&eacute;dit immobilier";"Cr&amp;eacute;dit immobilier";****0170;18/03/2022;;-113 095,26'  # noqa: E501
+            #    1st: '"Crédit immobilier";"Cr&eacute;dit immobilier";****0170;18/03/2022;;-113 095,26'             # noqa: E501
+            #    2nd: '"Crédit immobilier";"Crédit immobilier";****0170;18/03/2022;;-113 095,26'                    # noqa: E501
             first = unescape(unescape(first))
         balances = pd.DataFrame.from_records(
             data=[first.split(";")],
