@@ -1,12 +1,20 @@
 #!/bin/bash
+set -euxo pipefail
 
-IMAGE_NAME='finance-toolkit'
+REGISTRY_NAME="registry-intl.cn-hongkong.aliyuncs.com"
+IMAGE_NAMESPACE="jimidata-prod"
+IMAGE_NAME="finance-toolkit"
 
-tag="$(git rev-parse --short HEAD)"
 script_dir="$(cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd)"
-docker_dir="${script_dir}/.."
+project_dir="$(realpath ${script_dir}/..)"
+
+short_commit="$(git rev-parse --short HEAD)"
+pipeline_id="${GITHUB_RUN_ID:-0}"
+tag="v${pipeline_id}-${short_commit}"
 
 docker build \
   --tag "${IMAGE_NAME}:${tag}" \
   --tag "${IMAGE_NAME}:latest" \
-  "$docker_dir"
+  --tag "${REGISTRY_NAME}/${IMAGE_NAMESPACE}/${IMAGE_NAME}:${tag}" \
+  --tag "${REGISTRY_NAME}/${IMAGE_NAMESPACE}/${IMAGE_NAME}:latest" \
+  "$project_dir"
