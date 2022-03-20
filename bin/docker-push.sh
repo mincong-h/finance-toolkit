@@ -9,6 +9,5 @@ short_commit="$(git rev-parse --short HEAD)"
 pipeline_id="${GITHUB_RUN_ID:-0}"
 tag="v${pipeline_id}-${short_commit}"
 
-docker push \
-  --tag "${REGISTRY_NAME}/${IMAGE_NAMESPACE}/${IMAGE_NAME}:${tag}" \
-  --tag "${REGISTRY_NAME}/${IMAGE_NAMESPACE}/${IMAGE_NAME}:latest"
+docker push "${REGISTRY_NAME}/${IMAGE_NAMESPACE}/${IMAGE_NAME}:${tag}"
+docker push "${REGISTRY_NAME}/${IMAGE_NAMESPACE}/${IMAGE_NAME}:latest"
