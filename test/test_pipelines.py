@@ -12,19 +12,21 @@ from finance_toolkit.accounts import (
     BoursoramaAccount,
     FortuneoAccount,
 )
-from finance_toolkit.pipelines import (
+from finance_toolkit.models import Summary, TxType
+from finance_toolkit.pipeline_bnp import (
     BnpPipeline,
     BnpBalancePipeline,
     BnpTransactionPipeline,
+)
+from finance_toolkit.pipeline_factory import PipelineFactory
+from finance_toolkit.pipelines import (
     BoursoramaBalancePipeline,
     BoursoramaTransactionPipeline,
     FortuneoTransactionPipeline,
     GeneralBalancePipeline,
     NoopTransactionPipeline,
-    PipelineFactory,
 )
 from finance_toolkit.tx import TxCompletion
-from finance_toolkit.models import Summary, TxType
 
 
 # ---------- Class: AccountPipeline ----------
