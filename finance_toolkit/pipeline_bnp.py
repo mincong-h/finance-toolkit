@@ -93,4 +93,3 @@ class BnpBalancePipeline(BnpPipeline, BalancePipeline):
     def read_new_balances(self, csv: Path) -> DataFrame:
         balances, _ = self.read_raw(csv)
         return balances
-

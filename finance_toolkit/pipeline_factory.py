@@ -8,8 +8,16 @@ from .accounts import (
 )
 from .models import Configuration
 from .pipeline_bnp import BnpTransactionPipeline, BnpBalancePipeline
-from .pipelines import BoursoramaTransactionPipeline, TransactionPipeline, FortuneoTransactionPipeline, \
-    NoopTransactionPipeline, BalancePipeline, BoursoramaBalancePipeline, GeneralBalancePipeline, AccountParser
+from .pipelines import (
+    BoursoramaTransactionPipeline,
+    TransactionPipeline,
+    FortuneoTransactionPipeline,
+    NoopTransactionPipeline,
+    BalancePipeline,
+    BoursoramaBalancePipeline,
+    GeneralBalancePipeline,
+    AccountParser,
+)
 
 
 class PipelineFactory:
