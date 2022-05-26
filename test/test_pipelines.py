@@ -18,10 +18,12 @@ from finance_toolkit.pipeline_bnp import (
     BnpBalancePipeline,
     BnpTransactionPipeline,
 )
-from finance_toolkit.pipeline_factory import PipelineFactory
-from finance_toolkit.pipelines import (
+from finance_toolkit.pipeline_boursorama import (
     BoursoramaBalancePipeline,
     BoursoramaTransactionPipeline,
+)
+from finance_toolkit.pipeline_factory import PipelineFactory
+from finance_toolkit.pipelines import (
     FortuneoTransactionPipeline,
     GeneralBalancePipeline,
     NoopTransactionPipeline,
