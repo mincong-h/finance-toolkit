@@ -6,12 +6,7 @@ import pandas as pd
 from pandas import DataFrame
 from datetime import datetime
 
-from .accounts import (
-    Account,
-    BnpAccount,
-    BoursoramaAccount,
-    FortuneoAccount,
-)
+from .accounts import Account
 from .models import Configuration, Summary, TxType
 
 
