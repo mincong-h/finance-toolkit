@@ -8,13 +8,15 @@ from .accounts import (
 )
 from .models import Configuration
 from .pipeline_bnp import BnpTransactionPipeline, BnpBalancePipeline
-from .pipelines import (
+from .pipeline_boursorama import (
     BoursoramaTransactionPipeline,
+    BoursoramaBalancePipeline,
+)
+from .pipelines import (
     TransactionPipeline,
     FortuneoTransactionPipeline,
     NoopTransactionPipeline,
     BalancePipeline,
-    BoursoramaBalancePipeline,
     GeneralBalancePipeline,
     AccountParser,
 )
