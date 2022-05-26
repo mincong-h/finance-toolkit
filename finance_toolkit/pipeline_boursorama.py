@@ -8,7 +8,7 @@ import pandas as pd
 from pandas import DataFrame
 
 from .models import TxType
-from .pipelines import Pipeline, TransactionPipeline
+from .pipelines import Pipeline, TransactionPipeline, BalancePipeline
 
 
 class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
