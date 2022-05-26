@@ -1,10 +1,10 @@
 from abc import ABCMeta, abstractmethod
+from datetime import datetime
 from pathlib import Path
 from typing import Tuple
 
 import pandas as pd
 from pandas import DataFrame
-from datetime import datetime
 
 from .accounts import Account
 from .models import Configuration, Summary, TxType
