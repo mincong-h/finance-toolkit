@@ -1,19 +1,11 @@
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
-from typing import Tuple
 
 import pandas as pd
 from pandas import DataFrame
-from datetime import datetime
-from html import unescape
 
-from .accounts import (
-    Account,
-    BnpAccount,
-    BoursoramaAccount,
-    FortuneoAccount,
-)
-from .models import Configuration, Summary, TxType
+from .accounts import Account
+from .models import Configuration, Summary
 
 
 class Pipeline(metaclass=ABCMeta):
@@ -136,152 +128,6 @@ class GeneralBalancePipeline(BalancePipeline):
         pass
 
 
-class BnpPipeline(Pipeline, metaclass=ABCMeta):
-    @classmethod
-    def parse_fr_float(cls, s: str) -> float:
-        v = s.replace(",", ".").replace(" ", "")
-        return float(v)
-
-    @classmethod
-    def read_raw(cls, csv: Path) -> Tuple[DataFrame, DataFrame]:
-        # BNP Paribas stores the balance in the first line of the CSV
-        with csv.open(encoding="ISO-8859-1") as f:
-            first = next(f).strip()
-            # We need to unescape twice because BNP double-escaped the line
-            # Origin: '"Cr&eacute;dit immobilier";"Cr&amp;eacute;dit immobilier";****0170;18/03/2022;;-113 095,26'  # noqa: E501
-            #    1st: '"Crédit immobilier";"Cr&eacute;dit immobilier";****0170;18/03/2022;;-113 095,26'             # noqa: E501
-            #    2nd: '"Crédit immobilier";"Crédit immobilier";****0170;18/03/2022;;-113 095,26'                    # noqa: E501
-            first = unescape(unescape(first))
-        balances = pd.DataFrame.from_records(
-            data=[first.split(";")],
-            columns=[
-                "mainCategory",
-                "subCategory",
-                "accountNum",
-                "Date",
-                "unknown",
-                "Amount",
-            ],
-        )
-        balances["Date"] = pd.to_datetime(balances["Date"], format="%d/%m/%Y")
-        balances["Amount"] = balances["Amount"].apply(cls.parse_fr_float)
-        del balances["mainCategory"]
-        del balances["subCategory"]
-        del balances["accountNum"]
-        del balances["unknown"]
-
-        tx = pd.read_csv(
-            csv,
-            date_parser=lambda s: datetime.strptime(s, "%d/%m/%Y"),
-            decimal=",",
-            delimiter=";",
-            encoding="ISO-8859-1",
-            names=["Date", "bnpMainCategory", "bnpSubCategory", "Label", "Amount"],
-            parse_dates=["Date"],
-            skipinitialspace=True,
-            skiprows=1,
-            thousands=" ",
-        )
-
-        del tx["bnpMainCategory"]
-        del tx["bnpSubCategory"]
-        tx = tx.fillna("")
-        tx["Type"] = ""
-        tx["MainCategory"] = ""
-        tx["SubCategory"] = ""
-        return balances, tx
-
-
-class BnpTransactionPipeline(BnpPipeline, TransactionPipeline):
-    def guess_meta(self, df: DataFrame) -> DataFrame:
-        if self.account.type == "CDI":
-            df["Type"] = TxType.CREDIT.value
-        if self.account.type in ["LVA", "LDD"]:
-            df["Type"] = TxType.TRANSFER.value
-        elif self.account.type == "CHQ":
-            df["Type"] = TxType.EXPENSE.value
-
-        for i, row in df.iterrows():
-            for c in self.cfg.autocomplete:
-                if c.match(row.Label):
-                    df.loc[i, "Type"] = c.tx_type
-                    df.loc[i, "MainCategory"] = c.main_category
-                    df.loc[i, "SubCategory"] = c.sub_category
-                    break
-        return df
-
-    def read_new_transactions(self, path: Path) -> DataFrame:
-        _, tx = self.read_raw(path)
-        return tx
-
-
-class BnpBalancePipeline(BnpPipeline, BalancePipeline):
-    def read_new_balances(self, csv: Path) -> DataFrame:
-        balances, _ = self.read_raw(csv)
-        return balances
-
-
-class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
-    def read_raw(self, csv: Path) -> Tuple[DataFrame, DataFrame]:
-        df = pd.read_csv(
-            csv,
-            decimal=",",
-            delimiter=";",
-            dtype={"accountNum": "str"},
-            encoding="ISO-8859-1",
-            parse_dates=["dateOp", "dateVal"],
-            skipinitialspace=True,
-            thousands=" ",
-        )
-        df = df.rename(columns={"accountbalance": "accountBalance"})
-        transactions = df[df["accountNum"].map(self.account.is_account)]
-        transactions = transactions.reset_index(drop=True)
-        transactions = transactions.rename(
-            columns={"dateOp": "Date", "label": "Label", "amount": "Amount"}
-        )
-        del transactions["dateVal"]
-        del transactions["category"]
-        del transactions["categoryParent"]
-
-        m = self.account.pattern.match(csv.name)
-        balances = df.groupby("accountNum")["accountBalance"].max().to_frame()
-        balances.reset_index(inplace=True)
-        balances["Date"] = datetime.strptime(m.group(1), "%d-%m-%Y") - pd.Timedelta(
-            "1 day"
-        )
-        balances = balances[balances["accountNum"].map(self.account.is_account)]
-        balances = balances.reset_index(drop=True)
-        balances = balances.rename(columns={"accountBalance": "Amount"})
-        return balances, transactions
-
-
-class BoursoramaTransactionPipeline(BoursoramaPipeline, TransactionPipeline):
-    def guess_meta(self, df: DataFrame) -> DataFrame:
-        if self.account.type == "LVR":
-            df["Type"] = TxType.TRANSFER.value
-        elif self.account.type == "CHQ":
-            df["Type"] = TxType.EXPENSE.value
-
-        for i, row in df.iterrows():
-            for c in self.cfg.autocomplete:
-                if c.match(row.Label):
-                    df.loc[i, "Type"] = c.tx_type
-                    df.loc[i, "MainCategory"] = c.main_category
-                    df.loc[i, "SubCategory"] = c.sub_category
-                    break
-        return df
-
-    def read_new_transactions(self, path: Path):
-        _, tx = self.read_raw(path)
-        return tx
-
-
-class BoursoramaBalancePipeline(BoursoramaPipeline, BalancePipeline):
-    def read_new_balances(self, csv: Path) -> DataFrame:
-        balances, _ = self.read_raw(csv)
-        return balances
-
-
 class FortuneoTransactionPipeline(TransactionPipeline):
     def guess_meta(self, df: DataFrame) -> DataFrame:
         for i, row in df.iterrows():
@@ -355,28 +201,3 @@ class AccountParser:
         if len(parts) == 3 and account_id in self.accounts:
             return self.accounts[account_id]
         return Account("unknown", "unknown", "unknown", r"unknown")
-
-
-class PipelineFactory:
-    def __init__(self, cfg: Configuration):
-        self.cfg = cfg
-
-    def new_transaction_pipeline(self, account: Account) -> TransactionPipeline:
-        if isinstance(account, BnpAccount):
-            return BnpTransactionPipeline(account, self.cfg)
-        if isinstance(account, BoursoramaAccount):
-            return BoursoramaTransactionPipeline(account, self.cfg)
-        if isinstance(account, FortuneoAccount):
-            return FortuneoTransactionPipeline(account, self.cfg)
-        return NoopTransactionPipeline(account, self.cfg)
-
-    def new_balance_pipeline(self, account: Account) -> BalancePipeline:
-        if isinstance(account, BnpAccount):
-            return BnpBalancePipeline(account, self.cfg)
-        if isinstance(account, BoursoramaAccount):
-            return BoursoramaBalancePipeline(account, self.cfg)
-        return GeneralBalancePipeline(account, self.cfg)
-
-    def parse_balance_pipeline(self, path: Path) -> BalancePipeline:
-        account = AccountParser(self.cfg).parse(path)
-        return self.new_balance_pipeline(account)

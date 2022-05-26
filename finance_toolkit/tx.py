@@ -17,8 +17,9 @@ from .accounts import (
     OctoberAccount,
     RevolutAccount,
 )
-from .pipelines import PipelineFactory, AccountParser
 from .models import Configuration, Summary, TxCompletion, TxType
+from .pipeline_factory import PipelineFactory
+from .pipelines import AccountParser
 
 
 class Configurator:
