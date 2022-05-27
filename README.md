@@ -122,7 +122,7 @@ python -m pytest
 
 ### Download CSV File
 
-https://community.revolut.com/t/data-export/76631
+https://www.revolut.com/en-US/help/my-accounts/managing-my-account/viewing-my-account-statements
 
 Follow the steps below to download CSV files:
 
@@ -133,6 +133,11 @@ Follow the steps below to download CSV files:
   - Format: Excel (actually CSV will be sent)
   - Start on: the start month
   - Ending on: the end month
-* Click "Get statement" and you will be redirected to your email app. Finish the remaining steps there.
-* An email will be sent with CSV attached
-* Download the CSV file from that email
+* Click "Get statement" and wait until the generation is complete
+* Download the CSV file
+
+Note that:
+
+* You need to do this for each account. Different currency, such as EUR and USD, are considered as
+  two different accounts.
+* For commodities (such as gold), the account statement is not supported.
