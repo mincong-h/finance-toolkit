@@ -120,6 +120,40 @@ python -m pytest
 
 ## Revolut
 
+### Revolut Account Statement Format
+
+File name format:
+
+```
+account-statement_{START_DATE}_{END_DATE}_undefined-undefined_{ACCOUNT_ID}.csv
+```
+
+It consists of 3 parameters: the start date (format: yyyy-MM-dd), the end date (format: yyyy-MM-dd),
+and the account id in 6 hexadecimal digits.
+
+Example:
+
+```
+account-statement_2021-01-01_2022-05-27_undefined-undefined_abc123.csv
+```
+
+Delimiter: `,`
+
+Columns:
+
+| Column         | Type              | Comment                         |
+|:---------------|:------------------|:--------------------------------|
+| Type           | String            | TOPUP, EXCHANGE, TRANSFER       |
+| Product        | String            | Current                         |
+| Started Date   | Date              | Format: `yyyy-MM-dd' 'hh:mm:ss` |
+| Completed Date | Date              | Format: `yyyy-MM-dd' 'hh:mm:ss` |
+| Description    | String            | Description of the statement    |
+| Amount         | Float             |                                 |
+| Fee            | Fee               |                                 |
+| Currency       | String            | USD, EUR, ...                   |
+| State          | String            | COMPLETED                       |
+| Balance        | Optional\[Float\] | Balance of the account or empty |
+
 ### Download CSV File
 
 https://www.revolut.com/en-US/help/my-accounts/managing-my-account/viewing-my-account-statements
