@@ -9,17 +9,20 @@ from .pipelines import Pipeline, TransactionPipeline, BalancePipeline
 
 
 class RevolutPipeline(Pipeline, metaclass=ABCMeta):
-    def read_raw(self, csv: Path) -> Tuple[DataFrame, DataFrame]:
+    @classmethod
+    def read_raw(cls, csv: Path) -> Tuple[DataFrame, DataFrame]:
         df = pd.read_csv(
             csv,
             delimiter=",",
             parse_dates=["Started Date", "Completed Date"],
         )
         balances = df[["Completed Date", "Balance"]]
-        balances = balances.rename(columns={
-            "Completed Date": "Date",
-            "Balance": "Amount",
-        })
+        balances = balances.rename(
+            columns={
+                "Completed Date": "Date",
+                "Balance": "Amount",
+            }
+        )
         tx = df
         return balances, tx
 
