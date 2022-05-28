@@ -30,7 +30,15 @@ def test_revolut_pipeline_read_raw_2022_05_27(cfg):
                 "",
                 "",
                 "",
-            )
+            ),
+            (
+                pd.Timestamp("2021-11-19 08:35:35"),
+                "Balance migration to another region or legal entity",
+                -100.00,
+                "",
+                "",
+                "",
+            ),
         ],
     )
     assert_frame_equal(actual_transactions, expected_transactions)

@@ -24,6 +24,9 @@ class RevolutPipeline(Pipeline, metaclass=ABCMeta):
                 "Balance": "Amount",
             }
         )
+        balances = balances[balances["Amount"].notna()]
+
+        # TODO support fields: Type, Product, Fee, Currency, State
 
         tx = df[["Completed Date", "Description", "Amount"]]
         tx = tx.rename(
