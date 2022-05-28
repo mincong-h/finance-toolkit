@@ -1,20 +1,33 @@
 import re
 from pathlib import Path
-from typing import Pattern
+from typing import Pattern, List
 
 
 class Account:
     def __init__(
-        self, account_type: str, account_id: str, account_num: str, pattern: str
+        self, account_type: str, account_id: str, account_num: str, patterns: List[str]
     ):
+        """
+        Initialize a new account.
+
+        :param patterns: a list of regex patterns to match the filenames of a given account. We
+            need a list because companies may change the naming of the file over time.
+        """
         self.type: str = account_type
         self.id: str = account_id
-        self.pattern: Pattern = re.compile(pattern)
+        self.patterns: List[Pattern] = [re.compile(p) for p in patterns]
         self.num: str = account_num
         self.filename: str = f"{account_id}.csv"
 
     def __hash__(self):
-        return hash((self.type, self.id, self.pattern, self.num))
+        return hash(
+            (
+                self.type,
+                self.id,
+                self.num,
+                self.filename,
+            )
+        )
 
     def __eq__(self, o: object) -> bool:
         if not isinstance(o, type(self)):
@@ -22,8 +35,8 @@ class Account:
         return (
             self.type == o.type
             and self.id == o.id
-            and self.pattern == o.pattern
             and self.num == o.num
+            and self.filename == o.filename
         )
 
     def __repr__(self) -> str:
@@ -41,7 +54,14 @@ class Account:
         return account_full_num.endswith(self.num)
 
     def match(self, path: Path) -> bool:
-        return bool(self.pattern.match(path.name))
+        # print(f"path.name: {path.name}")
+        for p in self.patterns:
+            matched = p.match(path.name)
+            # print(f"{p}: {matched}")
+            if matched:
+                return True
+        # print(f"result: {result}")
+        return False
 
 
 class BnpAccount(Account):
@@ -50,7 +70,7 @@ class BnpAccount(Account):
             account_type=account_type,
             account_id=account_id,
             account_num=account_num,
-            pattern="E\\d{,3}%s\\.csv" % account_num[-4:],
+            patterns=["E\\d{,3}%s\\.csv" % account_num[-4:]],
         )
 
 
@@ -60,7 +80,7 @@ class BoursoramaAccount(Account):
             account_type=account_type,
             account_id=account_id,
             account_num=account_num,
-            pattern=r"export-operations-(\d{2}-\d{2}-\d{4})_.+\.csv",
+            patterns=[r"export-operations-(\d{2}-\d{2}-\d{4})_.+\.csv"],
         )
 
 
@@ -74,7 +94,7 @@ class DegiroAccount(Account):
             account_type=account_type,
             account_id=account_id,
             account_num=account_num,
-            pattern="Portfolio.csv",
+            patterns=["Portfolio.csv"],
         )
 
 
@@ -84,7 +104,9 @@ class FortuneoAccount(Account):
             account_type=account_type,
             account_id=account_id,
             account_num=account_num,
-            pattern=r"HistoriqueOperations_(\d+)_du_\d{2}_\d{2}_\d{4}_au_\d{2}_\d{2}_\d{4}\.csv",
+            patterns=[
+                r"HistoriqueOperations_(\d+)_du_\d{2}_\d{2}_\d{4}_au_\d{2}_\d{2}_\d{4}\.csv"
+            ],
         )
 
 
@@ -94,7 +116,7 @@ class OctoberAccount(Account):
             account_type=account_type,
             account_id=account_id,
             account_num=account_num,
-            pattern=f"remboursements-{account_num}.xlsx",
+            patterns=[f"remboursements-{account_num}.xlsx"],
         )
 
 
@@ -104,5 +126,8 @@ class RevolutAccount(Account):
             account_type=account_type,
             account_id=account_id,
             account_num=account_num,
-            pattern=r"account-statement_(\d{4}-\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})_undefined_undefined_([0-9a-f]+)\.csv",
+            patterns=[
+                r"Revolut-(.*)-Statement-(.*)\.csv",
+                r"account-statement_(\d{4}-\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})_undefined-undefined_([0-9a-f]+)\.csv", # noqa
+            ],
         )

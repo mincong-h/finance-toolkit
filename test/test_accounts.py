@@ -15,14 +15,14 @@ from finance_toolkit.accounts import (
 
 
 def test_account_eq_hash():
-    a = Account("aType", "anId", "****0001", r".*")
-    b = Account("aType", "anId", "****0001", r".*")
+    a = Account("aType", "anId", "****0001", [r".*"])
+    b = Account("aType", "anId", "****0001", [r".*"])
     assert a == b
     assert hash(a) == hash(b)
 
 
 def test_account_repr_attrs():
-    a = Account("aType", "anId", "00000001", r".*")
+    a = Account("aType", "anId", "00000001", [r".*"])
     assert repr(a) == "Account<type='aType', id='anId', num='****0001'>"
     assert a.type == "aType"
     assert a.id == "anId"
@@ -46,7 +46,7 @@ def test_bnp_account_match():
 def test_bnp_account_eq():
     a = BnpAccount("aType", "anId", "****0001")
     b = BnpAccount("aType", "anId", "****0001")
-    c = Account("aType", "anId", "****0001", r"E\d{,3}0001\.csv")
+    c = Account("aType", "anId", "****0001", [r"E\d{,3}0001\.csv"])
     assert a == b
     assert a != c
 
@@ -54,7 +54,7 @@ def test_bnp_account_eq():
 def test_bnp_account_hash():
     a = BnpAccount("aType", "anId", "****0001")
     b = BnpAccount("aType", "anId", "****0001")
-    c = Account("aType", "anId", "****0001", r"E\d{,3}0001\.csv")
+    c = Account("aType", "anId", "****0001", [r"E\d{,3}0001\.csv"])
     assert hash(a) == hash(b)
     assert hash(a) == hash(c)
 
@@ -66,7 +66,7 @@ def test_boursorama_account_eq():
     a = BoursoramaAccount("aType", "anId", "****0001")
     b = BoursoramaAccount("aType", "anId", "****0001")
     c = Account(
-        "aType", "anId", "****0001", r"export-operations-(\d{2}-\d{2}-\d{4})_.+\.csv"
+        "aType", "anId", "****0001", [r"export-operations-(\d{2}-\d{2}-\d{4})_.+\.csv"]
     )
     assert a == b
     assert a != c
@@ -76,7 +76,7 @@ def test_boursorama_account_hash():
     a = BoursoramaAccount("aType", "anId", "****0001")
     b = BoursoramaAccount("aType", "anId", "****0001")
     c = Account(
-        "aType", "anId", "****0001", r"export-operations-(\d{2}-\d{2}-\d{4})_.+\.csv"
+        "aType", "anId", "****0001", [r"export-operations-(\d{2}-\d{2}-\d{4})_.+\.csv"]
     )
     assert hash(a) == hash(b)
     assert hash(a) == hash(c)
@@ -112,3 +112,6 @@ def test_october_account_match():
 def test_revolut_account_match():
     a = RevolutAccount("aType", "anId", "myLogin")
     assert a.match(Path("Revolut-EUR-Statement-Oct – Nov 2020.csv"))
+    assert a.match(
+        Path("account-statement_2021-01-01_2022-05-27_undefined-undefined_abc123.csv")
+    )
