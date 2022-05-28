@@ -73,7 +73,15 @@ class TransactionPipeline(Pipeline, metaclass=ABCMeta):
     @abstractmethod
     def read_new_transactions(self, csv: Path) -> DataFrame:
         """
-        Read new transactions from a CSV file, probably downloaded from internet.
+        Read new transactions from a CSV file, probably downloaded from internet. The
+        implementation of this abstract method should return a data-frame containing the following
+        fields, the order of the fields should be respected as well:
+
+            1. "Date": pandas.Timestamp, required.
+            2. "Label": string, required.
+            3. "Amount": float, required.
+
+        This allows merging transactions from different accounts in the downstream.
 
         :param csv: the path of the CSV file
         """
