@@ -39,7 +39,9 @@ class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
 
         balances = df.groupby("accountNum")["accountBalance"].max().to_frame()
         balances.reset_index(inplace=True)
-        balances["Date"] = self.account.get_operations_date(csv.name) - pd.Timedelta("1 day")
+        balances["Date"] = self.account.get_operations_date(csv.name) - pd.Timedelta(
+            "1 day"
+        )
         balances = balances[balances["accountNum"].map(self.account.is_account)]
         balances = balances.reset_index(drop=True)
         balances = balances.rename(columns={"accountBalance": "Amount"})

@@ -3,8 +3,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Pattern, List
 
-import pandas as pd
-
 
 class Account:
     def __init__(
@@ -140,6 +138,6 @@ class RevolutAccount(Account):
             account_num=account_num,
             patterns=[
                 r"Revolut-(.*)-Statement-(.*)\.csv",
-                r"account-statement_(\d{4}-\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})_undefined-undefined_([0-9a-f]+)\.csv", # noqa
+                r"account-statement_(\d{4}-\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})_undefined-undefined_([0-9a-f]+)\.csv",  # noqa
             ],
         )
