@@ -212,4 +212,9 @@ class AccountParser:
         account_id = parts[1]
         if len(parts) == 3 and account_id in self.accounts:
             return self.accounts[account_id]
-        return Account("unknown", "unknown", "unknown", r"unknown")
+        return Account(
+            account_type="unknown",
+            account_id="unknown",
+            account_num="unknown",
+            patterns=[r"unknown"],
+        )
