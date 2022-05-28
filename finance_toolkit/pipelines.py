@@ -80,6 +80,10 @@ class TransactionPipeline(Pipeline, metaclass=ABCMeta):
             1. "Date": pandas.Timestamp, required.
             2. "Label": string, required.
             3. "Amount": float, required.
+            # TODO can we remove these fields?
+            4. "Type": string, required.
+            5. "MainCategory": string, required.
+            6. "SubCategory": string, required.
 
         This allows merging transactions from different accounts in the downstream.
 

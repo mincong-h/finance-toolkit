@@ -61,9 +61,12 @@ class BnpPipeline(Pipeline, metaclass=ABCMeta):
         del tx["bnpMainCategory"]
         del tx["bnpSubCategory"]
         tx = tx.fillna("")
+
+        # TODO can we remove these fields?
         tx["Type"] = ""
         tx["MainCategory"] = ""
         tx["SubCategory"] = ""
+
         return balances, tx
 
 

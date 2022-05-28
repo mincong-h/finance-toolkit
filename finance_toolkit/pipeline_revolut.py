@@ -33,6 +33,11 @@ class RevolutPipeline(Pipeline, metaclass=ABCMeta):
             }
         )
 
+        # TODO can we remove these fields?
+        tx["Type"] = ""
+        tx["MainCategory"] = ""
+        tx["SubCategory"] = ""
+
         return balances, tx
 
 

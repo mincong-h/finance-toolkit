@@ -10,6 +10,7 @@ def test_revolut_pipeline_read_raw_2022_05_27(cfg):
         cfg.download_dir
         / "account-statement_2021-01-01_2022-05-27_undefined-undefined_abc123.csv"
     )
+
     # When
     actual_balances, actual_transactions = RevolutPipeline.read_raw(csv)
 
@@ -26,6 +27,9 @@ def test_revolut_pipeline_read_raw_2022_05_27(cfg):
                 pd.Timestamp("2021-01-05 14:00:41"),
                 "Payment from M  Huang Mincong",
                 10.00,
+                "",
+                "",
+                "",
             )
         ],
     )
