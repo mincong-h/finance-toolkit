@@ -1,6 +1,9 @@
 import re
+from datetime import datetime
 from pathlib import Path
 from typing import Pattern, List
+
+import pandas as pd
 
 
 class Account:
@@ -80,8 +83,17 @@ class BoursoramaAccount(Account):
             account_type=account_type,
             account_id=account_id,
             account_num=account_num,
-            patterns=[r"export-operations-(\d{2}-\d{2}-\d{4})_.+\.csv"],
+            patterns=[r"export-operations-(?P<date>\d{2}-\d{2}-\d{4})_.+\.csv"],
         )
+
+    def get_operations_date(self, filename: str) -> datetime:
+        for pattern in self.patterns:
+            match = pattern.match(filename)
+            if match:
+                d = match.groupdict()["date"]
+                # print(d)
+                return datetime.strptime(d, "%d-%m-%Y")
+        raise ValueError(f"failed to find date from the filename: {filename}")
 
 
 class CartaAccount(Account):
