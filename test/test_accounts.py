@@ -110,8 +110,17 @@ def test_october_account_match():
 
 
 def test_revolut_account_match():
-    a = RevolutAccount("aType", "anId", "myLogin")
-    assert a.match(Path("Revolut-EUR-Statement-Oct – Nov 2020.csv"))
-    assert a.match(
+    account1 = RevolutAccount("aType", "anId", "myLogin")
+    assert account1.match(Path("Revolut-EUR-Statement-Oct – Nov 2020.csv"))
+    assert account1.match(
+        Path("account-statement_2021-01-01_2022-05-27_undefined-undefined_abc123.csv")
+    ) is False
+
+    account2 = RevolutAccount("aType", "anId", "abc123")
+    assert account2.match(Path("Revolut-EUR-Statement-Oct – Nov 2020.csv"))
+    assert account2.match(
         Path("account-statement_2021-01-01_2022-05-27_undefined-undefined_abc123.csv")
     )
+    assert account2.match(
+        Path("account-statement_2021-01-01_2022-05-27_undefined-undefined_edf123.csv")
+    ) is False

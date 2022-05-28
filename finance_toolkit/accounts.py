@@ -11,6 +11,15 @@ class Account:
         """
         Initialize a new account.
 
+        :param account_type: the type of the account, usually in 3 characters in upper-case, such
+            as CHQ (Compte de Chèque), LVA (Livret A), LDD (Livret de Développement Durable), GLD
+            (Gold), OPT (Stock options).
+        :param account_id: the account id used internally by the Finance Toolkit.
+            TODO rename this variable
+        :param account_num: the account id provided by your account. This is mainly used for
+            detecting downloaded CSV files. You may not need to provide the full id, please
+            check the requirements for each bank or each financial service.
+            TODO rename this variable
         :param patterns: a list of regex patterns to match the filenames of a given account. We
             need a list because companies may change the naming of the file over time.
         """
@@ -138,6 +147,6 @@ class RevolutAccount(Account):
             account_num=account_num,
             patterns=[
                 r"Revolut-(.*)-Statement-(.*)\.csv",
-                r"account-statement_(\d{4}-\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})_undefined-undefined_([0-9a-f]+)\.csv",  # noqa
+                r"account-statement_(\d{4}-\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})_undefined-undefined_%s\.csv" % account_num,  # noqa
             ],
         )
