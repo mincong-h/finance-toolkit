@@ -104,5 +104,5 @@ class RevolutAccount(Account):
             account_type=account_type,
             account_id=account_id,
             account_num=account_num,
-            pattern=r"Revolut-(.*)-Statement-(.*)\.csv",
+            pattern=r"account-statement_(\d{4}-\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})_undefined_undefined_([0-9a-f]+)\.csv",
         )
