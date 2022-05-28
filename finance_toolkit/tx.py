@@ -64,7 +64,7 @@ class Configurator:
                         account_type=fields["type"],
                         account_id=symbolic_name,
                         account_num=fields["id"],
-                        pattern=fields["expr"],
+                        patterns=[fields["expr"]],
                     )
                 )
             elif company == "Degiro":
@@ -120,7 +120,7 @@ class Configurator:
                         account_type=fields["type"],
                         account_id=symbolic_name,
                         account_num=fields["id"],
-                        pattern="unknown",
+                        patterns=["unknown"],
                     )
                 )
         accounts.sort(key=lambda a: a.id)

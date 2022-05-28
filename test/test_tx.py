@@ -519,7 +519,7 @@ accounts:
             account_type="CHQ",
             account_num="****0001",
             account_id="rstark-???-CHQ",
-            pattern="unknown",
+            patterns=["unknown"],
         )
     ]
 
