@@ -16,6 +16,7 @@ class RevolutPipeline(Pipeline, metaclass=ABCMeta):
             delimiter=",",
             parse_dates=["Started Date", "Completed Date"],
         )
+
         balances = df[["Completed Date", "Balance"]]
         balances = balances.rename(
             columns={
@@ -23,7 +24,15 @@ class RevolutPipeline(Pipeline, metaclass=ABCMeta):
                 "Balance": "Amount",
             }
         )
-        tx = df
+
+        tx = df[["Completed Date", "Description", "Amount"]]
+        tx = tx.rename(
+            columns={
+                "Completed Date": "Date",
+                "Description": "Label",
+            }
+        )
+
         return balances, tx
 
 

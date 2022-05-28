@@ -4,7 +4,7 @@ from pandas.testing import assert_frame_equal
 from finance_toolkit.pipeline_revolut import RevolutPipeline
 
 
-def test_revolute_pipeline_read_raw_2022_05_27(cfg):
+def test_revolut_pipeline_read_raw_2022_05_27(cfg):
     # Given
     csv = (
         cfg.download_dir
@@ -18,3 +18,15 @@ def test_revolute_pipeline_read_raw_2022_05_27(cfg):
         columns=["Date", "Amount"], data=[(pd.Timestamp("2021-01-05 14:00:41"), 74.43)]
     )
     assert_frame_equal(actual_balances, expected_balances)
+
+    expected_transactions = pd.DataFrame(
+        columns=["Date", "Label", "Amount"],
+        data=[
+            (
+                pd.Timestamp("2021-01-05 14:00:41"),
+                "Payment from M  Huang Mincong",
+                10.00,
+            )
+        ],
+    )
+    assert_frame_equal(actual_transactions, expected_transactions)
