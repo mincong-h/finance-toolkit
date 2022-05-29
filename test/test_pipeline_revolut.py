@@ -10,7 +10,7 @@ from finance_toolkit.pipeline_revolut import (
 )
 
 
-def test_revolut_pipeline_read_raw_2022_05_27(cfg):
+def test_read_raw_2022_05_27(cfg):
     # Given
     csv = (
         cfg.download_dir
@@ -50,7 +50,7 @@ def test_revolut_pipeline_read_raw_2022_05_27(cfg):
     assert_frame_equal(actual_transactions, expected_transactions)
 
 
-def test_revolut_pipeline_integrate(cfg):
+def test_integration_normal(cfg):
     (cfg.root_dir / "2021-01").mkdir()
     (cfg.root_dir / "2021-12").mkdir()
 
@@ -106,3 +106,8 @@ Date,Label,Amount,Type,MainCategory,SubCategory
 2021-01-05,Payment from M  Huang Mincong,10.0,income,,
 """
     )
+
+
+def test_integration_deduplicate(cfg):
+    # TODO
+    pass
