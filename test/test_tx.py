@@ -406,42 +406,75 @@ accounts:
     company: BNP
     type: CHQ
     id: '****0001'
+    currency: EUR
     label: Sansa Stark - BNP Paribas (Compte de Chèque)
   sstark-BNP-LVA:
     company: BNP
     type: LVA
     id: '****0002'
+    currency: EUR
     label: Sansa Stark - BNP Paribas (Livret A)
   astark-BRS-CHQ:
     company: Boursorama
     type: CHQ
     id: '****0001'
+    currency: EUR
     label: Arya Stark - Boursorama (Compte de Chèque)
   astark-DGR-STK:
     company: Degiro
     type: STK
     id: '****0002'
+    currency: EUR
     label: Arya Stark - Degiro (Stock)
   astark-OCT-CWL:
     company: October
     type: CWL
     id: 'astark'
+    currency: EUR
     label: Arya Stark - October (CrowdLending)
-  astark-REV-CHQ:
+  astark-REV-EUR:
     company: Revolut
     type: CHQ
-    id: 'astark'
-    label: Arya Stark - Revolut (Compte de Chèque)
+    id: 'astark1'
+    currency: EUR
+    label: Arya Stark - Revolut (Euro)
+  astark-REV-USD:
+    company: Revolut
+    type: CHQ
+    id: 'astark2'
+    currency: USD
+    label: Arya Stark - Revolut (US Dollar)
 """
     )
     # results are sorted by lexicographical order on symbolic name
     assert Configurator.load_accounts(cfg["accounts"]) == [
-        BoursoramaAccount("CHQ", "astark-BRS-CHQ", "****0001"),
-        DegiroAccount("STK", "astark-DGR-STK", "****0002"),
-        OctoberAccount("CWL", "astark-OCT-CWL", "astark"),
-        RevolutAccount("CHQ", "astark-REV-CHQ", "astark"),
-        BnpAccount("CHQ", "sstark-BNP-CHQ", "****0001"),
-        BnpAccount("LVA", "sstark-BNP-LVA", "****0002"),
+        BoursoramaAccount(
+            account_type="CHQ", account_id="astark-BRS-CHQ", account_num="****0001"
+        ),
+        DegiroAccount(
+            account_type="STK", account_id="astark-DGR-STK", account_num="****0002"
+        ),
+        OctoberAccount(
+            account_type="CWL", account_id="astark-OCT-CWL", account_num="astark"
+        ),
+        RevolutAccount(
+            account_type="CHQ",
+            account_id="astark-REV-EUR",
+            account_num="astark1",
+            currency="EUR",
+        ),
+        RevolutAccount(
+            account_type="CHQ",
+            account_id="astark-REV-USD",
+            account_num="astark2",
+            currency="USD",
+        ),
+        BnpAccount(
+            account_type="CHQ", account_id="sstark-BNP-CHQ", account_num="****0001"
+        ),
+        BnpAccount(
+            account_type="LVA", account_id="sstark-BNP-LVA", account_num="****0002"
+        ),
     ]
 
 
@@ -512,6 +545,7 @@ accounts:
     company: unknown
     type: CHQ
     id: '****0001'
+    currency: EUR
 """
     )
     assert Configurator.load_accounts(cfg["accounts"]) == [
@@ -520,6 +554,7 @@ accounts:
             account_num="****0001",
             account_id="rstark-???-CHQ",
             patterns=["unknown"],
+            currency="EUR",
         )
     ]
 
@@ -577,10 +612,41 @@ def test_configurator_autocomplete_without_content():
 def test_configurator_parse_yaml(sample):
     cfg = Configurator.parse_yaml(sample / "finance-tools.yml")
     assert cfg.accounts == [
-        BnpAccount("CHQ", "astark-BNP-CHQ", "00000002"),
-        DegiroAccount("STK", "astark-DGR-STK", "00000003"),
-        FortuneoAccount("CHQ", "astark-FTN-CHQ", "12345"),
-        OctoberAccount("CWL", "astark-OCT-CWL", "astark"),
-        RevolutAccount("CHQ", "astark-REV-CHQ", "astark"),
-        BnpAccount("LVA", "sstark-BNP-LVA", "00000001"),
+        BnpAccount(
+            account_type="CHQ",
+            account_id="astark-BNP-CHQ",
+            account_num="00000002",
+        ),
+        DegiroAccount(
+            account_type="STK",
+            account_id="astark-DGR-STK",
+            account_num="00000003",
+        ),
+        FortuneoAccount(
+            account_type="CHQ",
+            account_id="astark-FTN-CHQ",
+            account_num="12345",
+        ),
+        OctoberAccount(
+            account_type="CWL",
+            account_id="astark-OCT-CWL",
+            account_num="astark",
+        ),
+        RevolutAccount(
+            account_type="CHQ",
+            account_id="astark-REV-EUR",
+            account_num="astark1",
+            currency="EUR",
+        ),
+        RevolutAccount(
+            account_type="CHQ",
+            account_id="astark-REV-USD",
+            account_num="astark2",
+            currency="USD",
+        ),
+        BnpAccount(
+            account_type="LVA",
+            account_id="sstark-BNP-LVA",
+            account_num="00000001",
+        ),
     ]

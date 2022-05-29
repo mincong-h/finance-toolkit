@@ -10,11 +10,14 @@ from .pipeline import Pipeline, TransactionPipeline, BalancePipeline
 
 
 class RevolutAccount(Account):
-    def __init__(self, account_type: str, account_id: str, account_num: str):
+    def __init__(
+        self, account_type: str, account_id: str, account_num: str, currency: str
+    ):
         super().__init__(
             account_type=account_type,
             account_id=account_id,
             account_num=account_num,
+            currency=currency,
             patterns=[
                 r"Revolut-(.*)-Statement-(.*)\.csv",
                 r"account-statement_(\d{4}-\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})_undefined-undefined_%s\.csv"  # noqa

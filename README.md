@@ -102,6 +102,26 @@ Targets:
 Finished.
 ```
 
+## Currency
+
+Currently, Finance Toolkit supports multiple currencies, such as euro (EUR) and US dollar (USD).
+Currency is defined at account level -- each account can only have one single currency. In the
+configuration file (`finance-tools.yml`), specify the currency field. For example, for user "Arya
+Stark (astark)", her BNP account "Compte de Chèque (CHQ)" in euro should be declared as follows:
+
+```yaml
+accounts:
+  astark-BNP-CHQ:
+    company: BNP
+    id: '****1234'
+    category: my-category
+    currency: EUR
+    type: CHQ
+    tags: [ ... ]
+```
+
+You can find out more world currency symbols here: <https://www.xe.com/en/symbols.php>
+
 ## Hacking
 
 Install pre-commit for day-to-day development. It will ensure a good quality code before commiting anything.

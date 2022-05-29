@@ -13,11 +13,18 @@ from .pipeline import Pipeline, TransactionPipeline, BalancePipeline
 
 
 class BnpAccount(Account):
-    def __init__(self, account_type: str, account_id: str, account_num: str):
+    def __init__(
+        self,
+        account_type: str,
+        account_id: str,
+        account_num: str,
+        currency: str = "EUR",
+    ):
         super().__init__(
             account_type=account_type,
             account_id=account_id,
             account_num=account_num,
+            currency=currency,
             patterns=["E\\d{,3}%s\\.csv" % account_num[-4:]],
         )
 

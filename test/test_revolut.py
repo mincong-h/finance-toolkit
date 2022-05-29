@@ -75,6 +75,7 @@ Date,Amount
         account_type="EUR",
         account_id="user-REV-EUR",
         account_num="abc123",
+        currency="EUR",
     )
     summary = Summary(cfg)
     new_file = (
