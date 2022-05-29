@@ -9,7 +9,7 @@ from .accounts import (
 )
 from .models import Configuration
 from .pipeline_bnp import BnpTransactionPipeline, BnpBalancePipeline
-from .pipeline_boursorama import (
+from .boursorama import (
     BoursoramaTransactionPipeline,
     BoursoramaBalancePipeline,
 )
