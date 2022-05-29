@@ -42,6 +42,7 @@ class Account:
                 self.type,
                 self.id,
                 self.num,
+                self.currency_symbol,
                 self.filename,
             )
         )
@@ -53,6 +54,7 @@ class Account:
             self.type == o.type
             and self.id == o.id
             and self.num == o.num
+            and self.currency_symbol == o.currency_symbol
             and self.filename == o.filename
         )
 
