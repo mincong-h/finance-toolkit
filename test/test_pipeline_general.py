@@ -1,14 +1,15 @@
 from pathlib import Path
+
 import pandas as pd
 from pandas.testing import assert_frame_equal
 
-from finance_toolkit.accounts import Account
-from finance_toolkit.pipelines import GeneralBalancePipeline
+from finance_toolkit.account import Account
+from finance_toolkit.pipeline import GeneralBalancePipeline
 
 
 def test_read_balance(cfg, tmpdir):
     # Given
-    account = Account("CHQ", "anAccountId", "anAccountNum", r"unknown")
+    account = Account("CHQ", "anAccountId", "anAccountNum", [r"unknown"])
     pipeline = GeneralBalancePipeline(account, cfg)
     csv = Path(tmpdir) / "my.csv"
     csv.write_text(

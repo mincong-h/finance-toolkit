@@ -1,27 +1,24 @@
 from pathlib import Path
 
-from .accounts import (
+from .account import (
     Account,
-    BnpAccount,
-    BoursoramaAccount,
-    FortuneoAccount,
-    RevolutAccount,
 )
-from .models import Configuration
-from .pipeline_bnp import BnpTransactionPipeline, BnpBalancePipeline
-from .pipeline_boursorama import (
+from .bnp import BnpAccount, BnpTransactionPipeline, BnpBalancePipeline
+from .boursorama import (
+    BoursoramaAccount,
     BoursoramaTransactionPipeline,
     BoursoramaBalancePipeline,
 )
-from .pipeline_revolut import RevolutTransactionPipeline, RevolutBalancePipeline
-from .pipelines import (
+from .fortuneo import FortuneoAccount, FortuneoTransactionPipeline
+from .models import Configuration
+from .pipeline import (
     TransactionPipeline,
-    FortuneoTransactionPipeline,
     NoopTransactionPipeline,
     BalancePipeline,
     GeneralBalancePipeline,
     AccountParser,
 )
+from .revolut import RevolutAccount, RevolutTransactionPipeline, RevolutBalancePipeline
 
 
 class PipelineFactory:

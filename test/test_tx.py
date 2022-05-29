@@ -2,11 +2,15 @@ import re
 from unittest.mock import patch, call
 
 import pandas as pd
-from pandas.testing import assert_frame_equal
 import yaml
+from pandas.testing import assert_frame_equal
 
 from finance_toolkit import tx
-from finance_toolkit.accounts import Account
+from finance_toolkit.account import Account
+from finance_toolkit.models import (
+    Configuration,
+    TxCompletion,
+)
 from finance_toolkit.tx import (
     BnpAccount,
     BoursoramaAccount,
@@ -15,10 +19,6 @@ from finance_toolkit.tx import (
     FortuneoAccount,
     OctoberAccount,
     RevolutAccount,
-)
-from finance_toolkit.models import (
-    Configuration,
-    TxCompletion,
 )
 
 

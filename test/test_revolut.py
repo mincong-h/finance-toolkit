@@ -1,9 +1,9 @@
 import pandas as pd
 from pandas.testing import assert_frame_equal
 
-from finance_toolkit.accounts import RevolutAccount
 from finance_toolkit.models import Summary
-from finance_toolkit.pipeline_revolut import (
+from finance_toolkit.revolut import (
+    RevolutAccount,
     RevolutPipeline,
     RevolutBalancePipeline,
     RevolutTransactionPipeline,
