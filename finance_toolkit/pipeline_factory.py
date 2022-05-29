@@ -13,7 +13,7 @@ from .pipeline_boursorama import (
     BoursoramaTransactionPipeline,
     BoursoramaBalancePipeline,
 )
-from .pipeline_revolut import RevolutTransactionPipeline, RevolutBalancePipeline
+from .revolut import RevolutTransactionPipeline, RevolutBalancePipeline
 from .pipelines import (
     TransactionPipeline,
     FortuneoTransactionPipeline,
