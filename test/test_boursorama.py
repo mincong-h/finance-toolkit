@@ -66,16 +66,16 @@ dateOp;dateVal;Label;category;categoryParent;Amount;accountNum;accountLabel;acco
 
     # Then the new lines are integrated
     assert (
-            tx08.read_text()
-            == """\
+        tx08.read_text()
+        == """\
 Date,Label,Amount,Type,MainCategory,SubCategory
 2019-08-29,VIR Virement interne depuis BOURSORA,30.0,transfer,,
 2019-08-30,VIR Virement interne depuis BOURSORA,10.0,transfer,,
 """
     )
     assert (
-            tx09.read_text()
-            == """\
+        tx09.read_text()
+        == """\
 Date,Label,Amount,Type,MainCategory,SubCategory
 2019-09-01,VIR Virement interne depuis BOURSORA,40.0,transfer,,
 2019-09-02,VIR Virement interne depuis BOURSORA,11.0,transfer,,
@@ -85,8 +85,8 @@ Date,Label,Amount,Type,MainCategory,SubCategory
     # And the balance is correct
     BoursoramaBalancePipeline(account, cfg).run(new_file, summary)
     assert (
-            b.read_text()
-            == """\
+        b.read_text()
+        == """\
 Date,Amount
 2019-08-29,300.0
 2019-09-01,200.0
@@ -202,8 +202,8 @@ Date,Amount
 
         # Then rows are available and sorted
         assert (
-                csv.read_text()
-                == """\
+            csv.read_text()
+            == """\
 Date,Amount
 2019-03-01,300.0
 2019-03-10,320.0
@@ -247,8 +247,8 @@ Date,Label,Amount,Type,MainCategory,SubCategory
 
         # Then rows are available and sorted
         assert (
-                csv.read_text()
-                == """\
+            csv.read_text()
+            == """\
 Date,Label,Amount,Type,MainCategory,SubCategory
 2018-09-26,CARTE 25/09/18 93 LABEL,-20.1,expense,food,resto
 2018-09-27,L,-10.0,expense,M,S
@@ -291,8 +291,8 @@ Date,Label,Amount,Type,MainCategory,SubCategory
 
         # Then rows has no duplicates
         assert (
-                csv.read_text()
-                == """\
+            csv.read_text()
+            == """\
 Date,Label,Amount,Type,MainCategory,SubCategory
 2018-09-26,myLabel,-20.1,expense,food,resto
 """

@@ -60,16 +60,16 @@ Date,Label,Amount,Type,MainCategory,SubCategory
 
     # Then the new lines are integrated
     assert (
-            tx08.read_text()
-            == """\
+        tx08.read_text()
+        == """\
 Date,Label,Amount,Type,MainCategory,SubCategory
 2018-08-30,myLabel,-0.49,expense,main,sub
 2018-08-31,myLabel,-0.99,expense,,
 """
     )
     assert (
-            tx09.read_text()
-            == """\
+        tx09.read_text()
+        == """\
 Date,Label,Amount,Type,MainCategory,SubCategory
 2018-09-01,myLabel,-1.49,expense,main,sub
 2018-09-02,myLabel,-2.49,expense,,
@@ -102,8 +102,8 @@ Date,Amount
 
     # Then rows are available and sorted
     assert (
-            csv.read_text()
-            == """\
+        csv.read_text()
+        == """\
 Date,Amount
 2018-07-04,189.29
 2018-08-02,724.37
@@ -277,8 +277,8 @@ def test_bnp_pipeline_append_tx_file_nonexistent_csv():
         csv = Path(root) / "my.csv"
         BnpTransactionPipeline.append_transactions(csv, df)
         assert (
-                csv.read_text()
-                == """\
+            csv.read_text()
+            == """\
 Date,Label,Amount,Type,MainCategory,SubCategory
 2019-08-01,myLabel,10.0,,,
 """
@@ -307,8 +307,8 @@ Date,Label,Amount,Type,MainCategory,SubCategory
         )
         BnpTransactionPipeline.append_transactions(csv, df)
         assert (
-                csv.read_text()
-                == """\
+            csv.read_text()
+            == """\
 Date,Label,Amount,Type,MainCategory,SubCategory
 2019-08-01,myLabel,10.0,myType,main,sub
 """
@@ -338,8 +338,8 @@ def test_bnp_pipeline_append_tx_file_drop_duplicates():
         csv = Path(root) / "my.csv"
         BnpTransactionPipeline.append_transactions(csv, df)
         assert (
-                csv.read_text()
-                == """\
+            csv.read_text()
+            == """\
 Date,Label,Amount,Type,MainCategory,SubCategory
 2019-08-01,myLabel,10.0,,,
 2019-08-01,myLabel,11.0,,,
