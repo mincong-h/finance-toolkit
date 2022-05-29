@@ -1,14 +1,16 @@
 # Finance Toolkit
 
 Finance Toolkit helps you to understand your personal finance by collecting
-transactions from different companies:
+data from different companies:
 
-- BNP Paribas (https://mabanque.bnpparibas)
-- Boursorama (https://www.boursorama.com)
-- Degiro (https://www.degiro.com)
-- Fortuneo (https://www.fortuneo.fr)
-- October (https://october.eu)
-- Revolut (https://www.revolut.com)
+| Company | Transaction | Balance | Description |
+| :---: | :---: | :---: | :--- |
+| [BNP Paribas](https://mabanque.bnpparibas) | Supported | Supported | You can download the CSV files from BNP Paribas' website and use Finance Toolkit to integrate the data. |
+| [Boursorama](https://www.boursorama.com) | Supported | Supported | You can download the CSV files from Boursorama's website and use Finance Toolkit to integrate the data. |
+| [Revolut](https://www.revolut.com) | Supported | Supported | You can download the CSV files from Revolut's website and use Finance Toolkit to integrate the data. |
+| [Fortuneo](https://www.fortuneo.fr) | Supported | - | You can download the CSV files from Fortuneo's website and use Finance Toolkit to integrate the data. However, Fortuneo does not provide an account statement so Finance Toolkit does not know the balance of your accounts. |
+| [October](https://october.eu) | - | - | Declare your account and enter the data manually in Finance Toolkit. |
+| [Degiro](https://www.degiro.com) | - | - | Declare your account and enter the data manually in Finance Toolkit. |
 
 ## Install
 
