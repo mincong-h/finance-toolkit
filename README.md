@@ -9,8 +9,7 @@ data from different companies:
 | [Boursorama](https://www.boursorama.com) | Supported | Supported | You can download the CSV files from Boursorama's website and use Finance Toolkit to integrate the data. |
 | [Revolut](https://www.revolut.com) | Supported | Supported | You can download the CSV files from Revolut's website and use Finance Toolkit to integrate the data. |
 | [Fortuneo](https://www.fortuneo.fr) | Supported | - | You can download the CSV files from Fortuneo's website and use Finance Toolkit to integrate the data. However, Fortuneo does not provide an account statement so Finance Toolkit does not know the balance of your accounts. |
-| [October](https://october.eu) | - | - | Declare your account and enter the data manually in Finance Toolkit. |
-| [Degiro](https://www.degiro.com) | - | - | Declare your account and enter the data manually in Finance Toolkit. |
+| Other | - | Partially supported | Declare your account and enter the balance manually in Finance Toolkit. We use this approach for companies like [October](https://october.eu), [Degiro](https://www.degiro.com), and [E\*Trade](https://us.etrade.com/). |
 
 ## Install
 
