@@ -1,0 +1,3 @@
+Type,Product,Started Date,Completed Date,Description,Amount,Fee,Currency,State,Balance
+TOPUP,Current,2021-01-05 14:00:40,2021-01-05 14:00:41,Payment from M  Huang Mincong,10.00,0.00,EUR,COMPLETED,74.43
+TRANSFER,Current,2021-11-19 08:35:35,2021-11-19 08:35:35,Balance migration to another region or legal entity,-100.00,0.00,EUR,COMPLETED,

@@ -45,7 +45,7 @@ def test_new_transaction_pipeline(cfg):
         FortuneoAccount("CHQ", "foo-FTN-CHQ", "12345")
     )
     p4 = PipelineFactory(cfg).new_transaction_pipeline(
-        Account("unknown", "unknown", "unknown", "unknown")
+        Account("unknown", "unknown", "unknown", ["unknown"])
     )
 
     assert isinstance(p1, BnpTransactionPipeline)

@@ -1,14 +1,15 @@
 # Finance Toolkit
 
-Finance Toolkit helps you to understand your personal finance by collecting
-transactions from different companies:
+Finance Toolkit is a command line interface (CLI) that helps you to better understand your personal finance situation by collecting
+data from different companies:
 
-- BNP Paribas (https://mabanque.bnpparibas)
-- Boursorama (https://www.boursorama.com)
-- Degiro (https://www.degiro.com)
-- Fortuneo (https://www.fortuneo.fr)
-- October (https://october.eu)
-- Revolut (https://www.revolut.com)
+| Company | Transaction | Balance | Description |
+| :---: | :---: | :---: | :--- |
+| [BNP Paribas](https://mabanque.bnpparibas) | Supported | Supported | You can download the CSV files from BNP Paribas' website and use Finance Toolkit to integrate the data. |
+| [Boursorama](https://www.boursorama.com) | Supported | Supported | You can download the CSV files from Boursorama's website and use Finance Toolkit to integrate the data. |
+| [Revolut](https://www.revolut.com) | Supported | Supported | You can download the CSV files from Revolut's website and use Finance Toolkit to integrate the data. |
+| [Fortuneo](https://www.fortuneo.fr) | Supported | - | You can download the CSV files from Fortuneo's website and use Finance Toolkit to integrate the data. However, Fortuneo does not provide an account statement so Finance Toolkit does not know the balance of your accounts. |
+| Other | - | Partially supported | Declare your account and enter the balance manually in Finance Toolkit. We use this approach for companies like [October](https://october.eu), [Degiro](https://www.degiro.com), and [E\*Trade](https://us.etrade.com/). |
 
 ## Install
 
@@ -120,9 +121,43 @@ python -m pytest
 
 ## Revolut
 
+### Revolut Account Statement Format
+
+File name format:
+
+```
+account-statement_{START_DATE}_{END_DATE}_undefined-undefined_{ACCOUNT_ID}.csv
+```
+
+It consists of 3 parameters: the start date (format: yyyy-MM-dd), the end date (format: yyyy-MM-dd),
+and the account id in 6 hexadecimal digits.
+
+Example:
+
+```
+account-statement_2021-01-01_2022-05-27_undefined-undefined_abc123.csv
+```
+
+Delimiter: `,`
+
+Columns:
+
+| Column         | Type              | Comment                         |
+|:---------------|:------------------|:--------------------------------|
+| Type           | String            | TOPUP, EXCHANGE, TRANSFER       |
+| Product        | String            | Current                         |
+| Started Date   | Date              | Format: `yyyy-MM-dd' 'hh:mm:ss` |
+| Completed Date | Date              | Format: `yyyy-MM-dd' 'hh:mm:ss` |
+| Description    | String            | Description of the statement    |
+| Amount         | Float             |                                 |
+| Fee            | Fee               |                                 |
+| Currency       | String            | USD, EUR, ...                   |
+| State          | String            | COMPLETED                       |
+| Balance        | Optional\[Float\] | Balance of the account or empty |
+
 ### Download CSV File
 
-https://community.revolut.com/t/data-export/76631
+https://www.revolut.com/en-US/help/my-accounts/managing-my-account/viewing-my-account-statements
 
 Follow the steps below to download CSV files:
 
@@ -133,6 +168,11 @@ Follow the steps below to download CSV files:
   - Format: Excel (actually CSV will be sent)
   - Start on: the start month
   - Ending on: the end month
-* Click "Get statement" and you will be redirected to your email app. Finish the remaining steps there.
-* An email will be sent with CSV attached
-* Download the CSV file from that email
+* Click "Get statement" and wait until the generation is complete
+* Download the CSV file
+
+Note that:
+
+* You need to do this for each account. Different currency, such as EUR and USD, are considered as
+  two different accounts.
+* For commodities (such as gold), the account statement is not supported.

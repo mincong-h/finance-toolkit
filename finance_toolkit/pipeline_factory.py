@@ -5,6 +5,7 @@ from .accounts import (
     BnpAccount,
     BoursoramaAccount,
     FortuneoAccount,
+    RevolutAccount,
 )
 from .models import Configuration
 from .pipeline_bnp import BnpTransactionPipeline, BnpBalancePipeline
@@ -12,6 +13,7 @@ from .pipeline_boursorama import (
     BoursoramaTransactionPipeline,
     BoursoramaBalancePipeline,
 )
+from .pipeline_revolut import RevolutTransactionPipeline, RevolutBalancePipeline
 from .pipelines import (
     TransactionPipeline,
     FortuneoTransactionPipeline,
@@ -33,6 +35,8 @@ class PipelineFactory:
             return BoursoramaTransactionPipeline(account, self.cfg)
         if isinstance(account, FortuneoAccount):
             return FortuneoTransactionPipeline(account, self.cfg)
+        if isinstance(account, RevolutAccount):
+            return RevolutTransactionPipeline(account, self.cfg)
         return NoopTransactionPipeline(account, self.cfg)
 
     def new_balance_pipeline(self, account: Account) -> BalancePipeline:
@@ -40,6 +44,8 @@ class PipelineFactory:
             return BnpBalancePipeline(account, self.cfg)
         if isinstance(account, BoursoramaAccount):
             return BoursoramaBalancePipeline(account, self.cfg)
+        if isinstance(account, RevolutAccount):
+            return RevolutBalancePipeline(account, self.cfg)
         return GeneralBalancePipeline(account, self.cfg)
 
     def parse_balance_pipeline(self, path: Path) -> BalancePipeline:

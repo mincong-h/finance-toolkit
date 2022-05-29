@@ -1,16 +1,20 @@
 from abc import ABCMeta
-from datetime import datetime
 from pathlib import Path
 from typing import Tuple
 
 import pandas as pd
 from pandas import DataFrame
 
-from .models import TxType
+from .accounts import BoursoramaAccount
+from .models import TxType, Configuration
 from .pipelines import Pipeline, TransactionPipeline, BalancePipeline
 
 
 class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
+    def __init__(self, account: BoursoramaAccount, cfg: Configuration):
+        super().__init__(account, cfg)
+        self.account: BoursoramaAccount = account
+
     def read_raw(self, csv: Path) -> Tuple[DataFrame, DataFrame]:
         df = pd.read_csv(
             csv,
@@ -32,10 +36,9 @@ class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
         del transactions["category"]
         del transactions["categoryParent"]
 
-        m = self.account.pattern.match(csv.name)
         balances = df.groupby("accountNum")["accountBalance"].max().to_frame()
         balances.reset_index(inplace=True)
-        balances["Date"] = datetime.strptime(m.group(1), "%d-%m-%Y") - pd.Timedelta(
+        balances["Date"] = self.account.get_operations_date(csv.name) - pd.Timedelta(
             "1 day"
         )
         balances = balances[balances["accountNum"].map(self.account.is_account)]

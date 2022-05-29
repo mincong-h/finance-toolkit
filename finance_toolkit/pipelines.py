@@ -53,8 +53,16 @@ class TransactionPipeline(Pipeline, metaclass=ABCMeta):
             "SubCategory",
         ]
 
+        # Revolut's data is too accurate, it has the time part.
+        # Truncate time and only keep date here:
+        df["Date"] = df["Date"].apply(lambda d: d.replace(hour=0, minute=0, second=0))
+        # print("new_transactions:")
+        # print(df)
+
         if csv.exists():
             existing = pd.read_csv(csv, parse_dates=["Date"])
+            # print("existing:")
+            # print(existing)
             df = df.append(existing, sort=False)
 
         df = df.drop_duplicates(subset=["Date", "Label", "Amount"], keep="last")
@@ -73,7 +81,19 @@ class TransactionPipeline(Pipeline, metaclass=ABCMeta):
     @abstractmethod
     def read_new_transactions(self, csv: Path) -> DataFrame:
         """
-        Read new transactions from a CSV file, probably downloaded from internet.
+        Read new transactions from a CSV file, probably downloaded from internet. The
+        implementation of this abstract method should return a data-frame containing the following
+        fields, the order of the fields should be respected as well:
+
+            1. "Date": pandas.Timestamp, required.
+            2. "Label": string, required.
+            3. "Amount": float, required.
+            # TODO can we remove these fields?
+            4. "Type": string, required.
+            5. "MainCategory": string, required.
+            6. "SubCategory": string, required.
+
+        This allows merging transactions from different accounts in the downstream.
 
         :param csv: the path of the CSV file
         """
@@ -200,4 +220,9 @@ class AccountParser:
         account_id = parts[1]
         if len(parts) == 3 and account_id in self.accounts:
             return self.accounts[account_id]
-        return Account("unknown", "unknown", "unknown", r"unknown")
+        return Account(
+            account_type="unknown",
+            account_id="unknown",
+            account_num="unknown",
+            patterns=[r"unknown"],
+        )
