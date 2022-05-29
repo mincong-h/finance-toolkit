@@ -52,11 +52,19 @@ accounts:
     id: 'astark'
     label: Arya Stark - October (CrowdLending)
 
-  astark-REV-CHQ:
+  astark-REV-EUR:
     company: Revolut
     type: CHQ
-    id: 'astark'
-    label: Arya Stark - Revolut (Compte de Chèque)
+    id: 'astark1'
+    currency: EUR
+    label: Arya Stark - Revolut (Euro)
+
+  astark-REV-USD:
+    company: Revolut
+    type: CHQ
+    id: 'astark2'
+    currency: USD
+    label: Arya Stark - Revolut (US Dollar)
 
 # Categories
 # ----------

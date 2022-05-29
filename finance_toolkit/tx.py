@@ -99,6 +99,7 @@ class Configurator:
                         account_type=fields["type"],
                         account_id=symbolic_name,
                         account_num=fields["id"],
+                        currency=fields["currency"],
                     )
                 )
             elif company == "October":
@@ -121,6 +122,7 @@ class Configurator:
                         account_id=symbolic_name,
                         account_num=fields["id"],
                         patterns=["unknown"],
+                        currency=fields["currency"],
                     )
                 )
         accounts.sort(key=lambda a: a.id)

@@ -5,7 +5,12 @@ from typing import Pattern, List
 
 class Account:
     def __init__(
-        self, account_type: str, account_id: str, account_num: str, patterns: List[str]
+        self,
+        account_type: str,
+        account_id: str,
+        account_num: str,
+        currency: str,
+        patterns: List[str],
     ):
         """
         Initialize a new account.
@@ -19,6 +24,8 @@ class Account:
             detecting downloaded CSV files. You may not need to provide the full id, please
             check the requirements for each bank or each financial service.
             TODO rename this variable
+        :param currency: the currency used by this account. The input should be a valid currency
+            symbol in uppercase. See [World Currency Symbols](https://www.xe.com/en/symbols.php).
         :param patterns: a list of regex patterns to match the filenames of a given account. We
             need a list because companies may change the naming of the file over time.
         """
@@ -26,6 +33,7 @@ class Account:
         self.id: str = account_id
         self.patterns: List[Pattern] = [re.compile(p) for p in patterns]
         self.num: str = account_num
+        self.currency_symbol: str = currency
         self.filename: str = f"{account_id}.csv"
 
     def __hash__(self):
@@ -51,7 +59,8 @@ class Account:
     def __repr__(self) -> str:
         return (
             f"{type(self).__name__}<type={self.type!r}, "
-            f"id={self.id!r}, num={self.altered_num!r}>"
+            f"id={self.id!r}, num={self.altered_num!r}, "
+            f"currency_symbol={self.currency_symbol!r}>"
         )
 
     @property
@@ -78,20 +87,34 @@ class CartaAccount(Account):
 
 
 class DegiroAccount(Account):
-    def __init__(self, account_type: str, account_id: str, account_num: str):
+    def __init__(
+        self,
+        account_type: str,
+        account_id: str,
+        account_num: str,
+        currency: str = "EUR",
+    ):
         super().__init__(
             account_type=account_type,
             account_id=account_id,
             account_num=account_num,
+            currency=currency,
             patterns=["Portfolio.csv"],
         )
 
 
 class OctoberAccount(Account):
-    def __init__(self, account_type: str, account_id: str, account_num: str):
+    def __init__(
+        self,
+        account_type: str,
+        account_id: str,
+        account_num: str,
+        currency: str = "EUR",
+    ):
         super().__init__(
             account_type=account_type,
             account_id=account_id,
             account_num=account_num,
+            currency=currency,
             patterns=[f"remboursements-{account_num}.xlsx"],
         )

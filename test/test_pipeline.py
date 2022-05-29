@@ -33,7 +33,13 @@ def test_new_transaction_pipeline(cfg):
         FortuneoAccount("CHQ", "foo-FTN-CHQ", "12345")
     )
     p4 = PipelineFactory(cfg).new_transaction_pipeline(
-        Account("unknown", "unknown", "unknown", ["unknown"])
+        Account(
+            account_type="unknown",
+            account_id="unknown",
+            account_num="unknown",
+            currency="EUR",
+            patterns=["unknown"],
+        )
     )
 
     assert isinstance(p1, BnpTransactionPipeline)
@@ -50,7 +56,13 @@ def test_new_balance_pipeline(cfg):
         BoursoramaAccount("CHQ", "foo-BNP-CHQ", "****0001")
     )
     p3 = PipelineFactory(cfg).new_balance_pipeline(
-        Account("unknown", "unknown", "unknown", ["unknown"])
+        Account(
+            account_type="unknown",
+            account_num="unknown",
+            account_id="unknown",
+            currency="EUR",
+            patterns=["unknown"],
+        )
     )
 
     assert isinstance(p1, BnpBalancePipeline)

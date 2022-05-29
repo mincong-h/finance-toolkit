@@ -9,7 +9,13 @@ from finance_toolkit.pipeline import GeneralBalancePipeline
 
 def test_read_balance(cfg, tmpdir):
     # Given
-    account = Account("CHQ", "anAccountId", "anAccountNum", [r"unknown"])
+    account = Account(
+        account_type="CHQ",
+        account_id="anAccountId",
+        account_num="anAccountNum",
+        currency="EUR",
+        patterns=[r"unknown"],
+    )
     pipeline = GeneralBalancePipeline(account, cfg)
     csv = Path(tmpdir) / "my.csv"
     csv.write_text(

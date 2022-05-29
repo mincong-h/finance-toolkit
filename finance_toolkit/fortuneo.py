@@ -8,11 +8,18 @@ from .pipeline import TransactionPipeline
 
 
 class FortuneoAccount(Account):
-    def __init__(self, account_type: str, account_id: str, account_num: str):
+    def __init__(
+        self,
+        account_type: str,
+        account_id: str,
+        account_num: str,
+        currency: str = "EUR",
+    ):
         super().__init__(
             account_type=account_type,
             account_id=account_id,
             account_num=account_num,
+            currency=currency,
             patterns=[
                 r"HistoriqueOperations_(\d+)_du_\d{2}_\d{2}_\d{4}_au_\d{2}_\d{2}_\d{4}\.csv"
             ],
