@@ -45,7 +45,9 @@ class RevolutPipeline(Pipeline, metaclass=ABCMeta):
 
 class RevolutTransactionPipeline(RevolutPipeline, TransactionPipeline):
     TYPE_MAPPING = {
-        "TOPUP": "expense",
+        # A top-up transaction makes up to the full amount of your account, so we consider it's
+        # likely an income here. This is an opinionated choice.
+        "TOPUP": "income",
         "TRANSFER": "transfer",
         "FEE": "expense",
         "CARD_PAYMENT": "expense",

@@ -103,6 +103,6 @@ Date,Amount
         == """\
 Date,Label,Amount,Type,MainCategory,SubCategory
 2021-01-01,This is an existing transaction,10.0,transfer,,
-2021-01-05,Payment from M  Huang Mincong,10.0,expense,,
+2021-01-05,Payment from M  Huang Mincong,10.0,income,,
 """
     )
