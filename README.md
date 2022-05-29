@@ -1,6 +1,6 @@
 # Finance Toolkit
 
-Finance Toolkit helps you to understand your personal finance by collecting
+Finance Toolkit is a command line interface (CLI) that helps you to better understand your personal finance situation by collecting
 data from different companies:
 
 | Company | Transaction | Balance | Description |
