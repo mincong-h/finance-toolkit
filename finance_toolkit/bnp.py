@@ -7,8 +7,19 @@ from typing import Tuple
 import pandas as pd
 from pandas import DataFrame
 
+from .accounts import Account
 from .models import TxType
 from .pipelines import Pipeline, TransactionPipeline, BalancePipeline
+
+
+class BnpAccount(Account):
+    def __init__(self, account_type: str, account_id: str, account_num: str):
+        super().__init__(
+            account_type=account_type,
+            account_id=account_id,
+            account_num=account_num,
+            patterns=["E\\d{,3}%s\\.csv" % account_num[-4:]],
+        )
 
 
 class BnpPipeline(Pipeline, metaclass=ABCMeta):

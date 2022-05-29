@@ -1,5 +1,4 @@
 import re
-from datetime import datetime
 from pathlib import Path
 from typing import Pattern, List
 
@@ -74,35 +73,6 @@ class Account:
         return False
 
 
-class BnpAccount(Account):
-    def __init__(self, account_type: str, account_id: str, account_num: str):
-        super().__init__(
-            account_type=account_type,
-            account_id=account_id,
-            account_num=account_num,
-            patterns=["E\\d{,3}%s\\.csv" % account_num[-4:]],
-        )
-
-
-class BoursoramaAccount(Account):
-    def __init__(self, account_type: str, account_id: str, account_num: str):
-        super().__init__(
-            account_type=account_type,
-            account_id=account_id,
-            account_num=account_num,
-            patterns=[r"export-operations-(?P<date>\d{2}-\d{2}-\d{4})_.+\.csv"],
-        )
-
-    def get_operations_date(self, filename: str) -> datetime:
-        for pattern in self.patterns:
-            match = pattern.match(filename)
-            if match:
-                d = match.groupdict()["date"]
-                # print(d)
-                return datetime.strptime(d, "%d-%m-%Y")
-        raise ValueError(f"failed to find date from the filename: {filename}")
-
-
 class CartaAccount(Account):
     pass
 
@@ -117,18 +87,6 @@ class DegiroAccount(Account):
         )
 
 
-class FortuneoAccount(Account):
-    def __init__(self, account_type: str, account_id: str, account_num: str):
-        super().__init__(
-            account_type=account_type,
-            account_id=account_id,
-            account_num=account_num,
-            patterns=[
-                r"HistoriqueOperations_(\d+)_du_\d{2}_\d{2}_\d{4}_au_\d{2}_\d{2}_\d{4}\.csv"
-            ],
-        )
-
-
 class OctoberAccount(Account):
     def __init__(self, account_type: str, account_id: str, account_num: str):
         super().__init__(
@@ -136,18 +94,4 @@ class OctoberAccount(Account):
             account_id=account_id,
             account_num=account_num,
             patterns=[f"remboursements-{account_num}.xlsx"],
-        )
-
-
-class RevolutAccount(Account):
-    def __init__(self, account_type: str, account_id: str, account_num: str):
-        super().__init__(
-            account_type=account_type,
-            account_id=account_id,
-            account_num=account_num,
-            patterns=[
-                r"Revolut-(.*)-Statement-(.*)\.csv",
-                r"account-statement_(\d{4}-\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})_undefined-undefined_%s\.csv"  # noqa
-                % account_num,
-            ],
         )

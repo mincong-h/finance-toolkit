@@ -1,18 +1,18 @@
 from finance_toolkit.accounts import (
     Account,
-    BnpAccount,
-    BoursoramaAccount,
-    FortuneoAccount,
 )
 from finance_toolkit.bnp import (
+    BnpAccount,
     BnpBalancePipeline,
     BnpTransactionPipeline,
 )
 from finance_toolkit.boursorama import (
+    BoursoramaAccount,
     BoursoramaBalancePipeline,
     BoursoramaTransactionPipeline,
 )
-from finance_toolkit.fortuneo import FortuneoTransactionPipeline
+
+from finance_toolkit.fortuneo import FortuneoAccount, FortuneoTransactionPipeline
 from finance_toolkit.pipeline_factory import PipelineFactory
 from finance_toolkit.pipelines import (
     GeneralBalancePipeline,

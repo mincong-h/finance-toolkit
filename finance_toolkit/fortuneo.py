@@ -3,7 +3,20 @@ from pathlib import Path
 import pandas as pd
 from pandas import DataFrame
 
+from .accounts import Account
 from .pipelines import TransactionPipeline
+
+
+class FortuneoAccount(Account):
+    def __init__(self, account_type: str, account_id: str, account_num: str):
+        super().__init__(
+            account_type=account_type,
+            account_id=account_id,
+            account_num=account_num,
+            patterns=[
+                r"HistoriqueOperations_(\d+)_du_\d{2}_\d{2}_\d{4}_au_\d{2}_\d{2}_\d{4}\.csv"
+            ],
+        )
 
 
 class FortuneoTransactionPipeline(TransactionPipeline):

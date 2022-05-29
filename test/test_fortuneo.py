@@ -4,8 +4,7 @@ from pathlib import Path
 import pandas as pd
 from pandas.testing import assert_frame_equal
 
-from finance_toolkit.accounts import FortuneoAccount
-from finance_toolkit.fortuneo import FortuneoTransactionPipeline
+from finance_toolkit.fortuneo import FortuneoAccount, FortuneoTransactionPipeline
 from finance_toolkit.models import Summary, TxCompletion
 
 

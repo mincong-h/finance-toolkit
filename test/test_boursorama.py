@@ -6,10 +6,8 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
 
-from finance_toolkit.accounts import (
-    BoursoramaAccount,
-)
 from finance_toolkit.boursorama import (
+    BoursoramaAccount,
     BoursoramaBalancePipeline,
     BoursoramaTransactionPipeline,
 )

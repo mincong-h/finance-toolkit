@@ -1,9 +1,9 @@
 """Test the main() function."""
 import os
-import sys
 from pathlib import Path
 
 import pytest
+import sys
 
 from finance_toolkit.__main__ import main
 

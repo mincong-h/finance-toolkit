@@ -2,13 +2,13 @@ from pathlib import Path
 
 from finance_toolkit.accounts import (
     Account,
-    BnpAccount,
-    BoursoramaAccount,
     DegiroAccount,
-    FortuneoAccount,
     OctoberAccount,
-    RevolutAccount,
 )
+from finance_toolkit.bnp import BnpAccount
+from finance_toolkit.boursorama import BoursoramaAccount
+from finance_toolkit.fortuneo import FortuneoAccount
+from finance_toolkit.revolut import RevolutAccount
 
 
 # ---------- Class: Account ----------

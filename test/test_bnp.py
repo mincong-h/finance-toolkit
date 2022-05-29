@@ -6,10 +6,8 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
 
-from finance_toolkit.accounts import (
-    BnpAccount,
-)
 from finance_toolkit.bnp import (
+    BnpAccount,
     BnpPipeline,
     BnpBalancePipeline,
     BnpTransactionPipeline,
