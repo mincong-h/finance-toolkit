@@ -8,7 +8,7 @@ from .accounts import (
     RevolutAccount,
 )
 from .models import Configuration
-from .pipeline_bnp import BnpTransactionPipeline, BnpBalancePipeline
+from .bnp import BnpTransactionPipeline, BnpBalancePipeline
 from .boursorama import (
     BoursoramaTransactionPipeline,
     BoursoramaBalancePipeline,
