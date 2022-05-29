@@ -65,6 +65,7 @@ class Configurator:
                         account_id=symbolic_name,
                         account_num=fields["id"],
                         patterns=[fields["expr"]],
+                        currency=fields["currency"],
                     )
                 )
             elif company == "Degiro":
