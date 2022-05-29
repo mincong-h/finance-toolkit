@@ -12,9 +12,10 @@ from finance_toolkit.boursorama import (
     BoursoramaBalancePipeline,
     BoursoramaTransactionPipeline,
 )
+from finance_toolkit.fortuneo import FortuneoTransactionPipeline
 from finance_toolkit.pipeline_factory import PipelineFactory
 from finance_toolkit.pipelines import (
-    FortuneoTransactionPipeline,
+
     GeneralBalancePipeline,
     NoopTransactionPipeline,
 )

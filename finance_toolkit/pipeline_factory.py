@@ -7,21 +7,21 @@ from .accounts import (
     FortuneoAccount,
     RevolutAccount,
 )
-from .models import Configuration
 from .bnp import BnpTransactionPipeline, BnpBalancePipeline
 from .boursorama import (
     BoursoramaTransactionPipeline,
     BoursoramaBalancePipeline,
 )
-from .revolut import RevolutTransactionPipeline, RevolutBalancePipeline
+from .fortuneo import FortuneoTransactionPipeline
+from .models import Configuration
 from .pipelines import (
     TransactionPipeline,
-    FortuneoTransactionPipeline,
     NoopTransactionPipeline,
     BalancePipeline,
     GeneralBalancePipeline,
     AccountParser,
 )
+from .revolut import RevolutTransactionPipeline, RevolutBalancePipeline
 
 
 class PipelineFactory:
