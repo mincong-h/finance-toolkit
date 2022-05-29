@@ -7,7 +7,7 @@ import pandas as pd
 import yaml
 from pandas import DataFrame, Series
 
-from .accounts import (
+from .account import (
     Account,
     CartaAccount,
     DegiroAccount,
@@ -15,11 +15,11 @@ from .accounts import (
 )
 from .bnp import BnpAccount
 from .boursorama import BoursoramaAccount
-from .revolut import RevolutAccount
 from .fortuneo import FortuneoAccount
 from .models import Configuration, Summary, TxCompletion, TxType
+from .pipeline import AccountParser
 from .pipeline_factory import PipelineFactory
-from .pipelines import AccountParser
+from .revolut import RevolutAccount
 
 
 class Configurator:

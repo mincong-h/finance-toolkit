@@ -1,11 +1,10 @@
 import re
+from dataclasses import dataclass
 from enum import Enum
 from pathlib import Path
 from typing import List, Set, Dict, Pattern
 
-from dataclasses import dataclass
-
-from .accounts import Account
+from .account import Account
 
 
 class TxType(str, Enum):

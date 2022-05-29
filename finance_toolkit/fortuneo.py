@@ -3,8 +3,8 @@ from pathlib import Path
 import pandas as pd
 from pandas import DataFrame
 
-from .accounts import Account
-from .pipelines import TransactionPipeline
+from .account import Account
+from .pipeline import TransactionPipeline
 
 
 class FortuneoAccount(Account):

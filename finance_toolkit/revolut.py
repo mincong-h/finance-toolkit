@@ -5,8 +5,8 @@ from typing import Tuple
 import pandas as pd
 from pandas import DataFrame
 
-from .accounts import Account
-from .pipelines import Pipeline, TransactionPipeline, BalancePipeline
+from .account import Account
+from .pipeline import Pipeline, TransactionPipeline, BalancePipeline
 
 
 class RevolutAccount(Account):

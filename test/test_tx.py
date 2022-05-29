@@ -6,7 +6,7 @@ import yaml
 from pandas.testing import assert_frame_equal
 
 from finance_toolkit import tx
-from finance_toolkit.accounts import Account
+from finance_toolkit.account import Account
 from finance_toolkit.models import (
     Configuration,
     TxCompletion,

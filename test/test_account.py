@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from finance_toolkit.accounts import (
+from finance_toolkit.account import (
     Account,
     DegiroAccount,
     OctoberAccount,

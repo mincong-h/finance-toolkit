@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from .accounts import (
+from .account import (
     Account,
 )
 from .bnp import BnpAccount, BnpTransactionPipeline, BnpBalancePipeline
@@ -11,7 +11,7 @@ from .boursorama import (
 )
 from .fortuneo import FortuneoAccount, FortuneoTransactionPipeline
 from .models import Configuration
-from .pipelines import (
+from .pipeline import (
     TransactionPipeline,
     NoopTransactionPipeline,
     BalancePipeline,

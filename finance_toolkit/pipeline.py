@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 from pandas import DataFrame
 
-from .accounts import Account
+from .account import Account
 from .models import Configuration, Summary
 
 

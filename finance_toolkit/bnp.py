@@ -7,9 +7,9 @@ from typing import Tuple
 import pandas as pd
 from pandas import DataFrame
 
-from .accounts import Account
+from .account import Account
 from .models import TxType
-from .pipelines import Pipeline, TransactionPipeline, BalancePipeline
+from .pipeline import Pipeline, TransactionPipeline, BalancePipeline
 
 
 class BnpAccount(Account):
