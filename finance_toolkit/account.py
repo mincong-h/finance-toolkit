@@ -3,6 +3,8 @@ import re
 from pathlib import Path
 from typing import Pattern, List
 
+from .models import CurrencySymbol
+
 
 logger = logging.getLogger(__name__)
 
@@ -37,7 +39,7 @@ class Account:
         self.id: str = account_id
         self.patterns: List[Pattern] = [re.compile(p) for p in patterns]
         self.num: str = account_num
-        self.currency_symbol: str = currency
+        self.currency_symbol: CurrencySymbol = CurrencySymbol(currency)
         self.filename: str = f"{account_id}.csv"
 
     def __hash__(self):
