@@ -3,7 +3,7 @@ import re
 from pathlib import Path
 from typing import Pattern, List
 
-from .models import CurrencySymbol
+from .currency import CurrencySymbol
 
 
 logger = logging.getLogger(__name__)
