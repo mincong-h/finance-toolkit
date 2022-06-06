@@ -61,11 +61,10 @@ class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
             columns={"dateOp": "Date", "label": "Label", "amount": "Amount"}
         )
         # Boursorama does not provide currency information explicitly, so we create it ourselves.
-        transactions.loc[:, "Currency"] = self.account.currency_symbol.symbol
+        transactions = transactions.assign(Currency=lambda row: self.account.currency_symbol.symbol)
         del transactions["dateVal"]
         del transactions["category"]
         del transactions["categoryParent"]
-        transactions
 
         # Boursorama > Balance
         balances = df.groupby("accountNum")["accountBalance"].max().to_frame()
@@ -74,7 +73,7 @@ class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
             "1 day"
         )
         # Boursorama does not provide currency information explicitly, so we create it ourselves.
-        balances.loc[:, "Currency"] = self.account.currency_symbol.symbol
+        balances = balances.assign(Currency=lambda row: self.account.currency_symbol.symbol)
         balances = balances[balances["accountNum"].map(self.account.is_account)]
         balances = balances.reset_index(drop=True)
         balances = balances.rename(columns={"accountBalance": "Amount"})
