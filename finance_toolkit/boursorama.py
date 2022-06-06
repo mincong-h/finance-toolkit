@@ -1,3 +1,4 @@
+import logging
 from abc import ABCMeta
 from datetime import datetime
 from pathlib import Path
@@ -32,7 +33,7 @@ class BoursoramaAccount(Account):
             match = pattern.match(filename)
             if match:
                 d = match.groupdict()["date"]
-                # print(d)
+                logging.debug(d)
                 return datetime.strptime(d, "%d-%m-%Y")
         raise ValueError(f"failed to find date from the filename: {filename}")
 
