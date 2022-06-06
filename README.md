@@ -11,6 +11,32 @@ data from different companies:
 | [Fortuneo](https://www.fortuneo.fr) | Supported | - | You can download the CSV files from Fortuneo's website and use Finance Toolkit to integrate the data. However, Fortuneo does not provide an account statement so Finance Toolkit does not know the balance of your accounts. |
 | Other | - | Partially supported | Declare your account and enter the balance manually in Finance Toolkit. We use this approach for companies like [October](https://october.eu), [Degiro](https://www.degiro.com), and [E\*Trade](https://us.etrade.com/). |
 
+:warning: Currently Finance Toolkit is still in alpha phase and cannot be used easily. You need to
+clone the Git repository build from source to make it work. Please contact _mincong.h \[ at \] gmail.com_
+if you want to try.
+
+## Usage
+
+```
+$ finance-toolkit --help
+Finance Toolkit, a command line interface (CLI) that helps you to better understand your personal
+finance situation by collecting data from different companies.
+
+Usage:
+  finance-toolkit [options] (cat|categories) [<prefix>]
+  finance-toolkit [options] merge
+  finance-toolkit [options] move
+
+Arguments:
+  cat|categories   Print all categories, or categories starting with the given prefix.
+  merge            Merge staging data.
+  move             Import data from $HOME/Downloads directory.
+
+Options:
+  --finance-root FOLDER    Folder where the configuration file is stored (default: $HOME/finances).
+  -X --debug               Enable debugging logs. Default: false.
+```
+
 ## Install
 
 ### Install With Docker
