@@ -60,7 +60,9 @@ class BnpPipeline(Pipeline, metaclass=ABCMeta):
         balances["Date"] = pd.to_datetime(balances["Date"], format="%d/%m/%Y")
         balances["Amount"] = balances["Amount"].apply(self.parse_fr_float)
         # BNP Paribas does not provide currency information explicitly, so we create it ourselves.
-        balances = balances.assign(Currency=lambda row: self.account.currency_symbol.symbol)
+        balances = balances.assign(
+            Currency=lambda row: self.account.currency_symbol.symbol
+        )
         del balances["mainCategory"]
         del balances["subCategory"]
         del balances["accountNum"]
