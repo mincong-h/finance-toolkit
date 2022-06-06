@@ -44,22 +44,26 @@ class TransactionPipeline(Pipeline, metaclass=ABCMeta):
     @classmethod
     def append_transactions(cls, csv: Path, new_transactions: DataFrame):
         df = new_transactions.copy()
-        cols = [
-            "Date",
-            "Label",
-            "Amount",
-            "Type",
-            "MainCategory",
-            "SubCategory",
-        ]
-
         if csv.exists():
             existing = pd.read_csv(csv, parse_dates=["Date"])
             df = df.append(existing, sort=False)
 
         df = df.drop_duplicates(subset=["Date", "Label", "Amount"], keep="last")
         df = df.sort_values(by=["Date", "Label"])
-        df.to_csv(csv, columns=cols, index=None, date_format="%Y-%m-%d")
+        df.to_csv(
+            csv,
+            columns=[
+                "Date",
+                "Label",
+                "Amount",
+                "Currency",
+                "Type",
+                "MainCategory",
+                "SubCategory",
+            ],
+            index=None,
+            date_format="%Y-%m-%d",
+        )
 
     def guess_meta(self, df: DataFrame) -> DataFrame:
         """

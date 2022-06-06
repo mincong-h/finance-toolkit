@@ -22,12 +22,21 @@ def test_read_raw_2022_05_27(cfg):
 
     # Then
     expected_balances = pd.DataFrame(
-        columns=["Date", "Amount", "Currency"], data=[(pd.Timestamp("2021-01-05 14:00:41"), 74.43, "EUR")]
+        columns=["Date", "Amount", "Currency"],
+        data=[(pd.Timestamp("2021-01-05 14:00:41"), 74.43, "EUR")],
     )
     assert_frame_equal(actual_balances, expected_balances)
 
     expected_transactions = pd.DataFrame(
-        columns=["Date", "Label", "Amount", "Currency", "Type", "MainCategory", "SubCategory"],
+        columns=[
+            "Date",
+            "Label",
+            "Amount",
+            "Currency",
+            "Type",
+            "MainCategory",
+            "SubCategory",
+        ],
         data=[
             (
                 pd.Timestamp("2021-01-05 14:00:41"),
@@ -60,7 +69,7 @@ def test_integration_normal(cfg):
     tx01 = cfg.root_dir / "2021-01" / "2021-01.user-REV-EUR.csv"
     tx01.write_text(
         """\
-Date,Label,Amount,Type,Currency,MainCategory,SubCategory
+Date,Label,Amount,Currency,Type,MainCategory,SubCategory
 2021-01-01,This is an existing transaction,10.0,EUR,transfer,,
 """
     )
