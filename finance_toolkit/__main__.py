@@ -12,6 +12,7 @@ Arguments:
 
 Options:
   --finance-root FOLDER    Folder where the configuration file is stored (default: $HOME/finances).
+  -X --debug               Enable debugging logs. Default: false.
 
 """
 
@@ -26,12 +27,15 @@ import logging
 
 
 def main():
-    logging.basicConfig(level=logging.DEBUG)
-
     args = docopt(__doc__)
-    logging.debug(f"args={args}")
+
+    if "--debug" in args:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
 
     home = Path.home()
+    logging.debug(f"args={args}")
     logging.debug(f"home={home}")
 
     # Handle the finance folder
