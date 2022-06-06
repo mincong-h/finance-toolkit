@@ -12,7 +12,8 @@ CURRENT_USAGE = """Usage:
   finance-toolkit [options] merge
   finance-toolkit [options] move"""
 
-CURRENT_HELP = f"""Finance Toolkit, a command line interface (CLI) that helps you to better understand your personal
+CURRENT_HELP = f"""\
+Finance Toolkit, a command line interface (CLI) that helps you to better understand your personal
 finance situation by collecting data from different companies.
 
 {CURRENT_USAGE}
