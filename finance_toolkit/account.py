@@ -84,10 +84,6 @@ class Account:
         return False
 
 
-class CartaAccount(Account):
-    pass
-
-
 class DegiroAccount(Account):
     def __init__(
         self,

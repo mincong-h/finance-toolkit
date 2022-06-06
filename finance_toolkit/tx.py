@@ -9,7 +9,6 @@ from pandas import DataFrame, Series
 
 from .account import (
     Account,
-    CartaAccount,
     DegiroAccount,
     OctoberAccount,
 )
@@ -56,16 +55,6 @@ class Configurator:
                         account_type=fields["type"],
                         account_id=symbolic_name,
                         account_num=fields["id"],
-                    )
-                )
-            elif company == "Carta":
-                accounts.append(
-                    CartaAccount(
-                        account_type=fields["type"],
-                        account_id=symbolic_name,
-                        account_num=fields["id"],
-                        patterns=[fields["expr"]],
-                        currency=fields["currency"],
                     )
                 )
             elif company == "Degiro":
