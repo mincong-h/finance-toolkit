@@ -125,7 +125,7 @@ class BalancePipeline(Pipeline, metaclass=ABCMeta):
             df = df.append(existing, sort=False)
         df = df.drop_duplicates(subset=["Date"], keep="last")
         df = df.sort_values(by="Date")
-        df.to_csv(csv, index=None, columns=["Date", "Amount"])
+        df.to_csv(csv, index=None, columns=["Date", "Amount", "Currency"])
 
     @abstractmethod
     def read_new_balances(self, csv: Path) -> DataFrame:
