@@ -9,9 +9,6 @@ from .account import Account
 from .models import Configuration, Summary
 
 
-logger = logging.getLogger(__name__)
-
-
 class Pipeline(metaclass=ABCMeta):
     def __init__(self, account: Account, cfg: Configuration):
         self.account = account
@@ -52,9 +49,9 @@ class TransactionPipeline(Pipeline, metaclass=ABCMeta):
 
             # keep backward compatibility: existing data don't have column "Currency"
             if "Currency" in existing.columns:
-                logger.debug(f'Column "Currency" exists in file: {csv}, skip filling')
+                logging.debug(f'Column "Currency" exists in file: {csv}, skip filling')
             else:
-                logger.debug(
+                logging.debug(
                     f'Column "Currency" does not exist in file: {csv}, filling it with the account currency'  # noqa
                 )
                 existing = existing.assign(
@@ -143,9 +140,9 @@ class BalancePipeline(Pipeline, metaclass=ABCMeta):
 
             # keep backward compatibility: existing data don't have column "Currency"
             if "Currency" in existing.columns:
-                logger.debug(f'Column "Currency" exists in file: {csv}, skip filling')
+                logging.debug(f'Column "Currency" exists in file: {csv}, skip filling')
             else:
-                logger.debug(
+                logging.debug(
                     f'Column "Currency" does not exist in file: {csv}, filling it with the account currency'  # noqa
                 )
                 existing = existing.assign(

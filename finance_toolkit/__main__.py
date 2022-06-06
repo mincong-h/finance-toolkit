@@ -35,17 +35,16 @@ def main():
         logging.basicConfig(level=logging.DEBUG)
     else:
         logging.basicConfig(level=logging.INFO)
-    logger = logging.getLogger(__name__)
 
     home = Path.home()
-    logger.debug(f"args={args}")
-    logger.debug(f"home={home}")
+    logging.debug(f"args={args}")
+    logging.debug(f"home={home}")
 
     # Handle the finance folder
     finance_root = args["--finance-root"]
     if not finance_root:
         env = os.getenv("FINANCE_ROOT")
-        logger.debug(
+        logging.debug(
             f"User did not provide argument '--finance-root', check environment variable: FINANCE_ROOT={env}"  # noqa
         )
         if env:
@@ -54,10 +53,10 @@ def main():
             # Use the $HOME/finances folder by default
             root = home / "finances"
     else:
-        logger.debug(f"User provided argument '--finance-root'")
+        logging.debug(f"User provided argument '--finance-root'")
         root = Path(finance_root).expanduser()
 
-    logger.debug(f"finance-root={finance_root}")
+    logging.debug(f"finance-root={finance_root}")
 
     cfg_path = root / "finance-tools.yml"
     cfg = Configurator.load(cfg_path)
