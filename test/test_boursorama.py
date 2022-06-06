@@ -36,8 +36,8 @@ Date,Label,Amount,Type,MainCategory,SubCategory
     )
 
     # And a file for balance
-    b = cfg.root_dir / "balance.xxx.csv"
-    b.write_text(
+    balance_file = cfg.root_dir / "balance.xxx.csv"
+    balance_file.write_text(
         """\
 Date,Amount
 2019-08-29,300.0
@@ -66,29 +66,29 @@ dateOp;dateVal;Label;category;categoryParent;Amount;accountNum;accountLabel;acco
     assert (
         tx08.read_text()
         == """\
-Date,Label,Amount,Type,MainCategory,SubCategory
-2019-08-29,VIR Virement interne depuis BOURSORA,30.0,transfer,,
-2019-08-30,VIR Virement interne depuis BOURSORA,10.0,transfer,,
+Date,Label,Amount,Currency,Type,MainCategory,SubCategory
+2019-08-29,VIR Virement interne depuis BOURSORA,30.0,EUR,transfer,,
+2019-08-30,VIR Virement interne depuis BOURSORA,10.0,EUR,transfer,,
 """
     )
     assert (
         tx09.read_text()
         == """\
-Date,Label,Amount,Type,MainCategory,SubCategory
-2019-09-01,VIR Virement interne depuis BOURSORA,40.0,transfer,,
-2019-09-02,VIR Virement interne depuis BOURSORA,11.0,transfer,,
+Date,Label,Amount,Currency,Type,MainCategory,SubCategory
+2019-09-01,VIR Virement interne depuis BOURSORA,40.0,EUR,transfer,,
+2019-09-02,VIR Virement interne depuis BOURSORA,11.0,EUR,transfer,,
 """
     )
 
     # And the balance is correct
     BoursoramaBalancePipeline(account, cfg).run(new_file, summary)
     assert (
-        b.read_text()
+        balance_file.read_text()
         == """\
-Date,Amount
-2019-08-29,300.0
-2019-09-01,200.0
-2019-09-03,1000.0
+Date,Amount,Currency
+2019-08-29,300.0,EUR
+2019-09-01,200.0,EUR
+2019-09-03,1000.0,EUR
 """
     )
 
@@ -96,7 +96,7 @@ Date,Amount
     assert new_file in summary.sources
     assert tx08 in summary.targets
     assert tx09 in summary.targets
-    assert b in summary.targets
+    assert balance_file in summary.targets
 
 
 def test_boursorama_account_read_raw(cfg):
@@ -104,14 +104,16 @@ def test_boursorama_account_read_raw(cfg):
 
     account = BoursoramaAccount("type1", "name1", "001234")
     cfg.accounts.append(account)
-    b, tx = BoursoramaTransactionPipeline(account, cfg).read_raw(csv)
+    actual_balances, actual_transactions = BoursoramaTransactionPipeline(
+        account, cfg
+    ).read_raw(csv)
 
-    expected_b = pd.DataFrame(
-        {"accountNum": "001234", "Amount": 370.0, "Date": pd.Timestamp("2019-03-29")},
-        index=[0],
+    expected_balances = pd.DataFrame(
+        columns=["accountNum", "Date", "Amount", "Currency"],
+        data=[("001234", pd.Timestamp("2019-03-29"), 370.0, "EUR")],
     )
-    assert_frame_equal(expected_b, b)
-    expected_tx = pd.DataFrame(
+    assert_frame_equal(expected_balances, actual_balances)
+    expected_transactions = pd.DataFrame(
         columns=[
             "Date",
             "Label",
@@ -119,6 +121,7 @@ def test_boursorama_account_read_raw(cfg):
             "accountNum",
             "accountLabel",
             "accountBalance",
+            "Currency",
         ],
         data=[
             (
@@ -128,6 +131,7 @@ def test_boursorama_account_read_raw(cfg):
                 "001234",
                 "BOURSORAMA BANQUE",
                 370.0,
+                "EUR",
             ),
             (
                 pd.Timestamp("2019-03-12"),
@@ -136,6 +140,7 @@ def test_boursorama_account_read_raw(cfg):
                 "001234",
                 "BOURSORAMA BANQUE",
                 370.0,
+                "EUR",
             ),
             (
                 pd.Timestamp("2019-03-12"),
@@ -144,10 +149,11 @@ def test_boursorama_account_read_raw(cfg):
                 "001234",
                 "BOURSORAMA BANQUE",
                 370.0,
+                "EUR",
             ),
         ],
     )
-    assert_frame_equal(expected_tx, tx)
+    assert_frame_equal(expected_transactions, actual_transactions)
 
 
 def test_boursorama_account_read_raw_account_2(cfg):
@@ -155,18 +161,28 @@ def test_boursorama_account_read_raw_account_2(cfg):
 
     account = BoursoramaAccount("type2", "name2", "003607")
     cfg.accounts.append(account)
-    b, tx = BoursoramaTransactionPipeline(account, cfg).read_raw(csv)
+    actual_balances, actual_transactions = BoursoramaTransactionPipeline(
+        account, cfg
+    ).read_raw(csv)
 
-    expected_b = pd.DataFrame(
-        {
-            "accountNum": "003607",
-            "Amount": 4810.0,
-            "Date": pd.Timestamp("2019-03-29"),  # date from filename, not row
-        },
-        index=[0],
+    expected_balances = pd.DataFrame(
+        columns=[
+            "accountNum",
+            "Date",
+            "Amount",
+            "Currency",
+        ],
+        data=[
+            (
+                "003607",
+                pd.Timestamp("2019-03-29"),  # date from filename, not row
+                4810.0,
+                "EUR",
+            ),
+        ],
     )
-    assert_frame_equal(expected_b, b)
-    expected_tx = pd.DataFrame(
+    assert_frame_equal(expected_balances, actual_balances)
+    expected_transactions = pd.DataFrame(
         {
             "Date": pd.Timestamp("2019-03-12"),
             "Label": "VIR VIREMENT CREATION COMPTE",
@@ -174,13 +190,14 @@ def test_boursorama_account_read_raw_account_2(cfg):
             "accountNum": "003607",
             "accountLabel": "COMPTE SUR LIVRET",
             "accountBalance": 4810.0,
+            "Currency": "EUR",
         },
         index=[0],
     )
-    assert_frame_equal(expected_tx, tx)
+    assert_frame_equal(expected_transactions, actual_transactions)
 
 
-def test_boursorama_account_write_balances():
+def test_boursorama_account_write_balances(cfg):
     with TemporaryDirectory() as d:
         # Given an existing CSV file with 2 rows
         csv = Path(d) / "balance.xxx.csv"
@@ -194,23 +211,25 @@ Date,Amount
 
         # When writing new row into the CSV file
         new_lines = pd.DataFrame(
-            columns=["Date", "Amount"], data=[(pd.Timestamp("2019-03-10"), 320.00)]
+            columns=["Date", "Amount", "Currency"],
+            data=[(pd.Timestamp("2019-03-10"), 320.00, "EUR")],
         )
-        BoursoramaBalancePipeline.write_balances(csv, new_lines)
+        account = BoursoramaAccount("type2", "name2", "003607")
+        BoursoramaBalancePipeline(account, cfg).write_balances(csv, new_lines)
 
         # Then rows are available and sorted
         assert (
             csv.read_text()
             == """\
-Date,Amount
-2019-03-01,300.0
-2019-03-10,320.0
-2019-03-12,370.0
+Date,Amount,Currency
+2019-03-01,300.0,EUR
+2019-03-10,320.0,EUR
+2019-03-12,370.0,EUR
 """
         )
 
 
-def test_boursorama_pipeline_append_tx():
+def test_boursorama_pipeline_append_tx(cfg):
     with TemporaryDirectory() as d:
         # Given an existing CSV
         csv = Path(d) / "2018-09.xxx.csv"
@@ -222,39 +241,43 @@ Date,Label,Amount,Type,MainCategory,SubCategory
         )
 
         # When writing new row into the CSV file
-        cols = [
-            "Date",
-            "Label",
-            "Amount",
-            "Type",
-            "MainCategory",
-            "SubCategory",
-        ]
-        data = [
-            (
-                pd.Timestamp("2018-09-27"),
-                "L",
-                -10.0,
-                "expense",
-                "M",
-                "S",
-            )
-        ]
-        new_lines = pd.DataFrame(columns=cols, data=data)
-        BoursoramaTransactionPipeline.append_transactions(csv, new_lines)
+        new_lines = pd.DataFrame(
+            columns=[
+                "Date",
+                "Label",
+                "Amount",
+                "Currency",
+                "Type",
+                "MainCategory",
+                "SubCategory",
+            ],
+            data=[
+                (
+                    pd.Timestamp("2018-09-27"),
+                    "L",
+                    -10.0,
+                    "EUR",
+                    "expense",
+                    "M",
+                    "S",
+                ),
+            ],
+        )
+        account = BoursoramaAccount("type2", "name2", "003607")
+        BoursoramaTransactionPipeline(account, cfg).append_transactions(csv, new_lines)
 
         # Then rows are available and sorted
         assert (
             csv.read_text()
             == """\
-Date,Label,Amount,Type,MainCategory,SubCategory
-2018-09-26,CARTE 25/09/18 93 LABEL,-20.1,expense,food,resto
-2018-09-27,L,-10.0,expense,M,S
+Date,Label,Amount,Currency,Type,MainCategory,SubCategory
+2018-09-26,CARTE 25/09/18 93 LABEL,-20.1,EUR,expense,food,resto
+2018-09-27,L,-10.0,EUR,expense,M,S
 """
         )
 
 
-def test_boursorama_pipeline_append_tx_drop_duplicates():
+def test_boursorama_pipeline_append_tx_drop_duplicates(cfg):
     with TemporaryDirectory() as d:
         # Given an existing CSV
         csv = Path(d) / "my.csv"
@@ -266,33 +289,37 @@ Date,Label,Amount,Type,MainCategory,SubCategory
         )
 
         # When writing new row into the CSV file
-        cols = [
-            "Date",
-            "Label",
-            "Amount",
-            "Type",
-            "MainCategory",
-            "SubCategory",
-        ]
-        data = [
-            (
-                pd.Timestamp("2018-09-26"),
-                "myLabel",
-                -20.1,
-                "expense",
-                "food",
-                "resto",
-            )
-        ]
-        new_lines = pd.DataFrame(columns=cols, data=data)
-        BoursoramaTransactionPipeline.append_transactions(csv, new_lines)
+        new_lines = pd.DataFrame(
+            columns=[
+                "Date",
+                "Label",
+                "Amount",
+                "Currency",
+                "Type",
+                "MainCategory",
+                "SubCategory",
+            ],
+            data=[
+                (
+                    pd.Timestamp("2018-09-26"),
+                    "myLabel",
+                    -20.1,
+                    "EUR",
+                    "expense",
+                    "food",
+                    "resto",
+                )
+            ],
+        )
+        account = BoursoramaAccount("type2", "name2", "003607")
+        BoursoramaTransactionPipeline(account, cfg).append_transactions(csv, new_lines)
 
         # Then rows has no duplicates
         assert (
             csv.read_text()
             == """\
-Date,Label,Amount,Type,MainCategory,SubCategory
-2018-09-26,myLabel,-20.1,expense,food,resto
+Date,Label,Amount,Currency,Type,MainCategory,SubCategory
+2018-09-26,myLabel,-20.1,EUR,expense,food,resto
 """
         )
 
