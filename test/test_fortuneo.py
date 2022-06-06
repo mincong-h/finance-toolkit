@@ -22,6 +22,7 @@ def test_fortuneo_transaction_pipeline_read_new_transactions(cfg):
             pd.Timestamp("2019-12-13"),
             "CARTE 12/12 FNAC METZ",
             -6.4,
+            "EUR",
             "",
             "",
             "",
@@ -30,6 +31,7 @@ def test_fortuneo_transaction_pipeline_read_new_transactions(cfg):
             pd.Timestamp("2019-12-13"),
             "CARTE 12/12 BRIOCHE DOREE METZ",
             -10.9,
+            "EUR",
             "",
             "",
             "",
@@ -38,6 +40,7 @@ def test_fortuneo_transaction_pipeline_read_new_transactions(cfg):
             pd.Timestamp("2019-12-13"),
             "CARTE 12/12 AMAZON EU SARL PAYLI2090401/",
             -45.59,
+            "EUR",
             "",
             "",
             "",
@@ -46,6 +49,7 @@ def test_fortuneo_transaction_pipeline_read_new_transactions(cfg):
             pd.Timestamp("2019-12-12"),
             "CARTE 11/12 LECLERC MARLY",
             -15.75,
+            "EUR",
             "",
             "",
             "",
@@ -54,6 +58,7 @@ def test_fortuneo_transaction_pipeline_read_new_transactions(cfg):
             pd.Timestamp("2019-04-30"),
             "VIR MALAKOFF MEDERIC PREVOYANCE",
             45.0,
+            "EUR",
             "",
             "",
             "",
@@ -64,6 +69,7 @@ def test_fortuneo_transaction_pipeline_read_new_transactions(cfg):
             "Date",
             "Label",
             "Amount",
+            "Currency",
             "Type",
             "MainCategory",
             "SubCategory",
@@ -96,17 +102,18 @@ Date,Label,Amount,Type,MainCategory,SubCategory
                 "Date": [pd.Timestamp("2020-02-13"), pd.Timestamp("2020-02-14")],
                 "Label": ["Label B", "Label D"],
                 "Amount": [30.0, 40.0],
+                "Currency": ["EUR", "EUR"],
             }
         ),
     )
 
     # then they are appended successfully
     content = """\
-Date,Label,Amount,Type,MainCategory,SubCategory
-2020-02-12,Label A,20.0,expense,foo,bar
-2020-02-13,Label B,30.0,expense,foo,bar
-2020-02-14,Label C,40.0,expense,foo,bar
-2020-02-14,Label D,40.0,,,
+Date,Label,Amount,Currency,Type,MainCategory,SubCategory
+2020-02-12,Label A,20.0,EUR,expense,foo,bar
+2020-02-13,Label B,30.0,EUR,expense,foo,bar
+2020-02-14,Label C,40.0,EUR,expense,foo,bar
+2020-02-14,Label D,40.0,EUR,,,
 """
     assert csv.read_text() == content
 
@@ -126,6 +133,7 @@ def test_append_transactions_nonexistent_target(cfg, tmpdir):
                 "Date": [pd.Timestamp("2020-02-13"), pd.Timestamp("2020-02-14")],
                 "Label": ["Label B", "Label D"],
                 "Amount": [30.0, 40.0],
+                "Currency": ["EUR", "EUR"],
                 "Type": None,
                 "MainCategory": None,
                 "SubCategory": None,
@@ -135,9 +143,9 @@ def test_append_transactions_nonexistent_target(cfg, tmpdir):
 
     # then they are appended successfully
     content = """\
-Date,Label,Amount,Type,MainCategory,SubCategory
-2020-02-13,Label B,30.0,,,
-2020-02-14,Label D,40.0,,,
+Date,Label,Amount,Currency,Type,MainCategory,SubCategory
+2020-02-13,Label B,30.0,EUR,,,
+2020-02-14,Label D,40.0,EUR,,,
 """
     assert csv.read_text() == content
 
@@ -160,19 +168,19 @@ def test_run(cfg):
     assert (
         tx201904.read_text()
         == """\
-Date,Label,Amount,Type,MainCategory,SubCategory
-2019-04-30,VIR MALAKOFF MEDERIC PREVOYANCE,45.0,,,
+Date,Label,Amount,Currency,Type,MainCategory,SubCategory
+2019-04-30,VIR MALAKOFF MEDERIC PREVOYANCE,45.0,EUR,,,
 """
     )
     tx201912 = cfg.root_dir / "2019-12" / "2019-12.astark-FTN-CHQ.csv"
     assert (
         tx201912.read_text()
         == """\
-Date,Label,Amount,Type,MainCategory,SubCategory
-2019-12-12,CARTE 11/12 LECLERC MARLY,-15.75,,,
-2019-12-13,CARTE 12/12 AMAZON EU SARL PAYLI2090401/,-45.59,,,
-2019-12-13,CARTE 12/12 BRIOCHE DOREE METZ,-10.9,,,
-2019-12-13,CARTE 12/12 FNAC METZ,-6.4,,,
+Date,Label,Amount,Currency,Type,MainCategory,SubCategory
+2019-12-12,CARTE 11/12 LECLERC MARLY,-15.75,EUR,,,
+2019-12-13,CARTE 12/12 AMAZON EU SARL PAYLI2090401/,-45.59,EUR,,,
+2019-12-13,CARTE 12/12 BRIOCHE DOREE METZ,-10.9,EUR,,,
+2019-12-13,CARTE 12/12 FNAC METZ,-6.4,EUR,,,
 """
     )
     assert (
@@ -232,6 +240,7 @@ def test_guess_meta(cfg):
             "Date",
             "Label",
             "Amount",
+            "Currency",
             "Type",
             "MainCategory",
             "SubCategory",
@@ -241,6 +250,7 @@ def test_guess_meta(cfg):
                 pd.Timestamp("2019-12-13"),
                 "CARTE 12/12 FNAC METZ",
                 -6.4,
+                "EUR",
                 "expense",
                 "shopping",
                 "offline",
@@ -249,6 +259,7 @@ def test_guess_meta(cfg):
                 pd.Timestamp("2019-12-13"),
                 "CARTE 12/12 BRIOCHE DOREE METZ",
                 -10.9,
+                "EUR",
                 "",
                 "",
                 "",
@@ -257,6 +268,7 @@ def test_guess_meta(cfg):
                 pd.Timestamp("2019-12-13"),
                 "CARTE 12/12 AMAZON EU SARL PAYLI2090401/",
                 -45.59,
+                "EUR",
                 "expense",
                 "shopping",
                 "online",
@@ -265,6 +277,7 @@ def test_guess_meta(cfg):
                 pd.Timestamp("2019-12-12"),
                 "CARTE 11/12 LECLERC MARLY",
                 -15.75,
+                "EUR",
                 "expense",
                 "food",
                 "supermarket",
@@ -273,6 +286,7 @@ def test_guess_meta(cfg):
                 pd.Timestamp("2019-04-30"),
                 "VIR MALAKOFF MEDERIC PREVOYANCE",
                 45.0,
+                "EUR",
                 "",
                 "",
                 "",

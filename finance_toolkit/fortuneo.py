@@ -66,6 +66,9 @@ class FortuneoTransactionPipeline(TransactionPipeline):
         tx["Amount"] = tx.apply(
             lambda row: row["Débit"] if row["Débit"] else row["Crédit"], axis="columns"
         )
+
+        # Fortuneo does not provide currency information explicitly, so we create it ourselves.
+        tx = tx.assign(Currency=lambda row: self.account.currency_symbol)
         tx["Type"] = ""
         tx["MainCategory"] = ""
         tx["SubCategory"] = ""
@@ -81,6 +84,7 @@ class FortuneoTransactionPipeline(TransactionPipeline):
                 "Date",
                 "Label",
                 "Amount",
+                "Currency",
                 "Type",
                 "MainCategory",
                 "SubCategory",

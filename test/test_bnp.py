@@ -8,7 +8,6 @@ from pandas.testing import assert_frame_equal
 
 from finance_toolkit.bnp import (
     BnpAccount,
-    BnpPipeline,
     BnpBalancePipeline,
     BnpTransactionPipeline,
 )
@@ -60,17 +59,17 @@ Date,Label,Amount,Type,MainCategory,SubCategory
     assert (
         tx08.read_text()
         == """\
-Date,Label,Amount,Type,MainCategory,SubCategory
-2018-08-30,myLabel,-0.49,expense,main,sub
-2018-08-31,myLabel,-0.99,expense,,
+Date,Label,Amount,Currency,Type,MainCategory,SubCategory
+2018-08-30,myLabel,-0.49,EUR,expense,main,sub
+2018-08-31,myLabel,-0.99,EUR,expense,,
 """
     )
     assert (
         tx09.read_text()
         == """\
-Date,Label,Amount,Type,MainCategory,SubCategory
-2018-09-01,myLabel,-1.49,expense,main,sub
-2018-09-02,myLabel,-2.49,expense,,
+Date,Label,Amount,Currency,Type,MainCategory,SubCategory
+2018-09-01,myLabel,-1.49,EUR,expense,main,sub
+2018-09-02,myLabel,-2.49,EUR,expense,,
 """
     )
 
@@ -94,18 +93,23 @@ Date,Amount
 
     # When writing new row into the CSV file
     new_lines = pd.DataFrame(
-        columns=["Date", "Amount"], data=[(pd.Timestamp("2018-09-02"), 924.37)]
+        {
+            "Date": [pd.Timestamp("2018-09-02")],
+            "Amount": [924.37],
+            "Currency": ["EUR"],
+        }
     )
-    BnpBalancePipeline.write_balances(csv, new_lines)
+    account = BnpAccount("CHQ", "xxx", "****1234")
+    BnpBalancePipeline(account, cfg).write_balances(csv, new_lines)
 
     # Then rows are available and sorted
     assert (
         csv.read_text()
         == """\
-Date,Amount
-2018-07-04,189.29
-2018-08-02,724.37
-2018-09-02,924.37
+Date,Amount,Currency
+2018-07-04,189.29,EUR
+2018-08-02,724.37,EUR
+2018-09-02,924.37,EUR
 """
     )
 
@@ -114,11 +118,15 @@ def test_bnp_pipeline_read_raw_20190703(cfg):
     # Given an existing CSV for BNP
     # When reading its content
     csv = cfg.download_dir / "E1851234.csv"
-    actual_balances, actual_transactions = BnpPipeline.read_raw(csv)
+    account = BnpAccount("CHQ", "xxx", "****1234")
+    actual_balances, actual_transactions = BnpTransactionPipeline(
+        account, cfg
+    ).read_raw(csv)
 
     # Then the balances DataFrame is read correctly
     expected_balances = pd.DataFrame(
-        columns=["Date", "Amount"], data=[(pd.Timestamp("2019-07-03"), -123456.78)]
+        columns=["Date", "Amount", "Currency"],
+        data=[(pd.Timestamp("2019-07-03"), -123456.78, "EUR")],
     )
     assert_frame_equal(actual_balances, expected_balances)
 
@@ -127,6 +135,7 @@ def test_bnp_pipeline_read_raw_20190703(cfg):
         "Date",
         "Label",
         "Amount",
+        "Currency",
         "Type",
         "MainCategory",
         "SubCategory",
@@ -136,6 +145,7 @@ def test_bnp_pipeline_read_raw_20190703(cfg):
             pd.Timestamp("2019-06-05"),
             "AMORTISSEMENT PRET 1234",
             67.97,
+            "EUR",
             "",
             "",
             "",
@@ -149,11 +159,15 @@ def test_bnp_pipeline_read_raw_20220318(cfg):
     # Given an existing CSV for BNP
     # When reading its content
     csv = cfg.download_dir / "E0790170.csv"
-    actual_balances, actual_transactions = BnpPipeline.read_raw(csv)
+    account = BnpAccount("CHQ", "xxx", "****1234")
+    actual_balances, actual_transactions = BnpTransactionPipeline(
+        account, cfg
+    ).read_raw(csv)
 
     # Then the balances DataFrame is read correctly
     expected_balances = pd.DataFrame(
-        columns=["Date", "Amount"], data=[(pd.Timestamp("2022-03-18"), -123456.78)]
+        columns=["Date", "Amount", "Currency"],
+        data=[(pd.Timestamp("2022-03-18"), -123456.78, "EUR")],
     )
     assert_frame_equal(actual_balances, expected_balances)
 
@@ -162,6 +176,7 @@ def test_bnp_pipeline_read_raw_20220318(cfg):
         "Date",
         "Label",
         "Amount",
+        "Currency",
         "Type",
         "MainCategory",
         "SubCategory",
@@ -171,6 +186,7 @@ def test_bnp_pipeline_read_raw_20220318(cfg):
             pd.Timestamp("2022-01-05"),
             "AMORTISSEMENT PRET 1234",
             70.93,
+            "EUR",
             "",
             "",
             "",
@@ -179,6 +195,7 @@ def test_bnp_pipeline_read_raw_20220318(cfg):
             pd.Timestamp("2022-02-05"),
             "AMORTISSEMENT PRET 1234",
             71.03,
+            "EUR",
             "",
             "",
             "",
@@ -187,6 +204,7 @@ def test_bnp_pipeline_read_raw_20220318(cfg):
             pd.Timestamp("2022-03-05"),
             "AMORTISSEMENT PRET 1234",
             71.13,
+            "EUR",
             "",
             "",
             "",
@@ -260,12 +278,13 @@ def test_bnp_pipeline_guess_meta_transaction_label(cfg):
     assert_frame_equal(actual, expected)
 
 
-def test_bnp_pipeline_append_tx_file_nonexistent_csv():
-    df = pd.DataFrame(
+def test_bnp_pipeline_append_tx_file_nonexistent_csv(cfg):
+    new_transactions = pd.DataFrame(
         {
             "Date": [pd.Timestamp("2019-08-01")],
             "Label": ["myLabel"],
             "Amount": [10.0],
+            "Currency": ["EUR"],
             "Type": [None],
             "MainCategory": [None],
             "SubCategory": [None],
@@ -273,27 +292,29 @@ def test_bnp_pipeline_append_tx_file_nonexistent_csv():
     )
     with TemporaryDirectory() as root:
         csv = Path(root) / "my.csv"
-        BnpTransactionPipeline.append_transactions(csv, df)
+        account = BnpAccount("CHQ", "xxx", "****1234")
+        BnpTransactionPipeline(account, cfg).append_transactions(csv, new_transactions)
         assert (
             csv.read_text()
             == """\
-Date,Label,Amount,Type,MainCategory,SubCategory
-2019-08-01,myLabel,10.0,,,
+Date,Label,Amount,Currency,Type,MainCategory,SubCategory
+2019-08-01,myLabel,10.0,EUR,,,
 """
         )
 
 
-def test_bnp_pipeline_append_tx_file_existing_csv():
-    df = pd.DataFrame(
+def test_bnp_pipeline_append_tx_file_existing_csv(cfg):
+    new_transactions = pd.DataFrame(
         columns=[
             "Date",
             "Label",
             "Amount",
+            "Currency",
             "Type",
             "MainCategory",
             "SubCategory",
         ],
-        data=[(pd.Timestamp("2019-08-01"), "myLabel", 10.0, "", "", "")],
+        data=[(pd.Timestamp("2019-08-01"), "myLabel", 10.0, "EUR", "", "", "")],
     )
     with TemporaryDirectory() as root:
         csv = Path(root) / "my.csv"
@@ -303,17 +324,18 @@ Date,Label,Amount,Type,MainCategory,SubCategory
 2019-08-01,myLabel,10.0,myType,main,sub
 """
         )
-        BnpTransactionPipeline.append_transactions(csv, df)
+        account = BnpAccount("CHQ", "xxx", "****1234")
+        BnpTransactionPipeline(account, cfg).append_transactions(csv, new_transactions)
         assert (
             csv.read_text()
             == """\
-Date,Label,Amount,Type,MainCategory,SubCategory
-2019-08-01,myLabel,10.0,myType,main,sub
+Date,Label,Amount,Currency,Type,MainCategory,SubCategory
+2019-08-01,myLabel,10.0,EUR,myType,main,sub
 """
         )
 
 
-def test_bnp_pipeline_append_tx_file_drop_duplicates():
+def test_bnp_pipeline_append_tx_file_drop_duplicates(cfg):
     """
     Mainly for third party payment websites, like PayPal.
     They don't provide distinguishable label.
@@ -323,23 +345,25 @@ def test_bnp_pipeline_append_tx_file_drop_duplicates():
             "Date",
             "Label",
             "Amount",
+            "Currency",
             "Type",
             "MainCategory",
             "SubCategory",
         ],
         data=[
-            (pd.Timestamp("2019-08-01"), "myLabel", 10.0, "", "", ""),
-            (pd.Timestamp("2019-08-01"), "myLabel", 11.0, "", "", ""),
+            (pd.Timestamp("2019-08-01"), "myLabel", 10.0, "EUR", "", "", ""),
+            (pd.Timestamp("2019-08-01"), "myLabel", 11.0, "EUR", "", "", ""),
         ],
     )
     with TemporaryDirectory() as root:
         csv = Path(root) / "my.csv"
-        BnpTransactionPipeline.append_transactions(csv, df)
+        account = BnpAccount("CHQ", "xxx", "****1234")
+        BnpTransactionPipeline(account, cfg).append_transactions(csv, df)
         assert (
             csv.read_text()
             == """\
-Date,Label,Amount,Type,MainCategory,SubCategory
-2019-08-01,myLabel,10.0,,,
-2019-08-01,myLabel,11.0,,,
+Date,Label,Amount,Currency,Type,MainCategory,SubCategory
+2019-08-01,myLabel,10.0,EUR,,,
+2019-08-01,myLabel,11.0,EUR,,,
 """
         )

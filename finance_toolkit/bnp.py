@@ -35,8 +35,7 @@ class BnpPipeline(Pipeline, metaclass=ABCMeta):
         v = s.replace(",", ".").replace(" ", "")
         return float(v)
 
-    @classmethod
-    def read_raw(cls, csv: Path) -> Tuple[DataFrame, DataFrame]:
+    def read_raw(self, csv: Path) -> Tuple[DataFrame, DataFrame]:
         # BNP Paribas stores the balance in the first line of the CSV
         with csv.open(encoding="ISO-8859-1") as f:
             first = next(f).strip()
@@ -45,6 +44,8 @@ class BnpPipeline(Pipeline, metaclass=ABCMeta):
             #    1st: '"Crédit immobilier";"Cr&eacute;dit immobilier";****0170;18/03/2022;;-113 095,26'             # noqa: E501
             #    2nd: '"Crédit immobilier";"Crédit immobilier";****0170;18/03/2022;;-113 095,26'                    # noqa: E501
             first = unescape(unescape(first))
+
+        # BNP > Balance
         balances = pd.DataFrame.from_records(
             data=[first.split(";")],
             columns=[
@@ -57,12 +58,15 @@ class BnpPipeline(Pipeline, metaclass=ABCMeta):
             ],
         )
         balances["Date"] = pd.to_datetime(balances["Date"], format="%d/%m/%Y")
-        balances["Amount"] = balances["Amount"].apply(cls.parse_fr_float)
+        balances["Amount"] = balances["Amount"].apply(self.parse_fr_float)
+        # BNP Paribas does not provide currency information explicitly, so we create it ourselves.
+        balances = balances.assign(Currency=lambda row: self.account.currency_symbol)
         del balances["mainCategory"]
         del balances["subCategory"]
         del balances["accountNum"]
         del balances["unknown"]
 
+        # BNP > Transaction
         tx = pd.read_csv(
             csv,
             date_parser=lambda s: datetime.strptime(s, "%d/%m/%Y"),
@@ -79,6 +83,9 @@ class BnpPipeline(Pipeline, metaclass=ABCMeta):
         del tx["bnpMainCategory"]
         del tx["bnpSubCategory"]
         tx = tx.fillna("")
+
+        # BNP Paribas does not provide currency information explicitly, so we create it ourselves.
+        tx = tx.assign(Currency=lambda row: self.account.currency_symbol)
 
         # TODO can we remove these fields?
         tx["Type"] = ""

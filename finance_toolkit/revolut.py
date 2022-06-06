@@ -36,7 +36,7 @@ class RevolutPipeline(Pipeline, metaclass=ABCMeta):
             parse_dates=["Started Date", "Completed Date"],
         )
 
-        balances = df[["Completed Date", "Balance"]]
+        balances = df[["Completed Date", "Balance", "Currency"]]
         balances = balances.rename(
             columns={
                 "Completed Date": "Date",
@@ -45,9 +45,9 @@ class RevolutPipeline(Pipeline, metaclass=ABCMeta):
         )
         balances = balances[balances["Amount"].notna()]
 
-        # TODO support fields: Type, Product, Fee, Currency, State
+        # TODO support fields: Type, Product, Fee, State
 
-        tx = df[["Completed Date", "Description", "Amount", "Type"]]
+        tx = df[["Completed Date", "Description", "Amount", "Currency", "Type"]]
         tx = tx.rename(
             columns={
                 "Completed Date": "Date",
@@ -88,6 +88,11 @@ class RevolutTransactionPipeline(RevolutPipeline, TransactionPipeline):
 
     def read_new_transactions(self, path: Path) -> DataFrame:
         _, tx = self.read_raw(path)
+
+        # Revolut's data is too accurate, it has the time part.
+        # Truncate time and only keep date here:
+        tx["Date"] = tx["Date"].apply(lambda d: d.replace(hour=0, minute=0, second=0))
+
         return tx
 
 
