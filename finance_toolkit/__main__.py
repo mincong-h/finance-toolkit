@@ -1,4 +1,6 @@
-"""Finance Tools
+"""\
+Finance Toolkit, a command line interface (CLI) that helps you to better understand your personal
+finance situation by collecting data from different companies.
 
 Usage:
   finance-toolkit [options] (cat|categories) [<prefix>]
