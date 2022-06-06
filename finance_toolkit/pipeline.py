@@ -9,9 +9,6 @@ from .account import Account
 from .models import Configuration, Summary
 
 
-logger = logging.getLogger(__name__)
-
-
 class Pipeline(metaclass=ABCMeta):
     def __init__(self, account: Account, cfg: Configuration):
         self.account = account
@@ -47,6 +44,7 @@ class TransactionPipeline(Pipeline, metaclass=ABCMeta):
 
     def append_transactions(self, csv: Path, new_transactions: DataFrame):
         df = new_transactions.copy()
+        logger = logging.getLogger(__name__)
         if csv.exists():
             existing = pd.read_csv(csv, parse_dates=["Date"])
 
@@ -138,6 +136,7 @@ class BalancePipeline(Pipeline, metaclass=ABCMeta):
 
     def write_balances(self, csv: Path, new_lines: DataFrame):
         df = new_lines.copy()
+        logger = logging.getLogger(__name__)
         if csv.exists():
             existing = pd.read_csv(csv, parse_dates=["Date"])
 
