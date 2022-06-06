@@ -119,11 +119,14 @@ def test_bnp_pipeline_read_raw_20190703(cfg):
     # When reading its content
     csv = cfg.download_dir / "E1851234.csv"
     account = BnpAccount("CHQ", "xxx", "****1234")
-    actual_balances, actual_transactions = BnpTransactionPipeline(account, cfg).read_raw(csv)
+    actual_balances, actual_transactions = BnpTransactionPipeline(
+        account, cfg
+    ).read_raw(csv)
 
     # Then the balances DataFrame is read correctly
     expected_balances = pd.DataFrame(
-        columns=["Date", "Amount", "Currency"], data=[(pd.Timestamp("2019-07-03"), -123456.78, "EUR")]
+        columns=["Date", "Amount", "Currency"],
+        data=[(pd.Timestamp("2019-07-03"), -123456.78, "EUR")],
     )
     assert_frame_equal(actual_balances, expected_balances)
 
@@ -157,11 +160,14 @@ def test_bnp_pipeline_read_raw_20220318(cfg):
     # When reading its content
     csv = cfg.download_dir / "E0790170.csv"
     account = BnpAccount("CHQ", "xxx", "****1234")
-    actual_balances, actual_transactions = BnpTransactionPipeline(account, cfg).read_raw(csv)
+    actual_balances, actual_transactions = BnpTransactionPipeline(
+        account, cfg
+    ).read_raw(csv)
 
     # Then the balances DataFrame is read correctly
     expected_balances = pd.DataFrame(
-        columns=["Date", "Amount", "Currency"], data=[(pd.Timestamp("2022-03-18"), -123456.78, "EUR")]
+        columns=["Date", "Amount", "Currency"],
+        data=[(pd.Timestamp("2022-03-18"), -123456.78, "EUR")],
     )
     assert_frame_equal(actual_balances, expected_balances)
 
