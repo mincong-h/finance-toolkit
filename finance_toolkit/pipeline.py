@@ -53,10 +53,6 @@ class TransactionPipeline(Pipeline, metaclass=ABCMeta):
             "SubCategory",
         ]
 
-        # Revolut's data is too accurate, it has the time part.
-        # Truncate time and only keep date here:
-        df["Date"] = df["Date"].apply(lambda d: d.replace(hour=0, minute=0, second=0))
-
         if csv.exists():
             existing = pd.read_csv(csv, parse_dates=["Date"])
             df = df.append(existing, sort=False)

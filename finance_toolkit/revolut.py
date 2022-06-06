@@ -88,6 +88,11 @@ class RevolutTransactionPipeline(RevolutPipeline, TransactionPipeline):
 
     def read_new_transactions(self, path: Path) -> DataFrame:
         _, tx = self.read_raw(path)
+
+        # Revolut's data is too accurate, it has the time part.
+        # Truncate time and only keep date here:
+        tx["Date"] = tx["Date"].apply(lambda d: d.replace(hour=0, minute=0, second=0))
+
         return tx
 
 
