@@ -55,7 +55,7 @@ class TransactionPipeline(Pipeline, metaclass=ABCMeta):
                 logger.debug(f'Column "Currency" exists in file: {csv}, skip filling')
             else:
                 logger.debug(
-                    f'Column "Currency" does not exist in file: {csv}, filling it with the account currency'
+                    f'Column "Currency" does not exist in file: {csv}, filling it with the account currency'  # noqa
                 )
                 existing = existing.assign(
                     Currency=lambda row: self.account.currency_symbol.symbol
@@ -146,7 +146,7 @@ class BalancePipeline(Pipeline, metaclass=ABCMeta):
                 logger.debug(f'Column "Currency" exists in file: {csv}, skip filling')
             else:
                 logger.debug(
-                    f'Column "Currency" does not exist in file: {csv}, filling it with the account currency'
+                    f'Column "Currency" does not exist in file: {csv}, filling it with the account currency'  # noqa
                 )
                 existing.loc[:, "Currency"] = self.account.currency_symbol.symbol
 
