@@ -6,6 +6,7 @@ import pandas as pd
 from pandas import DataFrame
 
 from .account import Account
+from .models import TxType
 from .pipeline import Pipeline, TransactionPipeline, BalancePipeline
 
 
@@ -65,11 +66,11 @@ class RevolutTransactionPipeline(RevolutPipeline, TransactionPipeline):
     TYPE_MAPPING = {
         # A top-up transaction makes up to the full amount of your account, so we consider it's
         # likely an income here. This is an opinionated choice.
-        "TOPUP": "income",
-        "TRANSFER": "transfer",
-        "FEE": "expense",
-        "CARD_PAYMENT": "expense",
-        "EXCHANGE": "expense",
+        "TOPUP": TxType.INCOME.value,
+        "TRANSFER": TxType.TRANSFER.value,
+        "FEE": TxType.EXPENSE.value,
+        "CARD_PAYMENT": TxType.EXPENSE.value,
+        "EXCHANGE": TxType.EXPENSE.value,
     }
 
     def guess_meta(self, df: DataFrame) -> DataFrame:
