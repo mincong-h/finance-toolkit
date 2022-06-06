@@ -68,7 +68,7 @@ class FortuneoTransactionPipeline(TransactionPipeline):
         )
 
         # Fortuneo does not provide currency information explicitly, so we create it ourselves.
-        tx = tx.assign(Currency=lambda row: self.account.currency_symbol.symbol)
+        tx = tx.assign(Currency=lambda row: self.account.currency_symbol)
         tx["Type"] = ""
         tx["MainCategory"] = ""
         tx["SubCategory"] = ""

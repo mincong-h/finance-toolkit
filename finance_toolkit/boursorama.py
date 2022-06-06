@@ -62,7 +62,7 @@ class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
         )
         # Boursorama does not provide currency information explicitly, so we create it ourselves.
         transactions = transactions.assign(
-            Currency=lambda row: self.account.currency_symbol.symbol
+            Currency=lambda row: self.account.currency_symbol
         )
         del transactions["dateVal"]
         del transactions["category"]
@@ -76,7 +76,7 @@ class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
         )
         # Boursorama does not provide currency information explicitly, so we create it ourselves.
         balances = balances.assign(
-            Currency=lambda row: self.account.currency_symbol.symbol
+            Currency=lambda row: self.account.currency_symbol
         )
         balances = balances[balances["accountNum"].map(self.account.is_account)]
         balances = balances.reset_index(drop=True)

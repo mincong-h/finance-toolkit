@@ -61,7 +61,7 @@ class BnpPipeline(Pipeline, metaclass=ABCMeta):
         balances["Amount"] = balances["Amount"].apply(self.parse_fr_float)
         # BNP Paribas does not provide currency information explicitly, so we create it ourselves.
         balances = balances.assign(
-            Currency=lambda row: self.account.currency_symbol.symbol
+            Currency=lambda row: self.account.currency_symbol
         )
         del balances["mainCategory"]
         del balances["subCategory"]
@@ -87,7 +87,7 @@ class BnpPipeline(Pipeline, metaclass=ABCMeta):
         tx = tx.fillna("")
 
         # BNP Paribas does not provide currency information explicitly, so we create it ourselves.
-        tx = tx.assign(Currency=lambda row: self.account.currency_symbol.symbol)
+        tx = tx.assign(Currency=lambda row: self.account.currency_symbol)
 
         # TODO can we remove these fields?
         tx["Type"] = ""

@@ -58,7 +58,7 @@ class TransactionPipeline(Pipeline, metaclass=ABCMeta):
                     f'Column "Currency" does not exist in file: {csv}, filling it with the account currency'  # noqa
                 )
                 existing = existing.assign(
-                    Currency=lambda row: self.account.currency_symbol.symbol
+                    Currency=lambda row: self.account.currency_symbol
                 )
 
             df = df.append(existing, sort=False)
@@ -148,7 +148,7 @@ class BalancePipeline(Pipeline, metaclass=ABCMeta):
                 logger.debug(
                     f'Column "Currency" does not exist in file: {csv}, filling it with the account currency'  # noqa
                 )
-                existing.loc[:, "Currency"] = self.account.currency_symbol.symbol
+                existing.loc[:, "Currency"] = self.account.currency_symbol
 
             df = df.append(existing, sort=False)
 
