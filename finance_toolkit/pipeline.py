@@ -44,15 +44,14 @@ class TransactionPipeline(Pipeline, metaclass=ABCMeta):
 
     def append_transactions(self, csv: Path, new_transactions: DataFrame):
         df = new_transactions.copy()
-        logger = logging.getLogger(__name__)
         if csv.exists():
             existing = pd.read_csv(csv, parse_dates=["Date"])
 
             # keep backward compatibility: existing data don't have column "Currency"
             if "Currency" in existing.columns:
-                logger.debug(f'Column "Currency" exists in file: {csv}, skip filling')
+                logging.debug(f'Column "Currency" exists in file: {csv}, skip filling')
             else:
-                logger.debug(
+                logging.debug(
                     f'Column "Currency" does not exist in file: {csv}, filling it with the account currency'  # noqa
                 )
                 existing = existing.assign(
@@ -136,15 +135,14 @@ class BalancePipeline(Pipeline, metaclass=ABCMeta):
 
     def write_balances(self, csv: Path, new_lines: DataFrame):
         df = new_lines.copy()
-        logger = logging.getLogger(__name__)
         if csv.exists():
             existing = pd.read_csv(csv, parse_dates=["Date"])
 
             # keep backward compatibility: existing data don't have column "Currency"
             if "Currency" in existing.columns:
-                logger.debug(f'Column "Currency" exists in file: {csv}, skip filling')
+                logging.debug(f'Column "Currency" exists in file: {csv}, skip filling')
             else:
-                logger.debug(
+                logging.debug(
                     f'Column "Currency" does not exist in file: {csv}, filling it with the account currency'  # noqa
                 )
                 existing = existing.assign(

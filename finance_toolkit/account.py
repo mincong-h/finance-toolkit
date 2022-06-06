@@ -75,15 +75,14 @@ class Account:
         return account_full_num.endswith(self.num)
 
     def match(self, path: Path) -> bool:
-        logger = logging.getLogger(__name__)
-        logger.debug(f"{path}")
+        logging.debug(f"{path}")
         for p in self.patterns:
             matched = p.match(path.name)
             if matched:
-                logger.debug(f"{p.pattern}: matched")
+                logging.debug(f"{p.pattern}: matched")
                 return True
             else:
-                logger.debug(f"{p.pattern}: not matched")
+                logging.debug(f"{p.pattern}: not matched")
         return False
 
 
