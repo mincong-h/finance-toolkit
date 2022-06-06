@@ -44,6 +44,16 @@ class TxType(str, Enum):
         return {m.value for m in TxType}
 
 
+class CurrencySymbol(str):
+    def __init__(self, symbol: str):
+        self.symbol: str = symbol
+
+
+USD = CurrencySymbol("USD")
+
+EUR = CurrencySymbol("EUR")
+
+
 @dataclass
 class TxCompletion:
     regex: Pattern
