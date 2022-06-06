@@ -27,7 +27,7 @@ def test_read_raw_2022_05_27(cfg):
     assert_frame_equal(actual_balances, expected_balances)
 
     expected_transactions = pd.DataFrame(
-        columns=["Date", "Label", "Amount", "Type", "Currency", "MainCategory", "SubCategory"],
+        columns=["Date", "Label", "Amount", "Currency", "Type", "MainCategory", "SubCategory"],
         data=[
             (
                 pd.Timestamp("2021-01-05 14:00:41"),
