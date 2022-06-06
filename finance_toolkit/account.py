@@ -1,6 +1,10 @@
+import logging
 import re
 from pathlib import Path
 from typing import Pattern, List
+
+
+logger = logging.getLogger(__name__)
 
 
 class Account:
@@ -74,13 +78,14 @@ class Account:
         return account_full_num.endswith(self.num)
 
     def match(self, path: Path) -> bool:
-        # print(f"path.name: {path.name}")
+        logger.debug(f"{path}")
         for p in self.patterns:
             matched = p.match(path.name)
-            # print(f"{p}: {matched}")
             if matched:
+                logger.debug(f"{p.pattern}: matched")
                 return True
-        # print(f"result: {result}")
+            else:
+                logger.debug(f"{p.pattern}: not matched")
         return False
 
 

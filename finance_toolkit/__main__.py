@@ -12,6 +12,7 @@ Arguments:
 
 Options:
   --finance-root FOLDER    Folder where the configuration file is stored (default: $HOME/finances).
+  -X --debug               Enable debugging logs. Default: false.
 
 """
 
@@ -22,25 +23,39 @@ from docopt import docopt
 
 from .tx import Configurator, merge, move
 
+import logging
+
 
 def main():
     args = docopt(__doc__)
 
+    if "--debug" in args:
+        logging.basicConfig(level=logging.DEBUG)
+    else:
+        logging.basicConfig(level=logging.INFO)
+    logger = logging.getLogger(__name__)
+
     home = Path.home()
+    logger.debug(f"args={args}")
+    logger.debug(f"home={home}")
 
     # Handle the finance folder
     finance_root = args["--finance-root"]
     if not finance_root:
-        # Check the envar
         env = os.getenv("FINANCE_ROOT")
+        logger.debug(
+            f"User did not provide argument '--finance-root', check environment variable: FINANCE_ROOT={env}"  # noqa
+        )
         if env:
             root = Path(env).expanduser()
         else:
             # Use the $HOME/finances folder by default
             root = home / "finances"
     else:
-        # Use the provided folder
+        logger.debug(f"User provided argument '--finance-root'")
         root = Path(finance_root).expanduser()
+
+    logger.debug(f"finance-root={finance_root}")
 
     cfg_path = root / "finance-tools.yml"
     cfg = Configurator.load(cfg_path)

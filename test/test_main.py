@@ -23,6 +23,7 @@ Arguments:
 
 Options:
   --finance-root FOLDER    Folder where the configuration file is stored (default: $HOME/finances).
+  -X --debug               Enable debugging logs. Default: false.
 """
 
 

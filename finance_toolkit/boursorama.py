@@ -32,7 +32,6 @@ class BoursoramaAccount(Account):
             match = pattern.match(filename)
             if match:
                 d = match.groupdict()["date"]
-                # print(d)
                 return datetime.strptime(d, "%d-%m-%Y")
         raise ValueError(f"failed to find date from the filename: {filename}")
 
