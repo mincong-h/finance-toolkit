@@ -57,13 +57,9 @@ class TransactionPipeline(Pipeline, metaclass=ABCMeta):
         # Revolut's data is too accurate, it has the time part.
         # Truncate time and only keep date here:
         df["Date"] = df["Date"].apply(lambda d: d.replace(hour=0, minute=0, second=0))
-        logging.debug("new_transactions:")
-        logging.debug(df)
 
         if csv.exists():
             existing = pd.read_csv(csv, parse_dates=["Date"])
-            logging.debug("existing:")
-            logging.debug(existing)
             df = df.append(existing, sort=False)
 
         df = df.drop_duplicates(subset=["Date", "Label", "Amount"], keep="last")
