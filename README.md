@@ -1,7 +1,12 @@
 # Finance Toolkit
 
 Finance Toolkit is a command line interface (CLI) that helps you to better understand your personal finance situation by collecting
-data from different companies:
+data from different companies. Currenctly,
+
+* It supports 4 banks (see table below).
+* It supports multiple currencies, e.g. EUR (€) and USD ($).
+* It supports auto-completion, which completes metadata (type and categories) automatically for you.
+* It supports multiple users, ideal for single person or family.
 
 | Company | Transaction | Balance | Description |
 | :---: | :---: | :---: | :--- |
