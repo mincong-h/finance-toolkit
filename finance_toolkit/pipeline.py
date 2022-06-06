@@ -1,3 +1,4 @@
+import logging
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
 
@@ -6,6 +7,9 @@ from pandas import DataFrame
 
 from .account import Account
 from .models import Configuration, Summary
+
+
+logger = logging.getLogger(__name__)
 
 
 class Pipeline(metaclass=ABCMeta):
@@ -41,11 +45,20 @@ class TransactionPipeline(Pipeline, metaclass=ABCMeta):
             self.append_transactions(target, tx[tx["Month"] == m])
             summary.add_target(target)
 
-    @classmethod
-    def append_transactions(cls, csv: Path, new_transactions: DataFrame):
+    def append_transactions(self, csv: Path, new_transactions: DataFrame):
         df = new_transactions.copy()
         if csv.exists():
             existing = pd.read_csv(csv, parse_dates=["Date"])
+
+            # keep backward compatibility: existing data don't have column "Currency"
+            if "Currency" in existing.columns:
+                logger.debug(f'Column "Currency" exists in file: {csv}, skip filling')
+            else:
+                logger.debug(
+                    f'Column "Currency" does not exist in file: {csv}, filling it with the account currency'
+                )
+                existing.loc[:, "Currency"] = self.account.currency_symbol.symbol
+
             df = df.append(existing, sort=False)
 
         df = df.drop_duplicates(subset=["Date", "Label", "Amount"], keep="last")
@@ -121,12 +134,22 @@ class BalancePipeline(Pipeline, metaclass=ABCMeta):
         df["AccountType"] = self.account.type
         return df
 
-    @classmethod
-    def write_balances(cls, csv: Path, new_lines: DataFrame):
+    def write_balances(self, csv: Path, new_lines: DataFrame):
         df = new_lines.copy()
         if csv.exists():
             existing = pd.read_csv(csv, parse_dates=["Date"])
+
+            # keep backward compatibility: existing data don't have column "Currency"
+            if "Currency" in existing.columns:
+                logger.debug(f'Column "Currency" exists in file: {csv}, skip filling')
+            else:
+                logger.debug(
+                    f'Column "Currency" does not exist in file: {csv}, filling it with the account currency'
+                )
+                existing.loc[:, "Currency"] = self.account.currency_symbol.symbol
+
             df = df.append(existing, sort=False)
+
         df = df.drop_duplicates(subset=["Date"], keep="last")
         df = df.sort_values(by="Date")
         df.to_csv(csv, index=None, columns=["Date", "Amount", "Currency"])

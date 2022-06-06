@@ -120,6 +120,67 @@ Date,Label,Amount,Currency,Type,MainCategory,SubCategory
     )
 
 
+def test_integration_missing_currency(cfg):
+    """Ensure that we can integrate new data (balance and transactions) even if the currency is
+    missing in the existing files."""
+    (cfg.root_dir / "2021-01").mkdir()
+    (cfg.root_dir / "2021-12").mkdir()
+
+    # Given some existing files
+    tx01 = cfg.root_dir / "2021-01" / "2021-01.user-REV-EUR.csv"
+    tx01.write_text(
+        """\
+Date,Label,Amount,Type,MainCategory,SubCategory
+2021-01-01,This is an existing transaction,10.0,transfer,,
+"""
+    )
+
+    balances = cfg.root_dir / "balance.user-REV-EUR.csv"
+    balances.write_text(
+        """\
+Date,Amount
+2021-01-01 00:00:00,10.00
+"""
+    )
+
+    account = RevolutAccount(
+        account_type="EUR",
+        account_id="user-REV-EUR",
+        account_num="abc123",
+        currency="EUR",
+    )
+    summary = Summary(cfg)
+    new_file = (
+        cfg.download_dir
+        / "account-statement_2021-01-01_2022-05-27_undefined-undefined_abc123.csv"
+    )
+
+    # When running pipeline to integrate new lines
+    RevolutBalancePipeline(account, cfg).run(new_file, summary)
+
+    # Then
+    assert (
+        balances.read_text()
+        == """\
+Date,Amount,Currency
+2021-01-01 00:00:00,10.0,EUR
+2021-01-05 14:00:41,74.43,EUR
+"""
+    )
+
+    # When
+    RevolutTransactionPipeline(account, cfg).run(new_file, summary)
+    # Then
+    assert (
+        tx01.read_text()
+        == """\
+Date,Label,Amount,Currency,Type,MainCategory,SubCategory
+2021-01-01,This is an existing transaction,10.0,EUR,transfer,,
+2021-01-05,Payment from M  Huang Mincong,10.0,EUR,income,,
+"""
+    )
+
+
 def test_integration_deduplicate(cfg):
     # TODO
     pass
