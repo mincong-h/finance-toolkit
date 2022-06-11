@@ -1,3 +1,5 @@
+ [![Build Status](https://github.com/mincong-h/finance-toolkit/workflows/Actions/badge.svg)](https://github.com/mincong-h/java-examples/actions) [![codecov](https://codecov.io/gh/mincong-h/finance-toolkit/branch/master/graph/badge.svg?token=JK56MPT4BL)](https://codecov.io/gh/mincong-h/finance-toolkit)
+
 # Finance Toolkit
 
 Finance Toolkit is a command line interface (CLI) that helps you to better understand your personal finance situation by collecting
