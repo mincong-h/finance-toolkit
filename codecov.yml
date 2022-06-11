@@ -1,0 +1,9 @@
+# https://docs.codecov.com/docs/codecovyml-reference
+codecov:
+  status:
+    project:
+      default:
+        threshold: 100%  # allow dropping 100%, i.e. always success
+    patch:
+      default:
+        threshold: 100%  # allow dropping 100%, i.e. always success
