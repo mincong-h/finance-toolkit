@@ -3,7 +3,7 @@ codecov:
   status:
     project:
       default:
-        threshold: 100%  # allow dropping 100%, i.e. always success
+        informational: true
     patch:
       default:
-        threshold: 100%  # allow dropping 100%, i.e. always success
+        informational: true
