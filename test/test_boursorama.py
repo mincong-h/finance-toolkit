@@ -127,7 +127,7 @@ dateOp;dateVal;label;category;categoryParent;amount;comment;accountNum;accountLa
 Failed to read new Boursorama data. Details:
   path={csv}
   headers=dateOp;dateVal;label;category;categoryParent;amount;comment;accountNum;accountLabel;accountbalance
-  pandas_kwargs={{'decimal': ',', 'delimiter': ';', 'dtype': {{'accountNum': 'str'}}, 'encoding': 'ISO-8859-1', 'parse_dates': ['dateOp', 'dateVal'], 'skipinitialspace': True, 'thousands': ' '}}
+  pandas_kwargs={{'decimal': ',', 'delimiter': ';', 'dtype': {{'accountNum': 'str', 'accountbalance': 'str'}}, 'encoding': 'ISO-8859-1', 'parse_dates': ['dateOp', 'dateVal'], 'skipinitialspace': True, 'thousands': ' '}}
   pandas_error=oops"""  # noqa: E501
     )
 
