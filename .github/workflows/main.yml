@@ -33,8 +33,11 @@ jobs:
       run: |
         . venv/bin/activate
         coverage report
+        coverage xml -o coverage.xml
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
+      with:
+        files: ./coverage.xml
 
   release:
     if: ${{ github.ref == 'refs/heads/master' || github.ref == 'refs/heads/docker' }}
