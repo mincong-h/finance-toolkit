@@ -1,6 +1,7 @@
 import logging
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
+from typing import Dict
 
 import pandas as pd
 from pandas import DataFrame
@@ -183,3 +184,18 @@ class AccountParser:
             account_num="unknown",
             patterns=[r"unknown"],
         )
+
+
+class PipelineDataError(ValueError):
+    def __init__(self, msg: str, path: Path, expected_columns: Dict[str, str], cause: ValueError):
+        self.msg = msg
+        self.path = path
+        self.expected_columns = expected_columns
+        self.cause = cause
+
+    def __repr__(self):
+        return f"""\
+{self.msg} Details:
+  path={self.path}
+  expected_columns={self.expected_columns}
+  cause={self.cause}"""

@@ -1,3 +1,4 @@
+import logging
 from abc import ABCMeta
 from datetime import datetime
 from pathlib import Path
@@ -8,7 +9,7 @@ from pandas import DataFrame
 
 from .account import Account
 from .models import TxType, Configuration
-from .pipeline import Pipeline, TransactionPipeline, BalancePipeline
+from .pipeline import Pipeline, TransactionPipeline, BalancePipeline, PipelineDataError
 
 
 class BoursoramaAccount(Account):
@@ -42,16 +43,32 @@ class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
         self.account: BoursoramaAccount = account
 
     def read_raw(self, csv: Path) -> Tuple[DataFrame, DataFrame]:
-        df = pd.read_csv(
-            csv,
-            decimal=",",
-            delimiter=";",
-            dtype={"accountNum": "str"},
-            encoding="ISO-8859-1",
-            parse_dates=["dateOp", "dateVal"],
-            skipinitialspace=True,
-            thousands=" ",
-        )
+        try:
+            df = pd.read_csv(
+                csv,
+                decimal=",",
+                delimiter=";",
+                dtype={"accountNum": "str"},
+                encoding="ISO-8859-1",
+                parse_dates=["dateOp", "dateVal"],
+                skipinitialspace=True,
+                thousands=" ",
+            )
+        except ValueError as e:
+            raise PipelineDataError(
+                msg="Failed to read Boursorama data.",
+                cause=e,
+                expected_columns={
+                    "dateOp": "date",
+                    "dateVal": "date",
+                    "label": "str",
+                    "amount": "float",
+                    "accountNum": "str",
+                    "accountbalance": "str",
+                },
+                path=csv,
+            )
+
         df = df.rename(columns={"accountbalance": "accountBalance"})
 
         # Boursorama > Transaction
