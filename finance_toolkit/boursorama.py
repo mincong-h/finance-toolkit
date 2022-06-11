@@ -51,7 +51,7 @@ class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
                 # uses ',' as decimal, so we handle the parsing ourselves.
                 "accountbalance": "str",
             },
-            "encoding": "ISO-8859-1",
+            "encoding": "UTF-8",
             "parse_dates": ["dateOp", "dateVal"],
             "skipinitialspace": True,
             "thousands": " ",

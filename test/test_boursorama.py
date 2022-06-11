@@ -55,7 +55,6 @@ dateOp;dateVal;Label;category;categoryParent;Amount;accountNum;accountLabel;acco
 2019-08-30;2019-08-30;"VIR Virement interne depuis BOURSORA";"Virements reçus de comptes à comptes";"Mouvements internes créditeurs";10,00;00001234;"COMPTE SUR LIVRET";1000.00
 2019-09-02;2019-09-02;"VIR Virement interne depuis BOURSORA";"Virements reçus de comptes à comptes";"Mouvements internes créditeurs";11,00;00001234;"COMPTE SUR LIVRET";1000.00
 """,  # noqa: E501
-        encoding="ISO-8859-1",
     )
 
     # When integrating new lines
@@ -127,7 +126,7 @@ dateOp;dateVal;label;category;categoryParent;amount;comment;accountNum;accountLa
 Failed to read new Boursorama data. Details:
   path={csv}
   headers=dateOp;dateVal;label;category;categoryParent;amount;comment;accountNum;accountLabel;accountbalance
-  pandas_kwargs={{'decimal': ',', 'delimiter': ';', 'dtype': {{'accountNum': 'str', 'accountbalance': 'str'}}, 'encoding': 'ISO-8859-1', 'parse_dates': ['dateOp', 'dateVal'], 'skipinitialspace': True, 'thousands': ' '}}
+  pandas_kwargs={{'decimal': ',', 'delimiter': ';', 'dtype': {{'accountNum': 'str', 'accountbalance': 'str'}}, 'encoding': 'UTF-8', 'parse_dates': ['dateOp', 'dateVal'], 'skipinitialspace': True, 'thousands': ' '}}
   pandas_error=oops"""  # noqa: E501
     )
 

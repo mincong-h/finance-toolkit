@@ -1,5 +1,5 @@
 dateOp;dateVal;label;category;categoryParent;amount;accountNum;accountLabel;accountbalance
-2019-03-12;2019-03-12;"Prime Parrainage";"Virements re�us";"Virements re�us";80,00;001234;"BOURSORAMA BANQUE";370.00
-2019-03-12;2019-03-12;"VIR VIREMENT CREATION COMPTE";"Virements re�us";"Virements re�us";300,00;001234;"BOURSORAMA BANQUE";370.00
-2019-03-12;2019-03-12;"VIR VIREMENT CREATION COMPTE";"Virements �mis de comptes � comptes";"Mouvements internes d�biteurs";-10,00;001234;"BOURSORAMA BANQUE";370.00
-2019-03-12;2019-03-12;"VIR VIREMENT CREATION COMPTE";"Virements re�us de comptes � comptes";"Mouvements internes cr�diteurs";10,00;003607;"COMPTE SUR LIVRET";4810.00
+2019-03-12;2019-03-12;"Prime Parrainage";"Virements reçus";"Virements reçus";80,00;001234;"BOURSORAMA BANQUE";370.00
+2019-03-12;2019-03-12;"VIR VIREMENT CREATION COMPTE";"Virements reçus";"Virements reçus";300,00;001234;"BOURSORAMA BANQUE";370.00
+2019-03-12;2019-03-12;"VIR VIREMENT CREATION COMPTE";"Virements émis de comptes à comptes";"Mouvements internes débiteurs";-10,00;001234;"BOURSORAMA BANQUE";370.00
+2019-03-12;2019-03-12;"VIR VIREMENT CREATION COMPTE";"Virements reçus de comptes à comptes";"Mouvements internes créditeurs";10,00;003607;"COMPTE SUR LIVRET";4810.00
