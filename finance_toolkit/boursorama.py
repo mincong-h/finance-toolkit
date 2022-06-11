@@ -38,34 +38,40 @@ class BoursoramaAccount(Account):
 
 
 class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
+    raw_data_columns_dtype={
+        "dateOp": "date",
+        "dateVal": "date",
+        "label": "?",
+        "amount": "?",
+        "accountNum": "str",
+        "accountbalance": "?",
+    }
+
     def __init__(self, account: BoursoramaAccount, cfg: Configuration):
         super().__init__(account, cfg)
         self.account: BoursoramaAccount = account
 
     def read_raw(self, csv: Path) -> Tuple[DataFrame, DataFrame]:
+        dtype = {col: t for col, t in self.raw_data_columns_dtype.items() if t not in ["?", "date"]}
+        parse_dates = [col for col, t in self.raw_data_columns_dtype.items() if t == "date"]
         try:
             df = pd.read_csv(
                 csv,
                 decimal=",",
                 delimiter=";",
-                dtype={"accountNum": "str"},
+                dtype=dtype,
                 encoding="ISO-8859-1",
-                parse_dates=["dateOp", "dateVal"],
+                parse_dates=parse_dates,
                 skipinitialspace=True,
                 thousands=" ",
             )
         except ValueError as e:
             raise PipelineDataError(
-                msg="Failed to read Boursorama data.",
+                msg="Failed to read new Boursorama data.",
                 cause=e,
-                expected_columns={
-                    "dateOp": "date",
-                    "dateVal": "date",
-                    "label": "str",
-                    "amount": "float",
-                    "accountNum": "str",
-                    "accountbalance": "str",
-                },
+                expected_columns=self.raw_data_columns_dtype,
+                type_columns=dtype,
+                date_columns=parse_dates,
                 path=csv,
             )
 
