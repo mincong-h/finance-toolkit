@@ -37,47 +37,28 @@ class BoursoramaAccount(Account):
 
 
 class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
-    raw_data_columns_dtype = {
-        "dateOp": "date",
-        "dateVal": "date",
-        "label": "?",
-        "amount": "?",
-        "accountNum": "str",
-        "accountbalance": "?",
-    }
-
     def __init__(self, account: BoursoramaAccount, cfg: Configuration):
         super().__init__(account, cfg)
         self.account: BoursoramaAccount = account
 
     def read_raw(self, csv: Path) -> Tuple[DataFrame, DataFrame]:
-        dtype = {
-            col: t
-            for col, t in self.raw_data_columns_dtype.items()
-            if t not in ["?", "date"]
+        kwargs = {
+            "decimal": ",",
+            "delimiter": ";",
+            "dtype": {"accountNum": "str"},
+            "encoding": "ISO-8859-1",
+            "parse_dates": ["dateOp", "dateVal"],
+            "skipinitialspace": True,
+            "thousands": " ",
         }
-        parse_dates = [
-            col for col, t in self.raw_data_columns_dtype.items() if t == "date"
-        ]
         try:
-            df = pd.read_csv(
-                csv,
-                decimal=",",
-                delimiter=";",
-                dtype=dtype,
-                encoding="ISO-8859-1",
-                parse_dates=parse_dates,
-                skipinitialspace=True,
-                thousands=" ",
-            )
+            df = pd.read_csv(csv, **kwargs)
         except ValueError as e:
             # TODO add first line of the CSV
             raise PipelineDataError(
                 msg="Failed to read new Boursorama data.",
                 path=csv,
-                expected_columns=self.raw_data_columns_dtype,
-                pandas_dtype=dtype,
-                pandas_parse_dates=parse_dates,
+                pandas_kwargs=kwargs,
                 pandas_error=e,
             )
 

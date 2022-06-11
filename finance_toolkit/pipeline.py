@@ -191,23 +191,17 @@ class PipelineDataError(ValueError):
         self,
         msg: str,
         path: Path,
-        expected_columns: Dict[str, str],
-        pandas_dtype: Dict[str, str],
-        pandas_parse_dates: List[str],
         pandas_error: ValueError,
+        pandas_kwargs,
     ):
         self.msg = msg
         self.path = path
-        self.expected_columns = expected_columns
-        self.pandas_dtype = pandas_dtype
-        self.pandas_parse_dates = pandas_parse_dates
+        self.pandas_kwargs = pandas_kwargs
         self.pandas_error = pandas_error
 
     def __str__(self):
         return f"""\
 {self.msg} Details:
   path={self.path}
-  expected_columns={self.expected_columns}
-  pandas_dtype={self.pandas_dtype}
-  pandas_parse_dates={self.pandas_parse_dates}
+  pandas_kwargs={self.pandas_kwargs}
   pandas_error={self.pandas_error}"""
