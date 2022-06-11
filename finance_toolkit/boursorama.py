@@ -37,7 +37,7 @@ class BoursoramaAccount(Account):
 
 
 class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
-    raw_data_columns_dtype={
+    raw_data_columns_dtype = {
         "dateOp": "date",
         "dateVal": "date",
         "label": "?",
@@ -51,8 +51,14 @@ class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
         self.account: BoursoramaAccount = account
 
     def read_raw(self, csv: Path) -> Tuple[DataFrame, DataFrame]:
-        dtype = {col: t for col, t in self.raw_data_columns_dtype.items() if t not in ["?", "date"]}
-        parse_dates = [col for col, t in self.raw_data_columns_dtype.items() if t == "date"]
+        dtype = {
+            col: t
+            for col, t in self.raw_data_columns_dtype.items()
+            if t not in ["?", "date"]
+        }
+        parse_dates = [
+            col for col, t in self.raw_data_columns_dtype.items() if t == "date"
+        ]
         try:
             df = pd.read_csv(
                 csv,

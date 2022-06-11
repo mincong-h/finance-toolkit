@@ -187,13 +187,15 @@ class AccountParser:
 
 
 class PipelineDataError(ValueError):
-    def __init__(self,
-                 msg: str,
-                 path: Path,
-                 expected_columns: Dict[str, str],
-                 pandas_dtype: Dict[str, str],
-                 pandas_parse_dates: List[str],
-                 pandas_error: ValueError):
+    def __init__(
+        self,
+        msg: str,
+        path: Path,
+        expected_columns: Dict[str, str],
+        pandas_dtype: Dict[str, str],
+        pandas_parse_dates: List[str],
+        pandas_error: ValueError,
+    ):
         self.msg = msg
         self.path = path
         self.expected_columns = expected_columns
