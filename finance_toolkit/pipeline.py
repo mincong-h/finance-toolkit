@@ -1,7 +1,6 @@
 import logging
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
-from typing import Dict, List
 
 import pandas as pd
 from pandas import DataFrame
@@ -191,11 +190,13 @@ class PipelineDataError(ValueError):
         self,
         msg: str,
         path: Path,
+        headers: str,
         pandas_error: ValueError,
         pandas_kwargs,
     ):
         self.msg = msg
         self.path = path
+        self.headers = headers
         self.pandas_kwargs = pandas_kwargs
         self.pandas_error = pandas_error
 
@@ -203,5 +204,6 @@ class PipelineDataError(ValueError):
         return f"""\
 {self.msg} Details:
   path={self.path}
+  headers={self.headers}
   pandas_kwargs={self.pandas_kwargs}
   pandas_error={self.pandas_error}"""

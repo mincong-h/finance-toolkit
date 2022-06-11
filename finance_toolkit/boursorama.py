@@ -54,10 +54,12 @@ class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
         try:
             df = pd.read_csv(csv, **kwargs)
         except ValueError as e:
-            # TODO add first line of the CSV
+            with csv.open(encoding="ISO-8859-1") as f:
+                headers = next(f).strip()
             raise PipelineDataError(
                 msg="Failed to read new Boursorama data.",
                 path=csv,
+                headers=headers,
                 pandas_kwargs=kwargs,
                 pandas_error=e,
             )
