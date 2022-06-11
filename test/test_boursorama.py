@@ -1,6 +1,7 @@
 import re
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 import pandas as pd
 import pytest
@@ -12,6 +13,7 @@ from finance_toolkit.boursorama import (
     BoursoramaTransactionPipeline,
 )
 from finance_toolkit.models import Summary, TxType
+from finance_toolkit.pipeline import PipelineDataError
 from finance_toolkit.tx import TxCompletion
 
 
@@ -97,6 +99,37 @@ Date,Amount,Currency
     assert tx08 in summary.targets
     assert tx09 in summary.targets
     assert balance_file in summary.targets
+
+
+@patch("pandas.read_csv")
+def test_pipeline_read_raw(mocked_read_csv, cfg):
+    mocked_read_csv.side_effect = ValueError("oops")
+    csv = cfg.root_dir / "export-operations-11-06-2022_18-00-00.csv"
+    csv.write_text(
+        """\
+dateOp;dateVal;label;category;categoryParent;amount;comment;accountNum;accountLabel;accountbalance
+2021-08-17;2021-08-17;"Prime Parrainage";"Virements reçus";"Virements reçus";130,00;;00040677485;"BOURSORAMA BANQUE";226.68
+"""  # noqa: E501
+    )
+
+    account = BoursoramaAccount("type1", "name1", "001234")
+    cfg.accounts.append(account)
+    captured_error = None
+
+    try:
+        BoursoramaTransactionPipeline(account, cfg).read_raw(csv)
+    except PipelineDataError as e:
+        captured_error = e
+
+    assert (
+        str(captured_error)
+        == f"""\
+Failed to read new Boursorama data. Details:
+  path={csv}
+  headers=dateOp;dateVal;label;category;categoryParent;amount;comment;accountNum;accountLabel;accountbalance
+  pandas_kwargs={{'decimal': ',', 'delimiter': ';', 'dtype': {{'accountNum': 'str'}}, 'encoding': 'ISO-8859-1', 'parse_dates': ['dateOp', 'dateVal'], 'skipinitialspace': True, 'thousands': ' '}}
+  pandas_error=oops"""  # noqa: E501
+    )
 
 
 def test_boursorama_account_read_raw_2019_03_30(cfg):

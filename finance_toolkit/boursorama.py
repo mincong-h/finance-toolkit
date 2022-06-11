@@ -8,7 +8,7 @@ from pandas import DataFrame
 
 from .account import Account
 from .models import TxType, Configuration
-from .pipeline import Pipeline, TransactionPipeline, BalancePipeline
+from .pipeline import Pipeline, TransactionPipeline, BalancePipeline, PipelineDataError
 
 
 class BoursoramaAccount(Account):
@@ -42,21 +42,34 @@ class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
         self.account: BoursoramaAccount = account
 
     def read_raw(self, csv: Path) -> Tuple[DataFrame, DataFrame]:
-        df = pd.read_csv(
-            csv,
-            decimal=",",
-            delimiter=";",
-            dtype={
+        kwargs = {
+            "decimal": ",",
+            "delimiter": ";",
+            "dtype": {
                 "accountNum": "str",
                 # This column uses ISO format, i.e. using '.' as decimal, but the "amount" column
                 # uses ',' as decimal, so we handle the parsing ourselves.
                 "accountbalance": "str",
             },
-            encoding="ISO-8859-1",
-            parse_dates=["dateOp", "dateVal"],
-            skipinitialspace=True,
-            thousands=" ",
-        )
+            "encoding": "ISO-8859-1",
+            "parse_dates": ["dateOp", "dateVal"],
+            "skipinitialspace": True,
+            "thousands": " ",
+        }
+        try:
+            df = pd.read_csv(csv, **kwargs)
+        except ValueError as e:
+            with csv.open(encoding=kwargs["encoding"]) as f:
+                headers = next(f).strip()
+            raise PipelineDataError(
+                msg="Failed to read new Boursorama data.",
+                path=csv,
+                headers=headers,
+                pandas_kwargs=kwargs,
+                pandas_error=e,
+            )
+
+        df = df.rename(columns={"accountbalance": "accountBalance"})
 
         # Boursorama > Transaction
         transactions = df[df["accountNum"].map(self.account.is_account)]
