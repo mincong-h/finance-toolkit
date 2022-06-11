@@ -183,3 +183,27 @@ class AccountParser:
             account_num="unknown",
             patterns=[r"unknown"],
         )
+
+
+class PipelineDataError(ValueError):
+    def __init__(
+        self,
+        msg: str,
+        path: Path,
+        headers: str,
+        pandas_error: ValueError,
+        pandas_kwargs,
+    ):
+        self.msg = msg
+        self.path = path
+        self.headers = headers
+        self.pandas_kwargs = pandas_kwargs
+        self.pandas_error = pandas_error
+
+    def __str__(self):
+        return f"""\
+{self.msg} Details:
+  path={self.path}
+  headers={self.headers}
+  pandas_kwargs={self.pandas_kwargs}
+  pandas_error={self.pandas_error}"""
