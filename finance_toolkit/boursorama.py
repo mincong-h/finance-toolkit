@@ -1,4 +1,3 @@
-import logging
 from abc import ABCMeta
 from datetime import datetime
 from pathlib import Path
@@ -68,11 +67,11 @@ class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
         except ValueError as e:
             raise PipelineDataError(
                 msg="Failed to read new Boursorama data.",
-                cause=e,
+                path=csv,
                 expected_columns=self.raw_data_columns_dtype,
                 type_columns=dtype,
                 date_columns=parse_dates,
-                path=csv,
+                pandas_cause=e,
             )
 
         df = df.rename(columns={"accountbalance": "accountBalance"})

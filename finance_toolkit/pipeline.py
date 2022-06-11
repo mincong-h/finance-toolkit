@@ -193,13 +193,13 @@ class PipelineDataError(ValueError):
                  expected_columns: Dict[str, str],
                  type_columns: Dict[str, str],
                  date_columns: List[str],
-                 cause: ValueError):
+                 pandas_cause: ValueError):
         self.msg = msg
         self.path = path
         self.expected_columns = expected_columns
         self.type_columns = type_columns
         self.date_columns = date_columns
-        self.cause = cause
+        self.pandas_cause = pandas_cause
 
     def __str__(self):
         return f"""\
@@ -208,4 +208,4 @@ class PipelineDataError(ValueError):
   expected_columns={self.expected_columns}
   type_columns={self.type_columns}
   date_columns={self.date_columns}
-  cause={self.cause}"""
+  pandas_cause={self.pandas_cause}"""
