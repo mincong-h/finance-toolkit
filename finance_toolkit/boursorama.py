@@ -46,13 +46,17 @@ class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
             csv,
             decimal=",",
             delimiter=";",
-            dtype={"accountNum": "str"},
+            dtype={
+                "accountNum": "str",
+                # This column uses ISO format, i.e. using '.' as decimal, but the "amount" column
+                # uses ',' as decimal, so we handle the parsing ourselves.
+                "accountbalance": "str",
+            },
             encoding="ISO-8859-1",
             parse_dates=["dateOp", "dateVal"],
             skipinitialspace=True,
             thousands=" ",
         )
-        df = df.rename(columns={"accountbalance": "accountBalance"})
 
         # Boursorama > Transaction
         transactions = df[df["accountNum"].map(self.account.is_account)]
@@ -64,11 +68,13 @@ class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
         transactions = transactions.assign(
             Currency=lambda row: self.account.currency_symbol
         )
-        del transactions["dateVal"]
-        del transactions["category"]
-        del transactions["categoryParent"]
+        transactions = transactions[
+            ["Date", "Label", "Amount", "Currency", "accountNum"]
+        ]
 
         # Boursorama > Balance
+        df = df.rename(columns={"accountbalance": "accountBalance"})
+        df["accountBalance"] = df["accountBalance"].astype(float)
         balances = df.groupby("accountNum")["accountBalance"].max().to_frame()
         balances.reset_index(inplace=True)
         balances["Date"] = self.account.get_operations_date(csv.name) - pd.Timedelta(
