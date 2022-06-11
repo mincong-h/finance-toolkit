@@ -52,10 +52,9 @@ Date,Amount
     new_file.write_text(
         """\
 dateOp;dateVal;Label;category;categoryParent;Amount;accountNum;accountLabel;accountbalance
-2019-08-30;2019-08-30;"VIR Virement interne depuis BOURSORA";"Virements reçus de comptes à comptes";"Mouvements internes créditeurs";10,00;00001234;"COMPTE SUR LIVRET";"1 000,00"
-2019-09-02;2019-09-02;"VIR Virement interne depuis BOURSORA";"Virements reçus de comptes à comptes";"Mouvements internes créditeurs";11,00;00001234;"COMPTE SUR LIVRET";"1 000,00"
+2019-08-30;2019-08-30;"VIR Virement interne depuis BOURSORA";"Virements reçus de comptes à comptes";"Mouvements internes créditeurs";10,00;00001234;"COMPTE SUR LIVRET";1000.00
+2019-09-02;2019-09-02;"VIR Virement interne depuis BOURSORA";"Virements reçus de comptes à comptes";"Mouvements internes créditeurs";11,00;00001234;"COMPTE SUR LIVRET";1000.00
 """,  # noqa: E501
-        encoding="ISO-8859-1",
     )
 
     # When integrating new lines
@@ -127,12 +126,12 @@ dateOp;dateVal;label;category;categoryParent;amount;comment;accountNum;accountLa
 Failed to read new Boursorama data. Details:
   path={csv}
   headers=dateOp;dateVal;label;category;categoryParent;amount;comment;accountNum;accountLabel;accountbalance
-  pandas_kwargs={{'decimal': ',', 'delimiter': ';', 'dtype': {{'accountNum': 'str'}}, 'encoding': 'ISO-8859-1', 'parse_dates': ['dateOp', 'dateVal'], 'skipinitialspace': True, 'thousands': ' '}}
+  pandas_kwargs={{'decimal': ',', 'delimiter': ';', 'dtype': {{'accountNum': 'str', 'accountbalance': 'str'}}, 'encoding': 'UTF-8', 'parse_dates': ['dateOp', 'dateVal'], 'skipinitialspace': True, 'thousands': ' '}}
   pandas_error=oops"""  # noqa: E501
     )
 
 
-def test_boursorama_account_read_raw(cfg):
+def test_boursorama_account_read_raw_2019_03_30(cfg):
     csv = cfg.download_dir / "export-operations-30-03-2019_08-50-51.csv"
 
     account = BoursoramaAccount("type1", "name1", "001234")
@@ -151,39 +150,74 @@ def test_boursorama_account_read_raw(cfg):
             "Date",
             "Label",
             "Amount",
-            "accountNum",
-            "accountLabel",
-            "accountBalance",
             "Currency",
+            "accountNum",
         ],
         data=[
             (
                 pd.Timestamp("2019-03-12"),
                 "Prime Parrainage",
                 80.0,
-                "001234",
-                "BOURSORAMA BANQUE",
-                370.0,
                 "EUR",
+                "001234",
             ),
             (
                 pd.Timestamp("2019-03-12"),
                 "VIR VIREMENT CREATION COMPTE",
                 300.0,
-                "001234",
-                "BOURSORAMA BANQUE",
-                370.0,
                 "EUR",
+                "001234",
             ),
             (
                 pd.Timestamp("2019-03-12"),
                 "VIR VIREMENT CREATION COMPTE",
                 -10.0,
-                "001234",
-                "BOURSORAMA BANQUE",
-                370.0,
                 "EUR",
+                "001234",
             ),
+        ],
+    )
+    assert_frame_equal(expected_transactions, actual_transactions)
+
+
+def test_boursorama_account_read_raw_2022_06_11(cfg):
+    csv = cfg.download_dir / "export-operations-11-06-2022_09-52-55.csv"
+
+    account = BoursoramaAccount("type1", "name1", "001234")
+    cfg.accounts.append(account)
+    actual_balances, actual_transactions = BoursoramaTransactionPipeline(
+        account, cfg
+    ).read_raw(csv)
+
+    expected_balances = pd.DataFrame(
+        columns=["accountNum", "Date", "Amount", "Currency"],
+        data=[
+            (
+                "001234",
+                # -1 because of https://github.com/mincong-h/finance-toolkit/issues/72
+                pd.Timestamp("2022-06-10"),
+                226.68,
+                "EUR",
+            )
+        ],
+    )
+    assert_frame_equal(expected_balances, actual_balances)
+    expected_transactions = pd.DataFrame(
+        columns=[
+            "Date",
+            "Label",
+            "Amount",
+            "Currency",
+            "accountNum",
+        ],
+        data=[
+            (
+                pd.Timestamp("2021-08-17"),
+                "Prime Parrainage",
+                130.0,
+                "EUR",
+                "001234",
+            )
         ],
     )
     assert_frame_equal(expected_transactions, actual_transactions)
@@ -220,10 +254,8 @@ def test_boursorama_account_read_raw_account_2(cfg):
             "Date": pd.Timestamp("2019-03-12"),
             "Label": "VIR VIREMENT CREATION COMPTE",
             "Amount": 10.0,
-            "accountNum": "003607",
-            "accountLabel": "COMPTE SUR LIVRET",
-            "accountBalance": 4810.0,
             "Currency": "EUR",
+            "accountNum": "003607",
         },
         index=[0],
     )
