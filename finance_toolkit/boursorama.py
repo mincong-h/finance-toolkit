@@ -65,13 +65,14 @@ class BoursoramaPipeline(Pipeline, metaclass=ABCMeta):
                 thousands=" ",
             )
         except ValueError as e:
+            # TODO add first line of the CSV
             raise PipelineDataError(
                 msg="Failed to read new Boursorama data.",
                 path=csv,
                 expected_columns=self.raw_data_columns_dtype,
-                type_columns=dtype,
-                date_columns=parse_dates,
-                pandas_cause=e,
+                pandas_dtype=dtype,
+                pandas_parse_dates=parse_dates,
+                pandas_error=e,
             )
 
         df = df.rename(columns={"accountbalance": "accountBalance"})
