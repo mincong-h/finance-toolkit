@@ -193,7 +193,7 @@ class PipelineDataError(ValueError):
         self.expected_columns = expected_columns
         self.cause = cause
 
-    def __repr__(self):
+    def __str__(self):
         return f"""\
 {self.msg} Details:
   path={self.path}
