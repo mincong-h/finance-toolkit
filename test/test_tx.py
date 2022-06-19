@@ -637,6 +637,9 @@ def test_configurator_parse_yaml(sample):
             account_id="astark-REV-EUR",
             account_num="astark1",
             currency="EUR",
+            extra_patterns=[
+                r"account-statement_(\d{4}-\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})_en_(\w+)\.csv"
+            ],
         ),
         RevolutAccount(
             account_type="CHQ",

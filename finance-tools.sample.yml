@@ -57,6 +57,8 @@ accounts:
     type: CHQ
     id: 'astark1'
     currency: EUR
+    expressions:
+      - account-statement_(\d{4}-\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})_en_(\w+)\.csv
     label: Arya Stark - Revolut (Euro)
 
   astark-REV-USD:
