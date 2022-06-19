@@ -90,7 +90,7 @@ class Configurator:
                         account_id=symbolic_name,
                         account_num=fields["id"],
                         currency=fields["currency"],
-                        extra_patterns=fields["expressions"],
+                        extra_patterns=fields["expressions"] if "expressions" in fields else None,
                     )
                 )
             elif company == "October":
