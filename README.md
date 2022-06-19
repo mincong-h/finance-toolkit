@@ -214,7 +214,7 @@ https://www.revolut.com/en-US/help/my-accounts/managing-my-account/viewing-my-ac
 
 Follow the steps below to download CSV files:
 
-* Open mobile application
+* Open web application <https://app.revolut.com/>
 * Go to "Accounts" tab
 * Click "..." (more) and select "Statement"
 * Enter parameters for export:
