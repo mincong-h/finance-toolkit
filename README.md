@@ -179,16 +179,25 @@ python -m pytest
 File name format:
 
 ```
-account-statement_{START_DATE}_{END_DATE}_undefined-undefined_{ACCOUNT_ID}.csv
+account-statement_{START_DATE}_{END_DATE}_{LANG}_{STATEMENT_ID}.csv
 ```
 
-It consists of 3 parameters: the start date (format: yyyy-MM-dd), the end date (format: yyyy-MM-dd),
-and the account id in 6 hexadecimal digits.
+It consists of several parameters:
+* the start date (format: yyyy-MM-dd)
+* the end date (format: yyyy-MM-dd)
+* the language tag ([wikipedia](https://en.wikipedia.org/wiki/Language_code)),
+  such as "en" for the US dollar account (USD). The value of your first account
+  is "undefined-undefined".
+* The download statement ID in 6 hexadecimal digits.
 
-Example:
+Examples:
 
-```
+```sh
+# EUR
 account-statement_2021-01-01_2022-05-27_undefined-undefined_abc123.csv
+
+# USD
+account-statement_2021-01-01_2022-05-27_en_def123.csv
 ```
 
 Delimiter: `,`
