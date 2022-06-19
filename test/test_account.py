@@ -203,17 +203,16 @@ def test_october_account_match():
 # ---------- Class: RevolutAccount ----------
 
 
-def test_revolut_account_match():
+def test_revolut_account_match_euro():
     account1 = RevolutAccount(
         account_type="aType", account_id="anId", account_num="myLogin", currency="EUR"
     )
     assert account1.match(Path("Revolut-EUR-Statement-Oct – Nov 2020.csv"))
+    assert account1.match(
+        Path("account-statement_2021-01-01_2022-05-27_undefined-undefined_abc123.csv")
+    )
     assert (
-        account1.match(
-            Path(
-                "account-statement_2021-01-01_2022-05-27_undefined-undefined_abc123.csv"
-            )
-        )
+        account1.match(Path("account-statement_2021-01-01_2022-05-27_en_abc123.csv"))
         is False
     )
 
@@ -227,11 +226,35 @@ def test_revolut_account_match():
     assert account2.match(
         Path("account-statement_2021-01-01_2022-05-27_undefined-undefined_abc123.csv")
     )
+    assert account2.match(
+        Path("account-statement_2021-01-01_2022-05-27_undefined-undefined_edf123.csv")
+    )
     assert (
-        account2.match(
+        account1.match(Path("account-statement_2021-01-01_2022-05-27_en_abc123.csv"))
+        is False
+    )
+
+
+def test_revolut_account_match_dollar():
+    account = RevolutAccount(
+        account_type="aType", account_id="anId", account_num="myLogin", currency="USD"
+    )
+    assert account.match(Path("Revolut-EUR-Statement-Oct – Nov 2020.csv"))
+    assert (
+        account.match(
+            Path(
+                "account-statement_2021-01-01_2022-05-27_undefined-undefined_abc123.csv"
+            )
+        )
+        is False
+    )
+    assert (
+        account.match(
             Path(
                 "account-statement_2021-01-01_2022-05-27_undefined-undefined_edf123.csv"
             )
         )
         is False
     )
+    assert account.match(Path("account-statement_2021-01-01_2022-05-27_en_abc123.csv"))
+    assert account.match(Path("account-statement_2021-01-01_2022-05-27_en_edf123.csv"))

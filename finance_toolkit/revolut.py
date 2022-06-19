@@ -11,6 +11,11 @@ from .pipeline import Pipeline, TransactionPipeline, BalancePipeline
 
 
 class RevolutAccount(Account):
+    default_patterns = {
+        "EUR": r"account-statement_(\d{4}-\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})_undefined-undefined_(\w+)\.csv",  # noqa
+        "USD": r"account-statement_(\d{4}-\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})_en_(\w+)\.csv",  # noqa
+    }
+
     def __init__(
         self,
         account_type: str,
@@ -21,8 +26,7 @@ class RevolutAccount(Account):
     ):
         patterns = [
             r"Revolut-(.*)-Statement-(.*)\.csv",
-            r"account-statement_(\d{4}-\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})_undefined-undefined_%s\.csv"  # noqa
-            % account_num,
+            self.default_patterns[currency],
         ]
         if extra_patterns:
             patterns.extend(extra_patterns)
