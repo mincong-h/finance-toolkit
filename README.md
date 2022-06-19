@@ -185,7 +185,7 @@ account-statement_{START_DATE}_{END_DATE}_{LANG}_{STATEMENT_ID}.csv
 It consists of several parameters:
 * the start date (format: yyyy-MM-dd)
 * the end date (format: yyyy-MM-dd)
-* the language tag ([wikipedia](https://en.wikipedia.org/wiki/Language_code),
+* the language tag ([wikipedia](https://en.wikipedia.org/wiki/Language_code)),
   such as "en" for the US dollar account (USD). The value of your first account
   is "undefined-undefined".
 * The download statement ID in 6 hexadecimal digits.
