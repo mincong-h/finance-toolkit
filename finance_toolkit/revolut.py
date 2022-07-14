@@ -56,6 +56,7 @@ class RevolutAccount(Account):
             currency=currency,
             patterns=patterns,
         )
+        self.skip_integration = account_type != self.TYPE_CASH
 
 
 class RevolutPipeline(Pipeline, metaclass=ABCMeta):
