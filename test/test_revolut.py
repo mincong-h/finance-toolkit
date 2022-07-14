@@ -4,7 +4,6 @@ from pandas.testing import assert_frame_equal
 from finance_toolkit.models import Summary
 from finance_toolkit.revolut import (
     RevolutAccount,
-    RevolutPipeline,
     RevolutBalancePipeline,
     RevolutTransactionPipeline,
 )
@@ -16,9 +15,17 @@ def test_read_raw_2022_05_27(cfg):
         cfg.download_dir
         / "account-statement_2021-01-01_2022-05-27_undefined-undefined_abc123.csv"
     )
+    account = RevolutAccount(
+        account_type="EUR",
+        account_id="user-REV-EUR",
+        account_num="abc123",
+        currency="EUR",
+    )
 
     # When
-    actual_balances, actual_transactions = RevolutPipeline.read_raw(csv)
+    actual_balances, actual_transactions = RevolutTransactionPipeline(
+        account, cfg
+    ).read_raw(csv)
 
     # Then
     expected_balances = pd.DataFrame(
