@@ -64,9 +64,13 @@ class RevolutPipeline(Pipeline, metaclass=ABCMeta):
             parse_dates=["Started Date", "Completed Date"],
         )
 
-        # In Revolut, the downloaded CSV files do not contain sufficient information about the
-        # account. Therefore, we iterate through all files and post-filter on the currency-symbol.
+        # The downloaded CSV files do not contain sufficient information about the account.
+        # Therefore, we iterate through all files and post-filter on the currency-symbol.
         df = df.loc[df["Currency"] == self.account.currency_symbol]
+
+        # We ignore pending transactions as they don't have completed date, and they are not
+        # interesting for the reporting. We will integrate them once they are completed.
+        df = df.loc[df["State"] != "PENDING"]
 
         balances = df[["Completed Date", "Balance", "Currency"]]
         balances = balances.rename(

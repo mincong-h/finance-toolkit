@@ -102,6 +102,57 @@ def test_read_raw_2022_05_27_dollar(cfg):
     assert len(actual_transactions.columns)
 
 
+# https://github.com/mincong-h/finance-toolkit/issues/88
+def test_read_raw_pending_transactions(cfg):
+    # Given
+    csv = (
+        cfg.download_dir
+        / "account-statement_2022-06-01_2022-07-14_undefined-undefined_e85fa6.csv"
+    )
+    account = RevolutAccount(
+        account_type="EUR",
+        account_id="user-REV-EUR",
+        account_num="abc123",
+        currency="EUR",
+    )
+
+    # When
+    actual_balances, actual_transactions = RevolutTransactionPipeline(
+        account, cfg
+    ).read_raw(csv)
+
+    # Then
+    expected_balances = pd.DataFrame(
+        columns=["Date", "Amount", "Currency"],
+        data=[(pd.Timestamp("2022-07-12 14:28:52"), 2006.06, "EUR")],
+    )
+    assert_frame_equal(actual_balances, expected_balances)
+
+    expected_transactions = pd.DataFrame(
+        columns=[
+            "Date",
+            "Label",
+            "Amount",
+            "Currency",
+            "Type",
+            "MainCategory",
+            "SubCategory",
+        ],
+        data=[
+            (
+                pd.Timestamp("2022-07-12 14:28:52"),
+                "Ob Stykkisholmi",
+                -55.34,
+                "EUR",
+                "CARD_PAYMENT",
+                "",
+                "",
+            ),
+        ],
+    )
+    assert_frame_equal(actual_transactions, expected_transactions)
+
+
 def test_integration_normal(cfg):
     (cfg.root_dir / "2021-01").mkdir()
     (cfg.root_dir / "2021-12").mkdir()
