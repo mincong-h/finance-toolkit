@@ -19,10 +19,7 @@ class RevolutAccount(Account):
     # A commodities account is an investment account for commodities, such as gold.
     TYPE_COMMODITIES = "commodities"
 
-    default_patterns = {
-        "EUR": r"account-statement_(\d{4}-\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})_undefined-undefined_(\w+)\.csv",  # noqa
-        "USD": r"account-statement_(\d{4}-\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})_en_(\w+)\.csv",  # noqa
-    }
+    default_pattern = r"account-statement_(\d{4}-\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})_undefined-undefined_(\w+)\.csv"  # noqa
 
     def __init__(
         self,
@@ -45,7 +42,7 @@ class RevolutAccount(Account):
         """
         patterns = [
             r"Revolut-(.*)-Statement-(.*)\.csv",
-            self.default_patterns[currency],
+            self.default_pattern,
         ]
         if extra_patterns:
             patterns.extend(extra_patterns)
