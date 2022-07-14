@@ -204,18 +204,18 @@ Delimiter: `,`
 
 Columns:
 
-| Column         | Type              | Comment                         |
-|:---------------|:------------------|:--------------------------------|
-| Type           | String            | TOPUP, EXCHANGE, TRANSFER       |
-| Product        | String            | Current                         |
-| Started Date   | Date              | Format: `yyyy-MM-dd' 'hh:mm:ss` |
-| Completed Date | Date              | Format: `yyyy-MM-dd' 'hh:mm:ss` |
-| Description    | String            | Description of the statement    |
-| Amount         | Float             |                                 |
-| Fee            | Fee               |                                 |
-| Currency       | String            | USD, EUR, ...                   |
-| State          | String            | COMPLETED                       |
-| Balance        | Optional\[Float\] | Balance of the account or empty |
+| Column         | Type              | Comment                                 |
+|:---------------|:------------------|:----------------------------------------|
+| Type           | String            | TOPUP, EXCHANGE, TRANSFER, CARD_PAYMENT |
+| Product        | String            | Current                                 |
+| Started Date   | Date              | Format: `yyyy-MM-dd' 'hh:mm:ss`         |
+| Completed Date | Date              | Format: `yyyy-MM-dd' 'hh:mm:ss`         |
+| Description    | String            | Description of the statement            |
+| Amount         | Float             |                                         |
+| Fee            | Fee               |                                         |
+| Currency       | String            | USD, EUR, ...                           |
+| State          | String            | COMPLETED, PENDING                      |
+| Balance        | Optional\[Float\] | Balance of the account or empty         |
 
 ### Download CSV File
 
