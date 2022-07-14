@@ -57,13 +57,16 @@ class RevolutAccount(Account):
 
 
 class RevolutPipeline(Pipeline, metaclass=ABCMeta):
-    @classmethod
-    def read_raw(cls, csv: Path) -> Tuple[DataFrame, DataFrame]:
+    def read_raw(self, csv: Path) -> Tuple[DataFrame, DataFrame]:
         df = pd.read_csv(
             csv,
             delimiter=",",
             parse_dates=["Started Date", "Completed Date"],
         )
+
+        # In Revolut, the downloaded CSV files do not contain sufficient information about the
+        # account. Therefore, we iterate through all files and post-filter on the currency-symbol.
+        df = df.loc[df["Currency"] == self.account.currency_symbol]
 
         balances = df[["Completed Date", "Balance", "Currency"]]
         balances = balances.rename(
