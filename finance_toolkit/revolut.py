@@ -11,10 +11,15 @@ from .pipeline import Pipeline, TransactionPipeline, BalancePipeline
 
 
 class RevolutAccount(Account):
-    default_patterns = {
-        "EUR": r"account-statement_(\d{4}-\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})_undefined-undefined_(\w+)\.csv",  # noqa
-        "USD": r"account-statement_(\d{4}-\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})_en_(\w+)\.csv",  # noqa
-    }
+    # Account type "cash"
+    # A cash account contains cash in one single currency.
+    TYPE_CASH = "cash"
+
+    # Account type "commodities"
+    # A commodities account is an investment account for commodities, such as gold.
+    TYPE_COMMODITIES = "commodities"
+
+    default_pattern = r"account-statement_(\d{4}-\d{2}-\d{2})_(\d{4}-\d{2}-\d{2})_undefined-undefined_(\w+)\.csv"  # noqa
 
     def __init__(
         self,
@@ -24,9 +29,20 @@ class RevolutAccount(Account):
         currency: str,
         extra_patterns: List[str] = None,
     ):
+        """
+        Initialize a new account for Revolut.
+
+        :param account_type: the type of the account, known types are listed as class variables
+            "TYPE_*".
+        :param account_id: the internal identifier of the account used by Finance Toolkit
+        :param account_num: the external identifier of the account used by Revolut
+        :param currency: the currency used by this account.
+        :param extra_patterns: the additional regular expression patterns used for CSV-file lookup
+            on top of the default ones.
+        """
         patterns = [
             r"Revolut-(.*)-Statement-(.*)\.csv",
-            self.default_patterns[currency],
+            self.default_pattern,
         ]
         if extra_patterns:
             patterns.extend(extra_patterns)
@@ -37,16 +53,20 @@ class RevolutAccount(Account):
             currency=currency,
             patterns=patterns,
         )
+        self.skip_integration = account_type != self.TYPE_CASH
 
 
 class RevolutPipeline(Pipeline, metaclass=ABCMeta):
-    @classmethod
-    def read_raw(cls, csv: Path) -> Tuple[DataFrame, DataFrame]:
+    def read_raw(self, csv: Path) -> Tuple[DataFrame, DataFrame]:
         df = pd.read_csv(
             csv,
             delimiter=",",
             parse_dates=["Started Date", "Completed Date"],
         )
+
+        # In Revolut, the downloaded CSV files do not contain sufficient information about the
+        # account. Therefore, we iterate through all files and post-filter on the currency-symbol.
+        df = df.loc[df["Currency"] == self.account.currency_symbol]
 
         balances = df[["Completed Date", "Balance", "Currency"]]
         balances = balances.rename(
