@@ -33,6 +33,8 @@ class PipelineFactory:
         if isinstance(account, FortuneoAccount):
             return FortuneoTransactionPipeline(account, self.cfg)
         if isinstance(account, RevolutAccount):
+            if account.skip_integration:
+                return NoopTransactionPipeline(account, self.cfg)
             return RevolutTransactionPipeline(account, self.cfg)
         return NoopTransactionPipeline(account, self.cfg)
 
@@ -42,6 +44,8 @@ class PipelineFactory:
         if isinstance(account, BoursoramaAccount):
             return BoursoramaBalancePipeline(account, self.cfg)
         if isinstance(account, RevolutAccount):
+            if account.skip_integration:
+                return GeneralBalancePipeline(account, self.cfg)
             return RevolutBalancePipeline(account, self.cfg)
         return GeneralBalancePipeline(account, self.cfg)
 
