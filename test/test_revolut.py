@@ -9,7 +9,7 @@ from finance_toolkit.revolut import (
 )
 
 
-def test_read_raw_2022_05_27(cfg):
+def test_read_raw_2022_05_27_euro(cfg):
     # Given
     csv = (
         cfg.download_dir
@@ -66,6 +66,40 @@ def test_read_raw_2022_05_27(cfg):
         ],
     )
     assert_frame_equal(actual_transactions, expected_transactions)
+
+
+def test_read_raw_2022_05_27_dollar(cfg):
+    # Given
+    csv = (
+        cfg.download_dir
+        / "account-statement_2021-01-01_2022-05-27_undefined-undefined_abc123.csv"
+    )
+    account = RevolutAccount(
+        account_type=RevolutAccount.TYPE_CASH,
+        account_id="user-REV-USD",
+        account_num="abc123",
+        currency="USD",
+    )
+
+    # When
+    actual_balances, actual_transactions = RevolutTransactionPipeline(
+        account, cfg
+    ).read_raw(csv)
+
+    # Then both data-frames are empty
+    assert actual_balances.columns.values.tolist() == ["Date", "Amount", "Currency"]
+    assert len(actual_balances) == 0
+
+    assert actual_transactions.columns.values.tolist() == [
+        "Date",
+        "Label",
+        "Amount",
+        "Currency",
+        "Type",
+        "MainCategory",
+        "SubCategory",
+    ]
+    assert len(actual_transactions.columns)
 
 
 def test_integration_normal(cfg):
