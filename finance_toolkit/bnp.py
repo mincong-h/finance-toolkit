@@ -87,11 +87,6 @@ class BnpPipeline(Pipeline, metaclass=ABCMeta):
         # BNP Paribas does not provide currency information explicitly, so we create it ourselves.
         tx = tx.assign(Currency=lambda row: self.account.currency_symbol)
 
-        # TODO can we remove these fields?
-        tx["Type"] = ""
-        tx["MainCategory"] = ""
-        tx["SubCategory"] = ""
-
         return balances, tx
 
 
