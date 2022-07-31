@@ -135,6 +135,7 @@ class BalancePipeline(Pipeline, metaclass=ABCMeta):
         summary.add_target(balance_file)
 
     def read_balance(self, path: Path) -> DataFrame:
+        logging.debug(f'Reading balance from {path}')
         df = pd.read_csv(path, parse_dates=["Date"])
         df = df[["Date", "Amount"]]
         df["Account"] = self.account.id
