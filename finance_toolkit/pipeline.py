@@ -28,6 +28,15 @@ class TransactionPipeline(Pipeline, metaclass=ABCMeta):
     def run(self, source: Path, summary: Summary) -> None:
         # read
         tx = self.read_new_transactions(source)
+
+        # add custom columns if needed
+        if "MainCategory" not in tx.columns:
+            tx["MainCategory"] = ""
+        if "SubCategory" not in tx.columns:
+            tx["SubCategory"] = ""
+        if "Type" not in tx.columns:
+            tx["Type"] = ""
+
         summary.add_source(source)
 
         # process

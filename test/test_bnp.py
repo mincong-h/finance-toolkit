@@ -136,9 +136,6 @@ def test_bnp_pipeline_read_raw_20190703(cfg):
         "Label",
         "Amount",
         "Currency",
-        "Type",
-        "MainCategory",
-        "SubCategory",
     ]
     t_data = [
         (
@@ -146,9 +143,6 @@ def test_bnp_pipeline_read_raw_20190703(cfg):
             "AMORTISSEMENT PRET 1234",
             67.97,
             "EUR",
-            "",
-            "",
-            "",
         )
     ]
     expected_transactions = pd.DataFrame(columns=t_cols, data=t_data)
@@ -177,9 +171,6 @@ def test_bnp_pipeline_read_raw_20220318(cfg):
         "Label",
         "Amount",
         "Currency",
-        "Type",
-        "MainCategory",
-        "SubCategory",
     ]
     t_data = [
         (
@@ -187,27 +178,18 @@ def test_bnp_pipeline_read_raw_20220318(cfg):
             "AMORTISSEMENT PRET 1234",
             70.93,
             "EUR",
-            "",
-            "",
-            "",
         ),
         (
             pd.Timestamp("2022-02-05"),
             "AMORTISSEMENT PRET 1234",
             71.03,
             "EUR",
-            "",
-            "",
-            "",
         ),
         (
             pd.Timestamp("2022-03-05"),
             "AMORTISSEMENT PRET 1234",
             71.13,
             "EUR",
-            "",
-            "",
-            "",
         ),
     ]
     expected_transactions = pd.DataFrame(columns=t_cols, data=t_data)
