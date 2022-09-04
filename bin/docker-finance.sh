@@ -27,5 +27,5 @@ fi
 docker run \
     --rm \
     --volume "${HOME}/Downloads:/data/source" \
-    --volume "${HOME}/gitty/finance-data:/data/target" \
+    --volume "${FINANCE_ROOT}:/data/target" \
     "$image" $@
