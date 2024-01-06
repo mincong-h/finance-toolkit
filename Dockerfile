@@ -1,6 +1,7 @@
 FROM python:3.10
 WORKDIR /app/finance-toolkit/
 COPY . /app/finance-toolkit/
+RUN pip install --upgrade setuptools pip
 RUN python setup.py install
 
 VOLUME ["/data/source", "/data/target"]
