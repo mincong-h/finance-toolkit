@@ -155,7 +155,30 @@ accounts:
 
 You can find out more world currency symbols here: <https://www.xe.com/en/symbols.php>
 
-## Hacking
+## Development
+
+### Local Development
+
+Build a Docker image:
+
+```
+bin/docker-build.sh
+```
+
+Push a Docker image to the Aliyun Registry (you need to connect to the private
+registry):
+
+```
+bin/docker-push.sh
+```
+
+Run the Docker image built locally with the right command `$cmd`:
+
+```
+FTK_DOCKER_MODE=local bin/docker-finance.sh $cmd
+```
+
+### Pre-commit Hook
 
 Install pre-commit for day-to-day development. It will ensure a good quality code before commiting anything.
 
@@ -164,7 +187,7 @@ python -m pip install -U --user pre-commit
 pre-commit install
 ```
 
-## Testing
+### Testing
 
 Run unit tests (at root level of the project directory):
 
