@@ -1,4 +1,4 @@
-FROM python:3.7
+FROM python:3.8
 WORKDIR /app/finance-toolkit/
 COPY . /app/finance-toolkit/
 RUN python setup.py install
