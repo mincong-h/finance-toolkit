@@ -6,6 +6,8 @@
 * Upgrade to [Pandas 1.3.5](https://github.com/pandas-dev/pandas/blob/1.3.x/setup.py)
   because Pands 1.2.x does not support Python 3.10 ([source
   code](https://github.com/pandas-dev/pandas/blob/1.2.x/setup.py#L182-L186))
+* Upgrade to pytest 6.2.5 to fix test error:
+  _"TypeError: required field "lineno" missing from alias"_
 
 ## 1.2.0
 
