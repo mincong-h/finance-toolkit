@@ -16,9 +16,9 @@ from .pipeline import (
     NoopTransactionPipeline,
     BalancePipeline,
     GeneralBalancePipeline,
-    ExchangeRatePipeline,
     AccountParser,
 )
+from .exchange_rate import ExchangeRatePipeline
 from .revolut import RevolutAccount, RevolutTransactionPipeline, RevolutBalancePipeline
 
 
