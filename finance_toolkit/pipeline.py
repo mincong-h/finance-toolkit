@@ -178,6 +178,14 @@ class GeneralBalancePipeline(BalancePipeline):
         pass
 
 
+class ExchangeRatePipeline(Pipeline, metaclass=ABCMeta):
+    """
+    Pipeline to download exchange rates from the Bank of France and save them to a CSV file.
+    """
+    def run(self, path: Path, summary: Summary) -> None:
+        print(f"Downloading exchange rates to {path}")
+
+
 class AccountParser:
     def __init__(self, cfg: Configuration):
         self.accounts = cfg.as_dict()

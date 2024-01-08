@@ -16,6 +16,7 @@ from .pipeline import (
     NoopTransactionPipeline,
     BalancePipeline,
     GeneralBalancePipeline,
+    ExchangeRatePipeline,
     AccountParser,
 )
 from .revolut import RevolutAccount, RevolutTransactionPipeline, RevolutBalancePipeline
@@ -48,6 +49,9 @@ class PipelineFactory:
                 return GeneralBalancePipeline(account, self.cfg)
             return RevolutBalancePipeline(account, self.cfg)
         return GeneralBalancePipeline(account, self.cfg)
+
+    def new_exchange_rate_pipeline(self) -> ExchangeRatePipeline:
+        return ExchangeRatePipeline(None, self.cfg)
 
     def parse_balance_pipeline(self, path: Path) -> BalancePipeline:
         account = AccountParser(self.cfg).parse(path)
