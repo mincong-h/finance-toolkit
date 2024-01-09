@@ -15,7 +15,7 @@ from .account import (
 from .bnp import BnpAccount
 from .boursorama import BoursoramaAccount
 from .fortuneo import FortuneoAccount
-from .models import Configuration, Summary, TxCompletion, TxType
+from .models import Configuration, Summary, TxCompletion, TxType, ExchangeRateConfig
 from .pipeline import AccountParser
 from .pipeline_factory import PipelineFactory
 from .revolut import RevolutAccount
@@ -130,6 +130,10 @@ class Configurator:
         return [] if raw is None else [TxCompletion.load(p) for p in raw]
 
     @classmethod
+    def load_exchange_rates(cls, raw: Dict) -> ExchangeRateConfig:
+        return ExchangeRateConfig(watched_currencies=raw["watched_currencies"])
+
+    @classmethod
     def parse_yaml(cls, path: Path) -> Configuration:
         data = yaml.safe_load(path.read_text())
         accounts = cls.load_accounts(data["accounts"])
@@ -145,6 +149,7 @@ class Configurator:
             autocomplete=autocomplete,
             download_dir=download_dir,
             root_dir=root_dir,
+            exchange_rate_cfg=cls.load_exchange_rates(data["exchange-rate"]),
         )
 
     @classmethod

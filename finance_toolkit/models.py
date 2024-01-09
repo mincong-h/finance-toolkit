@@ -77,6 +77,12 @@ class TxCompletion:
         )
 
 
+@dataclass
+class ExchangeRateConfig:
+    base_currency: str = "EUR"
+    watched_currencies: List[str]
+
+
 class Configuration:
     """
     Type-safe representation of the user configuration.
@@ -90,6 +96,7 @@ class Configuration:
         autocomplete: List[TxCompletion],
         download_dir: Path,
         root_dir: Path,
+        exchange_rate_cfg: ExchangeRateConfig,
     ):
         self.accounts: List[Account] = accounts
         self.category_set: Set[str] = set(categories)
@@ -97,6 +104,7 @@ class Configuration:
         self.autocomplete: List[TxCompletion] = autocomplete
         self.download_dir: Path = download_dir
         self.root_dir: Path = root_dir
+        self.exchange_rate_cfg: ExchangeRateConfig = exchange_rate_cfg
 
     def as_dict(self) -> Dict[str, Account]:
         return {a.id: a for a in self.accounts}
@@ -112,6 +120,10 @@ class Configuration:
 
     def get_exchange_rate_csv_path(self) -> Path:
         return self.root_dir / "exchange-rate.csv"
+
+    @property
+    def exchange_rate_currencies(self) -> List[str]:
+        return self.exchange_rate_cfg.watched_currencies
 
 
 class Summary:

@@ -43,7 +43,7 @@ class ExchangeRatePipeline(Pipeline, metaclass=ABCMeta):
             skiprows=6,  # Titre, Code série, Unité, Magnitude, Méthode d'observation, Source
             names=[self.extract_code(u) for u in unit_str.split(";")]
         )
-        rate_df = rate_df[['Date', 'USD', 'CNY']]  # TODO(mincong): make it configurable
+        rate_df = rate_df[['Date'] + self.cfg.exchange_rate_currencies]
         rate_df = rate_df.sort_values(by=['Date'], ascending=True)
 
         target = self.cfg.get_exchange_rate_csv_path()
