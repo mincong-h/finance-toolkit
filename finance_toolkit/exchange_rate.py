@@ -1,6 +1,6 @@
 import logging
 from abc import ABCMeta
-import datetime
+from datetime import datetime
 from pathlib import Path
 import pandas as pd
 import re
@@ -36,6 +36,7 @@ class ExchangeRatePipeline(Pipeline, metaclass=ABCMeta):
         rate_df = pd.read_csv(
             csv,
             date_parser=lambda s: datetime.strptime(s, "%d/%m/%Y"),
+            parse_dates=['Date'],
             decimal=",",
             delimiter=";",
             na_values="-",
@@ -43,11 +44,11 @@ class ExchangeRatePipeline(Pipeline, metaclass=ABCMeta):
             names=[self.extract_code(u) for u in unit_str.split(";")]
         )
         rate_df = rate_df[['Date', 'USD', 'CNY']]  # TODO(mincong): make it configurable
-        logging.debug(f"Head of {csv}\n{rate_df.head()}")
 
         target = self.cfg.get_exchange_rate_csv_path()
         logging.debug(f"Saving exchange rates to {target}")
-        rate_df.to_csv(target, index=False, date_format="%Y-%m-%d")  #, float_format="%.4f")
+        logging.debug(rate_df.head())
+        rate_df.to_csv(target, index=False, date_format="%Y-%m-%d")
 
     def extract_code(self, s: str) -> str:
         match = re.search(r'\((\w+)\)', s)

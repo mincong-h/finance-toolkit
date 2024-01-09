@@ -129,18 +129,18 @@ class BalancePipeline(Pipeline, metaclass=ABCMeta):
     def run(self, path: Path, summary: Summary):
         new_lines = self.read_new_balances(path)
 
-        original_balance_file = self.cfg.root_dir / self.account.get_balance_filename()
-        converted_balance_file = self.cfg.root_dir / self.account.get_euro_balance_filename()
-
+        original_balance_file = self.cfg.root_dir / self.account.balance_filename
         original_balance_df = self.insert_balance(original_balance_file, new_lines)
-        converted_balance_df = self.convert_balance_to_euro(original_balance_df)
-
-        self.write_balance(converted_balance_file, converted_balance_df)
         self.write_balance(original_balance_file, original_balance_df)
 
         summary.add_source(path)
         summary.add_target(original_balance_file)
-        summary.add_target(converted_balance_file)
+
+        if self.account.is_currency_conversion_needed:
+            converted_balance_file = self.cfg.root_dir / self.account.converted_balance_filename
+            converted_balance_df = self.convert_balance_to_euro(original_balance_df)
+            self.write_balance(converted_balance_file, converted_balance_df)
+            summary.add_target(converted_balance_file)
 
     def read_balance(self, path: Path) -> DataFrame:
         logging.debug(f'Reading balance from {path}')
@@ -175,23 +175,26 @@ class BalancePipeline(Pipeline, metaclass=ABCMeta):
         return df
 
     def write_balance(self, csv: Path, df: DataFrame) -> DataFrame:
-        df.to_csv(csv, index=None, columns=["Date", "Amount", "Currency"])
+        df.to_csv(csv, index=None, columns=["Date", "Amount", "Currency"], float_format="%.2f")
 
     def convert_balance_to_euro(self, balance_df: DataFrame) -> DataFrame:
-        logging.debug(f"Converting balance to EUR\n{balance_df.head()}")
+        balance_df = balance_df.copy()
+        balance_df["Date"] = pd.to_datetime(balance_df["Date"])
+        balance_df["Date"] = balance_df["Date"].dt.date  # remove time before the join
+
         exchange_rate_df = pd.read_csv(self.cfg.get_exchange_rate_csv_path(), parse_dates=["Date"])
         exchange_rate_df = exchange_rate_df.fillna(method="ffill")  # forward fill: propagate last valid observation forward to next valid
         exchange_rate_df["EUR"] = 1.0
-        logging.debug(f"Head of exchange rate\n{exchange_rate_df.head()}")
 
-        result_df = pd.merge(balance_df, exchange_rate_df, on="Date", how="left")
-        logging.debug(f"The currency of {self.account.id} is {self.account.currency_symbol}")
-        logging.debug(result_df[self.account.currency_symbol])
+        logging.debug(f"Converting the balance of account {self.account.id} from {self.account.currency_symbol} to EUR")
+        result_df = pd.merge(balance_df, exchange_rate_df,
+                             left_on="Date",
+                             right_on=exchange_rate_df["Date"].dt.date,
+                             how="left")
         result_df["Amount"] = result_df["Amount"] * result_df[self.account.currency_symbol]
-        result_df["Currency"] = self.account.currency_symbol
+        result_df["Currency"] = "EUR"
         result_df = result_df[["Date", "Amount", "Currency"]]
 
-        logging.debug(f"Head of result\n{result_df.head()}")
         return result_df
 
     @abstractmethod
