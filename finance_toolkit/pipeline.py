@@ -183,10 +183,11 @@ class BalancePipeline(Pipeline, metaclass=ABCMeta):
         balance_df["Date"] = balance_df["Date"].dt.date  # remove time before the join
 
         exchange_rate_df = pd.read_csv(self.cfg.get_exchange_rate_csv_path(), parse_dates=["Date"])
-        exchange_rate_df = exchange_rate_df.fillna(method="ffill")  # forward fill: propagate last valid observation forward to next valid
+        # forward fill: propagate last valid observation forward to next valid
+        exchange_rate_df = exchange_rate_df.fillna(method="ffill")
         exchange_rate_df["EUR"] = 1.0
 
-        logging.debug(f"Converting the balance of account {self.account.id} from {self.account.currency_symbol} to EUR")
+        logging.debug(f"Converting the balance of account {self.account.id} from {self.account.currency_symbol} to EUR")  # noqa
         result_df = pd.merge(balance_df, exchange_rate_df,
                              left_on="Date",
                              right_on=exchange_rate_df["Date"].dt.date,

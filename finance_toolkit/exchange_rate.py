@@ -20,7 +20,7 @@ class ExchangeRatePipeline(Pipeline, metaclass=ABCMeta):
         Unité :;Dollar Australien (AUD);Lev Nouveau (BGN);Real Bresilien (BRL)
         Magnitude :;Unités (0);Unités (0);Unités (0)
         Méthode d'observation :;Fin de période (E);Fin de période (E);Fin de période (E)
-        Source :;BCE (Banque Centrale Européenne) (4F0);BCE (Banque Centrale Européenne) (4F0);BCE (Banque Centrale Européenne) (4F0)
+        Source :;BCE (Banque Centrale Européenne) (4F0);BCE (Banque Centrale Européenne) (4F0);...
 
     This has an impact on the way we read the CSV file.
     """
