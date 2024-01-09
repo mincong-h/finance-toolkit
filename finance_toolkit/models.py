@@ -110,6 +110,9 @@ class Configuration:
         """
         return sorted(c for c in filter(cat_filter, self.category_set))
 
+    def get_exchange_rate_csv_path(self) -> Path:
+        return self.root_dir / "exchange-rate.csv"
+
 
 class Summary:
     def __init__(self, cfg: Configuration):

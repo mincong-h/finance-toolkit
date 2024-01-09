@@ -42,16 +42,16 @@ class ExchangeRatePipeline(Pipeline, metaclass=ABCMeta):
             skiprows=6,  # Titre, Code série, Unité, Magnitude, Méthode d'observation, Source
             names=[self.extract_code(u) for u in unit_str.split(";")]
         )
-        rate_df = rate_df[['Dates', 'USD', 'CNY']]  # TODO(mincong): make it configurable
+        rate_df = rate_df[['Date', 'USD', 'CNY']]  # TODO(mincong): make it configurable
         logging.debug(f"Head of {csv}\n{rate_df.head()}")
 
-        target = self.cfg.root_dir / "exchange-rate.csv"
+        target = self.cfg.get_exchange_rate_csv_path()
         logging.debug(f"Saving exchange rates to {target}")
-        rate_df.to_csv(target, index=False, date_format="%Y-%m-%d", float_format="%.4f")
+        rate_df.to_csv(target, index=False, date_format="%Y-%m-%d")  #, float_format="%.4f")
 
     def extract_code(self, s: str) -> str:
         match = re.search(r'\((\w+)\)', s)
         if match:
             return match.group(1)
         else:
-            return 'Dates'
+            return 'Date'
