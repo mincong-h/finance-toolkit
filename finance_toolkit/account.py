@@ -36,7 +36,6 @@ class Account:
         self.num: str = account_num
         self.currency_symbol: str = currency
         self.filename: str = f"{account_id}.csv"
-        self.euro_filename: str = f"{account_id}.EUR.csv"
 
     def __hash__(self):
         return hash(
@@ -46,7 +45,6 @@ class Account:
                 self.num,
                 self.currency_symbol,
                 self.filename,
-                self.euro_filename,
             )
         )
 
@@ -59,7 +57,6 @@ class Account:
             and self.num == o.num
             and self.currency_symbol == o.currency_symbol
             and self.filename == o.filename
-            and self.euro_filename == o.euro_filename
         )
 
     def __repr__(self) -> str:
@@ -87,6 +84,16 @@ class Account:
             else:
                 logging.debug(f"{p.pattern}: not matched")
         return False
+
+    def get_balance_filename(self) -> str:
+        return f"balance.{self.id}.csv"
+
+    def get_euro_balance_filename(self) -> str:
+        """
+        Returns the filename of the balance in Euro, which is used for standardizing accounts
+        because user may hold their assets in multiple currencies, e.g. EUR, USD, GBP, etc.
+        """
+        return f"balance.{self.id}.EUR.csv"
 
 
 class DegiroAccount(Account):

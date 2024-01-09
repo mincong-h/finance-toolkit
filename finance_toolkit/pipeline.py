@@ -128,11 +128,17 @@ class NoopTransactionPipeline(TransactionPipeline):
 class BalancePipeline(Pipeline, metaclass=ABCMeta):
     def run(self, path: Path, summary: Summary):
         balances = self.read_new_balances(path)
-        balance_file = self.cfg.root_dir / f"balance.{self.account.filename}"
-        self.write_balances(balance_file, balances)
+        original_balance_file = self.cfg.root_dir / self.account.get_balance_filename()
+        converted_balance_file = self.cfg.root_dir / self.account.get_euro_balance_filename()
+
+        logging.debug(f"Writing balance to {original_balance_file}")
+        self.write_balances(original_balance_file, balances)
+
+        logging.debug(f"Writing balance to {converted_balance_file}")
+        # TODO: convert to Euro
 
         summary.add_source(path)
-        summary.add_target(balance_file)
+        summary.add_target(original_balance_file)
 
     def read_balance(self, path: Path) -> DataFrame:
         logging.debug(f'Reading balance from {path}')
@@ -153,7 +159,7 @@ class BalancePipeline(Pipeline, metaclass=ABCMeta):
                 logging.debug(f'Column "Currency" exists in file: {csv}, skip filling')
             else:
                 logging.debug(
-                    f'Column "Currency" does not exist in file: {csv}, filling it with the account currency'  # noqa
+                    f'Column "Currency" does not exist in file: {csv}, filling it with the account currency: {self.account.currency_symbol}'  # noqa
                 )
                 existing = existing.assign(
                     Currency=lambda row: self.account.currency_symbol
