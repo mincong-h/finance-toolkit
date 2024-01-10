@@ -47,6 +47,9 @@ class ExchangeRatePipeline(Pipeline, metaclass=ABCMeta):
         rate_df = rate_df.sort_values(by=['Date'], ascending=True)
 
         target = self.cfg.exchange_rate_csv_path
+        summary.add_source(csv)
+        summary.add_target(target)
+
         logging.debug(f"Saving exchange rates to {target}")
         logging.debug(rate_df.tail())
         rate_df.to_csv(target, index=False, date_format="%Y-%m-%d")

@@ -180,20 +180,23 @@ class BalancePipeline(Pipeline, metaclass=ABCMeta):
 
     def convert_balance_to_euro(self, balance_df: DataFrame) -> DataFrame:
         balance_df = balance_df.copy()
-        balance_df["Date"] = pd.to_datetime(balance_df["Date"])
-        balance_df["Date"] = balance_df["Date"].dt.date  # remove time before the join
+        balance_df["_DateOnly"] = pd.to_datetime(balance_df["Date"]).dt.date  # remove time before the join
 
         exchange_rate_df = pd.read_csv(self.cfg.exchange_rate_csv_path, parse_dates=["Date"])
+        exchange_rate_df.rename(columns={"Date": "_ExDate"}, inplace=True)
         # forward fill: propagate last valid observation forward to next valid
         exchange_rate_df = exchange_rate_df.fillna(method="ffill")
         exchange_rate_df["EUR"] = 1.0
 
         logging.debug(f"Converting the balance of account {self.account.id} from {self.account.currency_symbol} to EUR")  # noqa
         result_df = pd.merge(balance_df, exchange_rate_df,
-                             left_on="Date",
-                             right_on=exchange_rate_df["Date"].dt.date,
+                             left_on="_DateOnly",
+                             right_on=exchange_rate_df["_ExDate"].dt.date,
                              how="left")
-        result_df["Amount"] = result_df["Amount"] * result_df[self.account.currency_symbol]
+
+        # amount in EUR = amount in currency / exchange rate
+        # e.g. amount in EUR = 100 USD / 1.0956 = 91.29 EUR
+        result_df["Amount"] = result_df["Amount"] / result_df[self.account.currency_symbol]
         result_df["Currency"] = "EUR"
         result_df = result_df[["Date", "Amount", "Currency"]]
 
