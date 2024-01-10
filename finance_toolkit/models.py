@@ -86,6 +86,7 @@ class ExchangeRateConfig:
         # note: the base currency is not configurable, it can only be euro for now
         return "EUR"
 
+
 class Configuration:
     """
     Type-safe representation of the user configuration.
