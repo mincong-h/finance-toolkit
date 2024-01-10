@@ -122,7 +122,8 @@ class Configuration:
         """
         return sorted(c for c in filter(cat_filter, self.category_set))
 
-    def get_exchange_rate_csv_path(self) -> Path:
+    @property
+    def exchange_rate_csv_path(self) -> Path:
         return self.root_dir / "exchange-rate.csv"
 
     @property
