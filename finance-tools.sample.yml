@@ -121,8 +121,8 @@ download-dir: ~/Downloads
 # Exchange Rates
 # ------------------
 # Configuration related to the exchange rates.
-exchange_rate:
+exchange-rate:
   # Currencies used by your bank accounts or other accounts.
-  watched_currencies:
+  watched-currencies:
     - USD
     - CNY

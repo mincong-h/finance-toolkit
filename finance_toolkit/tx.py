@@ -131,7 +131,7 @@ class Configurator:
 
     @classmethod
     def load_exchange_rates(cls, raw: Dict) -> ExchangeRateConfig:
-        return ExchangeRateConfig(watched_currencies=raw["watched_currencies"])
+        return ExchangeRateConfig(watched_currencies=raw["watched-currencies"])
 
     @classmethod
     def parse_yaml(cls, path: Path) -> Configuration:
