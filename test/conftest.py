@@ -35,7 +35,7 @@ def cfg(tmpdir, location):
     source_dir = location / "download"
     target_dir = Path(tmpdir) / "finance"
     target_dir.mkdir()
-    
+
     exchange_rate_path = target_dir / "exchange-rate.csv"
     exchange_rate_path.write_text(
         """\

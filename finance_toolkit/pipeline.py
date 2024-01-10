@@ -180,7 +180,7 @@ class BalancePipeline(Pipeline, metaclass=ABCMeta):
 
     def convert_balance_to_euro(self, balance_df: DataFrame) -> DataFrame:
         balance_df = balance_df.copy()
-        balance_df["_DateOnly"] = pd.to_datetime(balance_df["Date"]).dt.date  # remove time before the join
+        balance_df["_DateOnly"] = pd.to_datetime(balance_df["Date"]).dt.date  # remove time part
 
         exchange_rate_df = pd.read_csv(self.cfg.exchange_rate_csv_path, parse_dates=["Date"])
         exchange_rate_df.rename(columns={"Date": "_ExDate"}, inplace=True)
