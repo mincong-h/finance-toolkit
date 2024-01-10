@@ -166,7 +166,7 @@ Date,Label,Amount,Currency,Type,MainCategory,SubCategory
 """
     )
 
-    balances = cfg.root_dir / "balance.user-REV-EUR.csv"
+    balances = cfg.root_dir / "balance.user-REV-EUR.EUR.csv"
     balances.write_text(
         """\
 Date,Amount,Currency
@@ -194,7 +194,7 @@ Date,Amount,Currency
         balances.read_text()
         == """\
 Date,Amount,Currency
-2021-01-01 00:00:00,10.0,EUR
+2021-01-01 00:00:00,10.00,EUR
 2021-01-05 14:00:41,74.43,EUR
 """
     )
@@ -227,7 +227,7 @@ Date,Label,Amount,Type,MainCategory,SubCategory
 """
     )
 
-    balances = cfg.root_dir / "balance.user-REV-EUR.csv"
+    balances = cfg.root_dir / "balance.user-REV-EUR.EUR.csv"
     balances.write_text(
         """\
 Date,Amount
@@ -255,7 +255,7 @@ Date,Amount
         balances.read_text()
         == """\
 Date,Amount,Currency
-2021-01-01 00:00:00,10.0,EUR
+2021-01-01 00:00:00,10.00,EUR
 2021-01-05 14:00:41,74.43,EUR
 """
     )
