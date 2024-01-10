@@ -79,7 +79,7 @@ class TxCompletion:
 
 @dataclass
 class ExchangeRateConfig:
-    base_currency: str = "EUR"
+    base_currency: str
     watched_currencies: List[str]
 
 

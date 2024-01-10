@@ -131,7 +131,8 @@ class Configurator:
 
     @classmethod
     def load_exchange_rates(cls, raw: Dict) -> ExchangeRateConfig:
-        return ExchangeRateConfig(watched_currencies=raw["watched_currencies"])
+        # note: the base currency is not configurable, it can only be euro for now
+        return ExchangeRateConfig(base_currency="EUR", watched_currencies=raw["watched_currencies"])
 
     @classmethod
     def parse_yaml(cls, path: Path) -> Configuration:
@@ -142,6 +143,7 @@ class Configurator:
         autocomplete = cls.load_autocomplete(data["auto-complete"])
         download_dir = Path(data["download-dir"]).expanduser()
         root_dir = path.parent
+        exchange_rate_cfg = cls.load_exchange_rates(data["exchange-rate"])
         return Configuration(
             accounts=accounts,
             categories=categories,
@@ -149,7 +151,7 @@ class Configurator:
             autocomplete=autocomplete,
             download_dir=download_dir,
             root_dir=root_dir,
-            exchange_rate_cfg=cls.load_exchange_rates(data["exchange-rate"]),
+            exchange_rate_cfg=exchange_rate_cfg,
         )
 
     @classmethod
