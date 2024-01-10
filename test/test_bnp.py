@@ -36,7 +36,7 @@ Date,Label,Amount,Type,MainCategory,SubCategory
     )
 
     # And a file for balance
-    b = cfg.root_dir / "balance.xxx.csv"
+    b = cfg.root_dir / "balance.xxx.EUR.csv"
     with b.open("w") as f:
         f.write("mainCategory,subCategory,accountNum,Date,Amount\n")
         f.write("main,sub,****1234,2018-08-02,24.37\n")
