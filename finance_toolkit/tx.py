@@ -252,6 +252,10 @@ def move(cfg: Configuration):
     print(summary)
 
 
+def convert(cfg: Configuration):
+    print("Convert done")
+
+
 def merge(cfg: Configuration):
     bank_transactions = []
     cols = [

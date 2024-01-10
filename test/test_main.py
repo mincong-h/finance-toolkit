@@ -9,6 +9,8 @@ from finance_toolkit.__main__ import main
 
 CURRENT_USAGE = """Usage:
   finance-toolkit [options] (cat|categories) [<prefix>]
+  finance-toolkit [options] convert
+  finance-toolkit [options] convert-and-merge
   finance-toolkit [options] merge
   finance-toolkit [options] move"""
 
@@ -19,9 +21,12 @@ finance situation by collecting data from different companies.
 {CURRENT_USAGE}
 
 Arguments:
-  cat|categories   Print all categories, or categories starting with the given prefix.
-  merge            Merge staging data.
-  move             Import data from $HOME/Downloads directory.
+  cat|categories      Print all categories, or categories starting with the given prefix.
+  move                Import data from $HOME/Downloads directory.
+  convert             Convert data from one currency to another based on the exchange rates. The
+                      base currency is euro (EUR) and cannot be changed for now.
+  merge               Merge staging data.
+  convert-and-merge   Running the 'convert' and 'merge' commands sequentially.
 
 Options:
   --finance-root FOLDER    Folder where the configuration file is stored (default: $HOME/finances).
