@@ -38,18 +38,20 @@ def test_account_repr_attrs():
         account_type="aType",
         account_id="anId",
         account_num="00000001",
-        currency="EUR",
+        currency="USD",
         patterns=[r".*"],
     )
     assert (
         repr(a)
-        == "Account<type='aType', id='anId', num='****0001', currency_symbol='EUR'>"
+        == "Account<type='aType', id='anId', num='****0001', currency_symbol='USD', balance_filename='balance.anId.USD.csv', converted_balance_filename='balance.anId.EUR.csv'>"
     )
     assert a.type == "aType"
     assert a.id == "anId"
     assert a.num == "00000001"
     assert a.altered_num == "****0001"
-    assert a.currency_symbol == "EUR"
+    assert a.currency_symbol == "USD"
+    assert a.balance_filename == "balance.anId.USD.csv"
+    assert a.converted_balance_filename == "balance.anId.EUR.csv"
 
 
 # ---------- Class: BnpAccount ----------

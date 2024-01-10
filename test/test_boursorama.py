@@ -262,7 +262,7 @@ def test_boursorama_account_read_raw_account_2(cfg):
     assert_frame_equal(expected_transactions, actual_transactions)
 
 
-def test_boursorama_account_write_balances(cfg):
+def test_boursorama_account_write_balance(cfg):
     with TemporaryDirectory() as d:
         # Given an existing CSV file with 2 rows
         csv = Path(d) / "balance.xxx.csv"
@@ -280,7 +280,7 @@ Date,Amount
             data=[(pd.Timestamp("2019-03-10"), 320.00, "EUR")],
         )
         account = BoursoramaAccount("type2", "name2", "003607")
-        BoursoramaBalancePipeline(account, cfg).write_balances(csv, new_lines)
+        BoursoramaBalancePipeline(account, cfg).write_balance(csv, new_lines)
 
         # Then rows are available and sorted
         assert (

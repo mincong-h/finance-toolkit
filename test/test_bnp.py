@@ -80,7 +80,7 @@ Date,Label,Amount,Currency,Type,MainCategory,SubCategory
     assert b in summary.targets
 
 
-def test_bnp_balance_pipeline_write_balances(cfg):
+def test_bnp_balance_pipeline_insert_balance(cfg):
     # Given an existing CSV file with 2 rows
     csv = cfg.root_dir / "balance.xxx.csv"
     csv.write_text(
@@ -100,18 +100,18 @@ Date,Amount
         }
     )
     account = BnpAccount("CHQ", "xxx", "****1234")
-    BnpBalancePipeline(account, cfg).write_balances(csv, new_lines)
+    new_df = BnpBalancePipeline(account, cfg).insert_balance(csv, new_lines)
 
     # Then rows are available and sorted
-    assert (
-        csv.read_text()
-        == """\
-Date,Amount,Currency
-2018-07-04,189.29,EUR
-2018-08-02,724.37,EUR
-2018-09-02,924.37,EUR
-"""
+    expected_df = pd.DataFrame(
+        columns=["Date", "Amount", "Currency"],
+        data=[
+            (pd.Timestamp("2018-07-04"), 189.29, "EUR"),
+            (pd.Timestamp("2018-08-02"), 724.37, "EUR"),
+            (pd.Timestamp("2018-09-02"), 924.37, "EUR"),
+        ],
     )
+    assert_frame_equal(new_df, expected_df)
 
 
 def test_bnp_pipeline_read_raw_20190703(cfg):

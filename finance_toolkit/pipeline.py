@@ -172,6 +172,7 @@ class BalancePipeline(Pipeline, metaclass=ABCMeta):
 
         df = df.drop_duplicates(subset=["Date"], keep="last")
         df = df.sort_values(by="Date")
+        df = df.reset_index(drop=True)
         return df
 
     def write_balance(self, csv: Path, df: DataFrame) -> DataFrame:
