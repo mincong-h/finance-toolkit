@@ -26,3 +26,44 @@ where:
 * The "Date" column is the date of the exchange rates. Note that the accuracy stops at the date level, we don't have precision on finer levels (hours, minutes, seconds).
 * Other columns represent the exchange rate between the base currency Euro and the target currency `$CODE`, for example, the U.S. Dollar (USD) and the Chinese Yuan (CNY).
 * If the exchange rate is missing on some dates, we use the forward-filling technique, meaning that we take the latest valid value for the current date.
+
+## Operations
+
+### Convert Balances
+
+Converting the balances of all foreign accounts from a foreign currency to the base concurrency (EUR) is done via the `finance-toolkit convert` command.
+
+```
+(venv) ➜  finance-toolkit git:(exchange-rate|u=) finance-toolkit convert
+$$$ Summary $$$
+---------------
+2 files done (action: convert).
+---------------
+Sources:
+- /finance-data/balance.sstark-BNP-LVA.USD.csv
+- /finance-data/balance.astark-BNP-CHQ.USD.csv
+Targets:
+- /Users/minconghuang/github/jimi-data/finance-data/balance.sstark-BNP-LVA.EUR.csv
+- /Users/minconghuang/github/jimi-data/finance-data/balance.astark-BNP-CHQ.EUR.csv
+Finished.
+```
+
+You can also combine the "convert" and "merge" commands into a single command via the command `finance-toolkit convert-and-merge` (available since v1.4.0).
+
+### Convert Transactions
+
+This is not yet supported.
+
+### Update the Exchange-Rate Table
+
+Updating the exchange-rate table `${FINANCE_DATA}/exchange-rate.csv` is done in two steps:
+  1. Download the CSV file from the website of the Bank of France **manually**
+  2. Run the command `finance-toolkit move` which scans the download directory and adds the data into the finance database.
+
+### Watch a New Currency
+
+Update the finance configuration `${FINANCE_DATA}/finance-tools.yml` under the `exchange-rate` section. Add a new currency code there.
+
+## Reference
+
+- <https://en.wikipedia.org/wiki/ISO_4217>
