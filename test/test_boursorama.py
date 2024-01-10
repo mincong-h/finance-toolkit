@@ -38,12 +38,12 @@ Date,Label,Amount,Type,MainCategory,SubCategory
     )
 
     # And a file for balance
-    balance_file = cfg.root_dir / "balance.xxx.csv"
+    balance_file = cfg.root_dir / "balance.xxx.EUR.csv"
     balance_file.write_text(
         """\
 Date,Amount
-2019-08-29,300.0
-2019-09-01,200.0
+2019-08-29,300.00
+2019-09-01,200.00
 """
     )
 
@@ -87,9 +87,9 @@ Date,Label,Amount,Currency,Type,MainCategory,SubCategory
         balance_file.read_text()
         == """\
 Date,Amount,Currency
-2019-08-29,300.0,EUR
-2019-09-01,200.0,EUR
-2019-09-03,1000.0,EUR
+2019-08-29,300.00,EUR
+2019-09-01,200.00,EUR
+2019-09-03,1000.00,EUR
 """
     )
 
@@ -262,7 +262,7 @@ def test_boursorama_account_read_raw_account_2(cfg):
     assert_frame_equal(expected_transactions, actual_transactions)
 
 
-def test_boursorama_account_write_balance(cfg):
+def test_boursorama_account_insert_balance(cfg):
     with TemporaryDirectory() as d:
         # Given an existing CSV file with 2 rows
         csv = Path(d) / "balance.xxx.csv"
@@ -280,18 +280,18 @@ Date,Amount
             data=[(pd.Timestamp("2019-03-10"), 320.00, "EUR")],
         )
         account = BoursoramaAccount("type2", "name2", "003607")
-        BoursoramaBalancePipeline(account, cfg).write_balance(csv, new_lines)
+        actual_df = BoursoramaBalancePipeline(account, cfg).insert_balance(csv, new_lines)
 
         # Then rows are available and sorted
-        assert (
-            csv.read_text()
-            == """\
-Date,Amount,Currency
-2019-03-01,300.0,EUR
-2019-03-10,320.0,EUR
-2019-03-12,370.0,EUR
-"""
+        expected_df = pd.DataFrame(
+            columns=["Date", "Amount", "Currency"],
+            data=[
+                (pd.Timestamp("2019-03-01"), 300.00, "EUR"),
+                (pd.Timestamp("2019-03-10"), 320.00, "EUR"),
+                (pd.Timestamp("2019-03-12"), 370.00, "EUR"),
+            ],
         )
+        assert_frame_equal(actual_df, expected_df)
 
 
 def test_boursorama_pipeline_append_tx(cfg):

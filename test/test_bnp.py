@@ -100,7 +100,7 @@ Date,Amount
         }
     )
     account = BnpAccount("CHQ", "xxx", "****1234")
-    new_df = BnpBalancePipeline(account, cfg).insert_balance(csv, new_lines)
+    actual_df = BnpBalancePipeline(account, cfg).insert_balance(csv, new_lines)
 
     # Then rows are available and sorted
     expected_df = pd.DataFrame(
@@ -111,7 +111,7 @@ Date,Amount
             (pd.Timestamp("2018-09-02"), 924.37, "EUR"),
         ],
     )
-    assert_frame_equal(new_df, expected_df)
+    assert_frame_equal(actual_df, expected_df)
 
 
 def test_bnp_pipeline_read_raw_20190703(cfg):
