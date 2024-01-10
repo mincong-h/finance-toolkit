@@ -43,7 +43,7 @@ def test_account_repr_attrs():
     )
     assert (
         repr(a)
-        == "Account<type='aType', id='anId', num='****0001', currency_symbol='USD', balance_filename='balance.anId.USD.csv', converted_balance_filename='balance.anId.EUR.csv'>"
+        == "Account<type='aType', id='anId', num='****0001', currency_symbol='USD', balance_filename='balance.anId.USD.csv', converted_balance_filename='balance.anId.EUR.csv'>"  # noqa: E501
     )
     assert a.type == "aType"
     assert a.id == "anId"
