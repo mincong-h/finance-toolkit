@@ -43,8 +43,8 @@ Sources:
 - /finance-data/balance.sstark-BNP-LVA.USD.csv
 - /finance-data/balance.astark-BNP-CHQ.USD.csv
 Targets:
-- /Users/minconghuang/github/jimi-data/finance-data/balance.sstark-BNP-LVA.EUR.csv
-- /Users/minconghuang/github/jimi-data/finance-data/balance.astark-BNP-CHQ.EUR.csv
+- /finance-data/balance.sstark-BNP-LVA.EUR.csv
+- /finance-data/balance.astark-BNP-CHQ.EUR.csv
 Finished.
 ```
 
