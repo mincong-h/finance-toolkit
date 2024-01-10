@@ -1,6 +1,6 @@
 """Finance Tools"""
 
-__version__ = "1.3.0"
+__version__ = "1.4.0"
 __author__ = "The Finance Toolkit Team"
 __copyright__ = """
 Copyright (c) 2019-2024, The Finance Toolkit Team
