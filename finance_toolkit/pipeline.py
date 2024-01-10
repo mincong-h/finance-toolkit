@@ -220,15 +220,18 @@ class AccountParser:
         self.accounts = cfg.as_dict()
 
     def parse(self, path: Path) -> Account:
+        # balance: `balance.${account_id}.${currency}.csv`
+        # transaction: `${year}-${month}.${account_id}.csv`
         parts = path.name.split(".")
         account_id = parts[1]
-        if len(parts) == 3 and account_id in self.accounts:
+        if account_id in self.accounts:
             return self.accounts[account_id]
         return Account(
             account_type="unknown",
             account_id="unknown",
             account_num="unknown",
             patterns=[r"unknown"],
+            currency="EUR",
         )
 
 
