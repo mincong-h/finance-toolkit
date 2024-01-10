@@ -131,8 +131,7 @@ class Configurator:
 
     @classmethod
     def load_exchange_rates(cls, raw: Dict) -> ExchangeRateConfig:
-        # note: the base currency is not configurable, it can only be euro for now
-        return ExchangeRateConfig(base_currency="EUR", watched_currencies=raw["watched_currencies"])
+        return ExchangeRateConfig(watched_currencies=raw["watched_currencies"])
 
     @classmethod
     def parse_yaml(cls, path: Path) -> Configuration:

@@ -79,9 +79,12 @@ class TxCompletion:
 
 @dataclass
 class ExchangeRateConfig:
-    base_currency: str
     watched_currencies: List[str]
 
+    @property
+    def base_currency(self) -> str:
+        # note: the base currency is not configurable, it can only be euro for now
+        return "EUR"
 
 class Configuration:
     """

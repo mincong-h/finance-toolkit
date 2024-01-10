@@ -5,6 +5,7 @@ from tempfile import TemporaryDirectory
 import pytest
 
 from finance_toolkit.tx import Configuration
+from finance_toolkit.models import ExchangeRateConfig
 
 
 @pytest.fixture(scope="session")
@@ -42,6 +43,7 @@ def cfg(tmpdir, location):
         autocomplete=[],
         download_dir=source_dir,
         root_dir=target_dir,
+        exchange_rate_cfg=ExchangeRateConfig(watched_currencies=["USD", "CNY"])
     )
 
 
