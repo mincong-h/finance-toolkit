@@ -1,6 +1,7 @@
 """Finance Tools"""
 import os
 from pathlib import Path
+import re
 from typing import List, Dict
 
 import pandas as pd
@@ -245,7 +246,8 @@ def move(cfg: Configuration):
             if account.match(path):
                 factory.new_transaction_pipeline(account).run(path, summary)
                 factory.new_balance_pipeline(account).run(path, summary)
-        if path.name == "Webstat_Export_20240107.csv":
+
+        if re.match(r'Webstat_Export_(\d+)\.csv', path.name):
             factory.new_exchange_rate_pipeline().run(path, summary)
     print(summary)
 
