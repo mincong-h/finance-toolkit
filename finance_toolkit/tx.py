@@ -288,7 +288,7 @@ def merge(cfg: Configuration):
         index=False,
     )
 
-    # TODO export results
-    b = merge_balances([p for p in cfg.root_dir.glob("balance.*.csv")], cfg)
+    # note: we only scan euro-related CSV files because euro is the base currencye
+    b = merge_balances([p for p in cfg.root_dir.glob("balance.*.EUR.csv")], cfg)
     b.to_csv(cfg.root_dir / "balance.csv", index=False)
     print("Merge done")
