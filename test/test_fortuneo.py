@@ -188,7 +188,7 @@ Date,Label,Amount,Currency,Type,MainCategory,SubCategory
         == f"""\
 $$$ Summary $$$
 ---------------
-1 files copied.
+1 files done (action: copy).
 ---------------
 Sources:
 - {csv}

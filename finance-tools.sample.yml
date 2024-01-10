@@ -117,3 +117,12 @@ auto-complete:
 #   - macOS: ~/Downloads
 #
 download-dir: ~/Downloads
+
+# Exchange Rates
+# ------------------
+# Configuration related to the exchange rates.
+exchange-rate:
+  # Currencies used by your bank accounts or other accounts.
+  watched-currencies:
+    - USD
+    - CNY

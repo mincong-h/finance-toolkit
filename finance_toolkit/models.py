@@ -77,6 +77,28 @@ class TxCompletion:
         )
 
 
+@dataclass
+class AccountPath:
+    account: Account
+    path: Path
+    is_balance: bool
+    is_original: bool
+
+    @property
+    def is_currency_conversion_needed(self) -> bool:
+        return self.is_original and self.account.is_currency_conversion_needed
+
+
+@dataclass
+class ExchangeRateConfig:
+    watched_currencies: List[str]
+
+    @property
+    def base_currency(self) -> str:
+        # note: the base currency is not configurable, it can only be euro for now
+        return "EUR"
+
+
 class Configuration:
     """
     Type-safe representation of the user configuration.
@@ -90,6 +112,7 @@ class Configuration:
         autocomplete: List[TxCompletion],
         download_dir: Path,
         root_dir: Path,
+        exchange_rate_cfg: ExchangeRateConfig,
     ):
         self.accounts: List[Account] = accounts
         self.category_set: Set[str] = set(categories)
@@ -97,6 +120,7 @@ class Configuration:
         self.autocomplete: List[TxCompletion] = autocomplete
         self.download_dir: Path = download_dir
         self.root_dir: Path = root_dir
+        self.exchange_rate_cfg: ExchangeRateConfig = exchange_rate_cfg
 
     def as_dict(self) -> Dict[str, Account]:
         return {a.id: a for a in self.accounts}
@@ -110,12 +134,21 @@ class Configuration:
         """
         return sorted(c for c in filter(cat_filter, self.category_set))
 
+    @property
+    def exchange_rate_csv_path(self) -> Path:
+        return self.root_dir / "exchange-rate.csv"
+
+    @property
+    def exchange_rate_currencies(self) -> List[str]:
+        return self.exchange_rate_cfg.watched_currencies
+
 
 class Summary:
-    def __init__(self, cfg: Configuration):
+    def __init__(self, cfg: Configuration, action: str = "copy"):
         self.source_dir = cfg.download_dir
         self.sources = set()
         self.targets = set()
+        self.action = action
 
     def add_target(self, target: Path) -> None:
         self.targets.add(target)
@@ -130,7 +163,7 @@ class Summary:
             return f"""\
 $$$ Summary $$$
 ---------------
-{len(self.sources)} files copied.
+{len(self.sources)} files done (action: {self.action}).
 ---------------
 Sources:
 {s}

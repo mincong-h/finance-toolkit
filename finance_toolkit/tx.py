@@ -1,6 +1,7 @@
 """Finance Tools"""
 import os
 from pathlib import Path
+import re
 from typing import List, Dict
 
 import pandas as pd
@@ -15,7 +16,7 @@ from .account import (
 from .bnp import BnpAccount
 from .boursorama import BoursoramaAccount
 from .fortuneo import FortuneoAccount
-from .models import Configuration, Summary, TxCompletion, TxType
+from .models import Configuration, Summary, TxCompletion, TxType, ExchangeRateConfig
 from .pipeline import AccountParser
 from .pipeline_factory import PipelineFactory
 from .revolut import RevolutAccount
@@ -130,6 +131,10 @@ class Configurator:
         return [] if raw is None else [TxCompletion.load(p) for p in raw]
 
     @classmethod
+    def load_exchange_rates(cls, raw: Dict) -> ExchangeRateConfig:
+        return ExchangeRateConfig(watched_currencies=raw["watched-currencies"])
+
+    @classmethod
     def parse_yaml(cls, path: Path) -> Configuration:
         data = yaml.safe_load(path.read_text())
         accounts = cls.load_accounts(data["accounts"])
@@ -138,6 +143,7 @@ class Configurator:
         autocomplete = cls.load_autocomplete(data["auto-complete"])
         download_dir = Path(data["download-dir"]).expanduser()
         root_dir = path.parent
+        exchange_rate_cfg = cls.load_exchange_rates(data["exchange-rate"])
         return Configuration(
             accounts=accounts,
             categories=categories,
@@ -145,6 +151,7 @@ class Configurator:
             autocomplete=autocomplete,
             download_dir=download_dir,
             root_dir=root_dir,
+            exchange_rate_cfg=exchange_rate_cfg,
         )
 
     @classmethod
@@ -239,6 +246,21 @@ def move(cfg: Configuration):
             if account.match(path):
                 factory.new_transaction_pipeline(account).run(path, summary)
                 factory.new_balance_pipeline(account).run(path, summary)
+
+        if re.match(r'Webstat_Export_(\d+)\.csv', path.name):
+            factory.new_exchange_rate_pipeline().run(path, summary)
+    print(summary)
+
+
+def convert(cfg: Configuration):
+    parser = AccountParser(cfg)
+    summary = Summary(cfg, action="convert")
+    factory = PipelineFactory(cfg)
+
+    for path in cfg.root_dir.glob("balance.*.csv"):
+        result = parser.parse_path(path)
+        if result and result.is_currency_conversion_needed:
+            factory.new_convert_balance_pipeline(result.account).run(result.path, summary)
     print(summary)
 
 
@@ -278,7 +300,7 @@ def merge(cfg: Configuration):
         index=False,
     )
 
-    # TODO export results
-    b = merge_balances([p for p in cfg.root_dir.glob("balance.*.csv")], cfg)
+    # note: we only scan euro-related CSV files because euro is the base currencye
+    b = merge_balances([p for p in cfg.root_dir.glob("balance.*.EUR.csv")], cfg)
     b.to_csv(cfg.root_dir / "balance.csv", index=False)
     print("Merge done")

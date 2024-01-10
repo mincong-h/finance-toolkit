@@ -28,7 +28,7 @@ def test_summary_with_source_files(cfg):
         == f"""\
 $$$ Summary $$$
 ---------------
-2 files copied.
+2 files done (action: copy).
 ---------------
 Sources:
 - {cfg.download_dir}/abc

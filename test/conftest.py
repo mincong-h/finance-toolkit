@@ -5,6 +5,7 @@ from tempfile import TemporaryDirectory
 import pytest
 
 from finance_toolkit.tx import Configuration
+from finance_toolkit.models import ExchangeRateConfig
 
 
 @pytest.fixture(scope="session")
@@ -35,6 +36,17 @@ def cfg(tmpdir, location):
     target_dir = Path(tmpdir) / "finance"
     target_dir.mkdir()
 
+    exchange_rate_path = target_dir / "exchange-rate.csv"
+    exchange_rate_path.write_text(
+        """\
+Date,USD,CNY
+2024-01-01,,
+2024-01-02,1.0956,7.8264
+2024-01-03,1.0919,7.8057
+2024-01-04,1.0953,7.833
+2024-01-05,1.0921,7.813
+""")
+
     return Configuration(
         accounts=[],
         categories=[],
@@ -42,6 +54,7 @@ def cfg(tmpdir, location):
         autocomplete=[],
         download_dir=source_dir,
         root_dir=target_dir,
+        exchange_rate_cfg=ExchangeRateConfig(watched_currencies=["USD", "CNY"])
     )
 
 

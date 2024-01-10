@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.4.0
+
+* Support currency conversion based on exchange rates provided by the Bank of
+  France.
+
 ## 1.3.0
 
 * Upgrade to Python 3.10

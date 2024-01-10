@@ -63,7 +63,10 @@ class Account:
         return (
             f"{type(self).__name__}<type={self.type!r}, "
             f"id={self.id!r}, num={self.altered_num!r}, "
-            f"currency_symbol={self.currency_symbol!r}>"
+            f"currency_symbol={self.currency_symbol!r}, "
+            f"balance_filename={self.balance_filename!r}, "
+            f"converted_balance_filename={self.converted_balance_filename!r}"
+            f">"
         )
 
     @property
@@ -84,6 +87,26 @@ class Account:
             else:
                 logging.debug(f"{p.pattern}: not matched")
         return False
+
+    @property
+    def balance_filename(self) -> str:
+        return f"balance.{self.id}.{self.currency_symbol}.csv"
+
+    @property
+    def converted_balance_filename(self) -> str:
+        """
+        Returns the filename of the balance in Euro, which is used as the base currency for
+        standardizing accounts. We need this because user may hold their assets in multiple
+        currencies, e.g. EUR, USD, GBP, etc.
+        """
+        return f"balance.{self.id}.EUR.csv"
+
+    @property
+    def is_currency_conversion_needed(self) -> bool:
+        """
+        Returns True if the account needs currency conversion.
+        """
+        return self.currency_symbol != "EUR"
 
 
 class DegiroAccount(Account):

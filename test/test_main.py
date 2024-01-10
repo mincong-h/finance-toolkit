@@ -9,6 +9,8 @@ from finance_toolkit.__main__ import main
 
 CURRENT_USAGE = """Usage:
   finance-toolkit [options] (cat|categories) [<prefix>]
+  finance-toolkit [options] convert
+  finance-toolkit [options] convert-and-merge
   finance-toolkit [options] merge
   finance-toolkit [options] move"""
 
@@ -19,9 +21,12 @@ finance situation by collecting data from different companies.
 {CURRENT_USAGE}
 
 Arguments:
-  cat|categories   Print all categories, or categories starting with the given prefix.
-  merge            Merge staging data.
-  move             Import data from $HOME/Downloads directory.
+  cat|categories      Print all categories, or categories starting with the given prefix.
+  move                Import data from $HOME/Downloads directory.
+  convert             Convert data from one currency to another based on the exchange rates. The
+                      base currency is euro (EUR) and cannot be changed for now.
+  merge               Merge staging data.
+  convert-and-merge   Running the 'convert' and 'merge' commands sequentially.
 
 Options:
   --finance-root FOLDER    Folder where the configuration file is stored (default: $HOME/finances).
@@ -158,6 +163,11 @@ categories_to_rename:
 auto-complete:
 
 download-dir: {download_dir}
+
+exchange-rate:
+  watched-currencies:
+    - USD
+    - CNY
 """
         )
 
@@ -234,6 +244,11 @@ categories_to_rename:
 auto-complete:
 
 download-dir: {download_dir}
+
+exchange-rate:
+  watched-currencies:
+    - USD
+    - CNY
 """
         )
 
@@ -268,7 +283,7 @@ Date opération;Date valeur;libellé;Débit;Crédit;
     assert (root_dir / "2019-06" / "2019-06.credit-BNP-P15.csv").exists()
     assert (root_dir / "2019-04" / "2019-04.astark-FTN-CHQ.csv").exists()
     assert (root_dir / "2019-12" / "2019-12.astark-FTN-CHQ.csv").exists()
-    assert (root_dir / "balance.credit-BNP-P15.csv").exists()
+    assert (root_dir / "balance.credit-BNP-P15.EUR.csv").exists()
     assert csv.exists()
     assert download_fortuneo.exists()
     # And a summary is printed to standard output (stdout)
@@ -278,7 +293,7 @@ Date opération;Date valeur;libellé;Débit;Crédit;
         == f"""\
 $$$ Summary $$$
 ---------------
-2 files copied.
+2 files done (action: copy).
 ---------------
 Sources:
 - {tmpdir.strpath}/download/E1851234.csv
@@ -287,7 +302,7 @@ Targets:
 - {tmpdir.strpath}/finance/2019-04/2019-04.astark-FTN-CHQ.csv
 - {tmpdir.strpath}/finance/2019-06/2019-06.credit-BNP-P15.csv
 - {tmpdir.strpath}/finance/2019-12/2019-12.astark-FTN-CHQ.csv
-- {tmpdir.strpath}/finance/balance.credit-BNP-P15.csv
+- {tmpdir.strpath}/finance/balance.credit-BNP-P15.EUR.csv
 Finished.
 """
     )

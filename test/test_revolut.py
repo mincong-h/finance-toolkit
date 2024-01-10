@@ -7,6 +7,7 @@ from finance_toolkit.revolut import (
     RevolutBalancePipeline,
     RevolutTransactionPipeline,
 )
+from finance_toolkit.exchange_rate import ConvertBalancePipeline
 
 
 def test_read_raw_2022_05_27_euro(cfg):
@@ -166,7 +167,7 @@ Date,Label,Amount,Currency,Type,MainCategory,SubCategory
 """
     )
 
-    balances = cfg.root_dir / "balance.user-REV-EUR.csv"
+    balances = cfg.root_dir / "balance.user-REV-EUR.EUR.csv"
     balances.write_text(
         """\
 Date,Amount,Currency
@@ -194,7 +195,7 @@ Date,Amount,Currency
         balances.read_text()
         == """\
 Date,Amount,Currency
-2021-01-01 00:00:00,10.0,EUR
+2021-01-01 00:00:00,10.00,EUR
 2021-01-05 14:00:41,74.43,EUR
 """
     )
@@ -227,7 +228,7 @@ Date,Label,Amount,Type,MainCategory,SubCategory
 """
     )
 
-    balances = cfg.root_dir / "balance.user-REV-EUR.csv"
+    balances = cfg.root_dir / "balance.user-REV-EUR.EUR.csv"
     balances.write_text(
         """\
 Date,Amount
@@ -255,7 +256,7 @@ Date,Amount
         balances.read_text()
         == """\
 Date,Amount,Currency
-2021-01-01 00:00:00,10.0,EUR
+2021-01-01 00:00:00,10.00,EUR
 2021-01-05 14:00:41,74.43,EUR
 """
     )
@@ -273,6 +274,71 @@ Date,Label,Amount,Currency,Type,MainCategory,SubCategory
     )
 
 
-def test_integration_deduplicate(cfg):
-    # TODO
-    pass
+def test_integration_convert_currency(cfg):
+    """Ensure that we can integrate new data (balance and transactions) for a non-EUR account."""
+    (cfg.root_dir / "2024-01").mkdir()
+
+    # Given some existing files
+    tx01 = cfg.root_dir / "2024-01" / "2024-01.user-REV-USD.csv"
+    tx01.write_text(
+        """\
+Date,Label,Amount,Type,MainCategory,SubCategory
+2024-01-02,This is an existing transaction,10.0,transfer,,
+"""
+    )
+
+    eur_balance_path = cfg.root_dir / "balance.user-REV-USD.EUR.csv"
+    usd_balance_path = cfg.root_dir / "balance.user-REV-USD.USD.csv"
+    usd_balance_path.write_text(
+        """\
+Date,Amount,Currency
+2024-01-02 00:00:00,10.00,USD
+"""
+    )
+
+    account = RevolutAccount(
+        account_type="USD",
+        account_id="user-REV-USD",
+        account_num="abc123",
+        currency="USD",
+    )
+    summary = Summary(cfg)
+    new_file = (
+        cfg.download_dir
+        / "account-statement_2024-01-01_2024-01-10_undefined-undefined_abc123.csv"
+    )
+
+    # When running pipeline to integrate new lines
+    RevolutBalancePipeline(account, cfg).run(new_file, summary)
+    ConvertBalancePipeline(account, cfg).run(usd_balance_path, summary)
+
+    # Then
+    assert (
+        usd_balance_path.read_text()
+        == """\
+Date,Amount,Currency
+2024-01-02 00:00:00,10.00,USD
+2024-01-05 14:00:41,74.43,USD
+"""
+    )
+    assert (
+        eur_balance_path.read_text()
+        == """\
+Date,Amount,Currency
+2024-01-02 00:00:00,9.13,EUR
+2024-01-05 14:00:41,68.15,EUR
+"""
+    )
+
+    # When
+    RevolutTransactionPipeline(account, cfg).run(new_file, summary)
+
+    # Then
+    assert (
+        tx01.read_text()
+        == """\
+Date,Label,Amount,Currency,Type,MainCategory,SubCategory
+2024-01-02,This is an existing transaction,10.0,USD,transfer,,
+2024-01-05,Payment from M  Huang Mincong,10.0,USD,income,,
+"""
+    )

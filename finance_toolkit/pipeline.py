@@ -1,12 +1,13 @@
 import logging
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
+from typing import Optional
 
 import pandas as pd
 from pandas import DataFrame
 
 from .account import Account
-from .models import Configuration, Summary
+from .models import AccountPath, Configuration, Summary
 
 
 class Pipeline(metaclass=ABCMeta):
@@ -127,12 +128,14 @@ class NoopTransactionPipeline(TransactionPipeline):
 
 class BalancePipeline(Pipeline, metaclass=ABCMeta):
     def run(self, path: Path, summary: Summary):
-        balances = self.read_new_balances(path)
-        balance_file = self.cfg.root_dir / f"balance.{self.account.filename}"
-        self.write_balances(balance_file, balances)
+        new_lines = self.read_new_balances(path)
+
+        original_balance_file = self.cfg.root_dir / self.account.balance_filename
+        original_balance_df = self.insert_balance(original_balance_file, new_lines)
+        self.write_balance(original_balance_file, original_balance_df)
 
         summary.add_source(path)
-        summary.add_target(balance_file)
+        summary.add_target(original_balance_file)
 
     def read_balance(self, path: Path) -> DataFrame:
         logging.debug(f'Reading balance from {path}')
@@ -143,7 +146,8 @@ class BalancePipeline(Pipeline, metaclass=ABCMeta):
         df["AccountType"] = self.account.type
         return df
 
-    def write_balances(self, csv: Path, new_lines: DataFrame):
+    def insert_balance(self, csv: Path, new_lines: DataFrame) -> DataFrame:
+        logging.debug(f"Writing balance to {csv}")
         df = new_lines.copy()
         if csv.exists():
             existing = pd.read_csv(csv, parse_dates=["Date"])
@@ -153,7 +157,7 @@ class BalancePipeline(Pipeline, metaclass=ABCMeta):
                 logging.debug(f'Column "Currency" exists in file: {csv}, skip filling')
             else:
                 logging.debug(
-                    f'Column "Currency" does not exist in file: {csv}, filling it with the account currency'  # noqa
+                    f'Column "Currency" does not exist in file: {csv}, filling it with the account currency: {self.account.currency_symbol}'  # noqa
                 )
                 existing = existing.assign(
                     Currency=lambda row: self.account.currency_symbol
@@ -163,7 +167,11 @@ class BalancePipeline(Pipeline, metaclass=ABCMeta):
 
         df = df.drop_duplicates(subset=["Date"], keep="last")
         df = df.sort_values(by="Date")
-        df.to_csv(csv, index=None, columns=["Date", "Amount", "Currency"])
+        df = df.reset_index(drop=True)
+        return df
+
+    def write_balance(self, csv: Path, df: DataFrame) -> DataFrame:
+        df.to_csv(csv, index=None, columns=["Date", "Amount", "Currency"], float_format="%.2f")
 
     @abstractmethod
     def read_new_balances(self, csv: Path) -> DataFrame:
@@ -182,16 +190,39 @@ class AccountParser:
     def __init__(self, cfg: Configuration):
         self.accounts = cfg.as_dict()
 
-    def parse(self, path: Path) -> Account:
+    def parse_path(self, path: Path) -> Optional[AccountPath]:
+        # balance: `balance.${account_id}.${currency}.csv`
+        # transaction: `${year}-${month}.${account_id}.csv`
         parts = path.name.split(".")
         account_id = parts[1]
-        if len(parts) == 3 and account_id in self.accounts:
+        if account_id in self.accounts:
+            account = self.accounts[account_id]
+            is_balance = path.name.startswith("balance.")
+            if is_balance:
+                currency = parts[2]
+                is_original = account.currency_symbol == currency
+            else:
+                is_original = True
+
+            return AccountPath(account=account,
+                               path=path,
+                               is_balance=is_balance,
+                               is_original=is_original)
+        return None
+
+    def parse(self, path: Path) -> Account:
+        # balance: `balance.${account_id}.${currency}.csv`
+        # transaction: `${year}-${month}.${account_id}.csv`
+        parts = path.name.split(".")
+        account_id = parts[1]
+        if account_id in self.accounts:
             return self.accounts[account_id]
         return Account(
             account_type="unknown",
             account_id="unknown",
             account_num="unknown",
             patterns=[r"unknown"],
+            currency="EUR",
         )
 
 
