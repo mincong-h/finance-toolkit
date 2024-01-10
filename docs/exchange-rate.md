@@ -57,7 +57,7 @@ This is not yet supported.
 ### Update the Exchange-Rate Table
 
 Updating the exchange-rate table `${FINANCE_DATA}/exchange-rate.csv` is done in two steps:
-  1. Download the CSV file from the website of the Bank of France **manually**
+  1. Download the CSV file from the website of the Bank of France **manually**. For example, you can search ["taux de change quotidien site:banque-france.fr"](https://duckduckgo.com/?q=taux+de+change+quotidien+site%253Abanque-france.fr) on DuckDuckGo.
   2. Run the command `finance-toolkit move` which scans the download directory and adds the data into the finance database.
 
 ### Watch a New Currency
