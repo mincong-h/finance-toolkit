@@ -293,7 +293,7 @@ Date opération;Date valeur;libellé;Débit;Crédit;
         == f"""\
 $$$ Summary $$$
 ---------------
-2 files copied.
+2 files done (action: copy).
 ---------------
 Sources:
 - {tmpdir.strpath}/download/E1851234.csv

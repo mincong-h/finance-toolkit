@@ -18,7 +18,7 @@ from .pipeline import (
     GeneralBalancePipeline,
     AccountParser,
 )
-from .exchange_rate import ExchangeRatePipeline
+from .exchange_rate import ExchangeRatePipeline, ConvertBalancePipeline
 from .revolut import RevolutAccount, RevolutTransactionPipeline, RevolutBalancePipeline
 
 
@@ -52,6 +52,9 @@ class PipelineFactory:
 
     def new_exchange_rate_pipeline(self) -> ExchangeRatePipeline:
         return ExchangeRatePipeline(None, self.cfg)
+
+    def new_convert_balance_pipeline(self, account: Account) -> BalancePipeline:
+        return ConvertBalancePipeline(account, self.cfg)
 
     def parse_balance_pipeline(self, path: Path) -> BalancePipeline:
         account = AccountParser(self.cfg).parse(path)

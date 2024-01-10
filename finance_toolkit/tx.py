@@ -253,7 +253,15 @@ def move(cfg: Configuration):
 
 
 def convert(cfg: Configuration):
-    print("Convert done")
+    parser = AccountParser(cfg)
+    summary = Summary(cfg, action="convert")
+    factory = PipelineFactory(cfg)
+
+    for path in cfg.root_dir.glob("balance.*.csv"):
+        result = parser.parse_path(path)
+        if result and result.is_currency_conversion_needed:
+            factory.new_convert_balance_pipeline(result.account).run(result.path, summary)
+    print(summary)
 
 
 def merge(cfg: Configuration):

@@ -78,6 +78,18 @@ class TxCompletion:
 
 
 @dataclass
+class AccountPath:
+    account: Account
+    path: Path
+    is_balance: bool
+    is_original: bool
+
+    @property
+    def is_currency_conversion_needed(self) -> bool:
+        return self.is_original and self.account.is_currency_conversion_needed
+
+
+@dataclass
 class ExchangeRateConfig:
     watched_currencies: List[str]
 
@@ -132,10 +144,11 @@ class Configuration:
 
 
 class Summary:
-    def __init__(self, cfg: Configuration):
+    def __init__(self, cfg: Configuration, action: str = "copy"):
         self.source_dir = cfg.download_dir
         self.sources = set()
         self.targets = set()
+        self.action = action
 
     def add_target(self, target: Path) -> None:
         self.targets.add(target)
@@ -150,7 +163,7 @@ class Summary:
             return f"""\
 $$$ Summary $$$
 ---------------
-{len(self.sources)} files copied.
+{len(self.sources)} files done (action: {self.action}).
 ---------------
 Sources:
 {s}

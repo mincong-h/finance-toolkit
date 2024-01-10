@@ -3,6 +3,7 @@ from abc import ABCMeta
 from datetime import datetime
 from pathlib import Path
 import pandas as pd
+from pandas import DataFrame
 import re
 
 from .pipeline import Pipeline
@@ -60,3 +61,45 @@ class ExchangeRatePipeline(Pipeline, metaclass=ABCMeta):
             return match.group(1)
         else:
             return 'Date'
+
+
+class ConvertBalancePipeline(Pipeline, metaclass=ABCMeta):
+    def run(self, balance_csv: Path, summary: Summary) -> None:
+        logging.debug(f"Running {self.__class__.__name__} on {balance_csv}")
+
+        balance_df = pd.read_csv(balance_csv, parse_dates=["Date"])
+
+        converted_balance_file = self.cfg.root_dir / self.account.converted_balance_filename
+        converted_balance_df = self.convert_balance_to_euro(balance_df)
+
+        self.write_balance(converted_balance_file, converted_balance_df)
+
+        summary.add_source(balance_csv)
+        summary.add_target(converted_balance_file)
+
+    def convert_balance_to_euro(self, balance_df: DataFrame) -> DataFrame:
+        balance_df = balance_df.copy()
+        balance_df["_DateOnly"] = pd.to_datetime(balance_df["Date"]).dt.date  # remove time part
+
+        exchange_rate_df = pd.read_csv(self.cfg.exchange_rate_csv_path, parse_dates=["Date"])
+        exchange_rate_df.rename(columns={"Date": "_ExDate"}, inplace=True)
+        # forward fill: propagate last valid observation forward to next valid
+        exchange_rate_df = exchange_rate_df.fillna(method="ffill")
+        exchange_rate_df["EUR"] = 1.0
+
+        logging.debug(f"Converting the balance of account {self.account.id} from {self.account.currency_symbol} to EUR")  # noqa
+        result_df = pd.merge(balance_df, exchange_rate_df,
+                             left_on="_DateOnly",
+                             right_on=exchange_rate_df["_ExDate"].dt.date,
+                             how="left")
+
+        # amount in EUR = amount in currency / exchange rate
+        # e.g. amount in EUR = 100 USD / 1.0956 = 91.29 EUR
+        result_df["Amount"] = result_df["Amount"] / result_df[self.account.currency_symbol]
+        result_df["Currency"] = "EUR"
+        result_df = result_df[["Date", "Amount", "Currency"]]
+
+        return result_df
+
+    def write_balance(self, csv: Path, df: DataFrame) -> DataFrame:
+        df.to_csv(csv, index=None, columns=["Date", "Amount", "Currency"], float_format="%.2f")

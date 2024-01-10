@@ -7,6 +7,7 @@ from finance_toolkit.revolut import (
     RevolutBalancePipeline,
     RevolutTransactionPipeline,
 )
+from finance_toolkit.exchange_rate import ConvertBalancePipeline
 
 
 def test_read_raw_2022_05_27_euro(cfg):
@@ -309,6 +310,7 @@ Date,Amount,Currency
 
     # When running pipeline to integrate new lines
     RevolutBalancePipeline(account, cfg).run(new_file, summary)
+    ConvertBalancePipeline(account, cfg).run(usd_balance_path, summary)
 
     # Then
     assert (

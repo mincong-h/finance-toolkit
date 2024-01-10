@@ -1,12 +1,13 @@
 import logging
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
+from typing import Optional
 
 import pandas as pd
 from pandas import DataFrame
 
 from .account import Account
-from .models import Configuration, Summary
+from .models import AccountPath, Configuration, Summary
 
 
 class Pipeline(metaclass=ABCMeta):
@@ -136,12 +137,6 @@ class BalancePipeline(Pipeline, metaclass=ABCMeta):
         summary.add_source(path)
         summary.add_target(original_balance_file)
 
-        if self.account.is_currency_conversion_needed:
-            converted_balance_file = self.cfg.root_dir / self.account.converted_balance_filename
-            converted_balance_df = self.convert_balance_to_euro(original_balance_df)
-            self.write_balance(converted_balance_file, converted_balance_df)
-            summary.add_target(converted_balance_file)
-
     def read_balance(self, path: Path) -> DataFrame:
         logging.debug(f'Reading balance from {path}')
         df = pd.read_csv(path, parse_dates=["Date"])
@@ -178,30 +173,6 @@ class BalancePipeline(Pipeline, metaclass=ABCMeta):
     def write_balance(self, csv: Path, df: DataFrame) -> DataFrame:
         df.to_csv(csv, index=None, columns=["Date", "Amount", "Currency"], float_format="%.2f")
 
-    def convert_balance_to_euro(self, balance_df: DataFrame) -> DataFrame:
-        balance_df = balance_df.copy()
-        balance_df["_DateOnly"] = pd.to_datetime(balance_df["Date"]).dt.date  # remove time part
-
-        exchange_rate_df = pd.read_csv(self.cfg.exchange_rate_csv_path, parse_dates=["Date"])
-        exchange_rate_df.rename(columns={"Date": "_ExDate"}, inplace=True)
-        # forward fill: propagate last valid observation forward to next valid
-        exchange_rate_df = exchange_rate_df.fillna(method="ffill")
-        exchange_rate_df["EUR"] = 1.0
-
-        logging.debug(f"Converting the balance of account {self.account.id} from {self.account.currency_symbol} to EUR")  # noqa
-        result_df = pd.merge(balance_df, exchange_rate_df,
-                             left_on="_DateOnly",
-                             right_on=exchange_rate_df["_ExDate"].dt.date,
-                             how="left")
-
-        # amount in EUR = amount in currency / exchange rate
-        # e.g. amount in EUR = 100 USD / 1.0956 = 91.29 EUR
-        result_df["Amount"] = result_df["Amount"] / result_df[self.account.currency_symbol]
-        result_df["Currency"] = "EUR"
-        result_df = result_df[["Date", "Amount", "Currency"]]
-
-        return result_df
-
     @abstractmethod
     def read_new_balances(self, csv: Path) -> DataFrame:
         pass
@@ -218,6 +189,26 @@ class GeneralBalancePipeline(BalancePipeline):
 class AccountParser:
     def __init__(self, cfg: Configuration):
         self.accounts = cfg.as_dict()
+
+    def parse_path(self, path: Path) -> Optional[AccountPath]:
+        # balance: `balance.${account_id}.${currency}.csv`
+        # transaction: `${year}-${month}.${account_id}.csv`
+        parts = path.name.split(".")
+        account_id = parts[1]
+        if account_id in self.accounts:
+            account = self.accounts[account_id]
+            is_balance = path.name.startswith("balance.")
+            if is_balance:
+                currency = parts[2]
+                is_original = account.currency_symbol == currency
+            else:
+                is_original = True
+
+            return AccountPath(account=account,
+                               path=path,
+                               is_balance=is_balance,
+                               is_original=is_original)
+        return None
 
     def parse(self, path: Path) -> Account:
         # balance: `balance.${account_id}.${currency}.csv`
