@@ -24,7 +24,7 @@ Source :;BCE (Banque Centrale Européenne) (4F0);BCE (Banque Centrale Européenn
 02/01/2024;1,6147;1,9558;5,3562;1,4565;0,9305;7,8264;;24,687;7,4551;;0,86645;8,5609;;382,1;17007,66;3,9705;91,285;150,7;155,68;1438,78;;;;18,6887;5,0425;11,2815;1,7471;60,981;4,3708;4,9705;;11,1545;1,4533;;;37,563;32,5684;1,0956;20,3656
 """  # noqa
     )
-        with patch("finance_toolkit.exchange_rate.get_today", return_value=datetime.datetime(2024, 1, 6)):
+        with patch("finance_toolkit.exchange_rate.get_today", return_value=datetime.datetime(2024, 1, 6)):  # noqa
             pipeline = PipelineFactory(cfg).new_exchange_rate_pipeline()
             summary = Summary(cfg)
 
