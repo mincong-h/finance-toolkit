@@ -46,7 +46,8 @@ class ExchangeRatePipeline(Pipeline, metaclass=ABCMeta):
         )
         rate_df = rate_df[['Date'] + self.cfg.exchange_rate_currencies]
         rate_df = rate_df.sort_values(by=['Date'], ascending=True)
-        today = datetime.today()
+        today = get_today()
+        logging.debug(f"Today is {today}")
         while rate_df.iloc[-1]['Date'] < today:
             rate_df = rate_df.append({'Date': rate_df.iloc[-1]['Date'] + pd.DateOffset(1)}, ignore_index=True)
 
@@ -64,6 +65,10 @@ class ExchangeRatePipeline(Pipeline, metaclass=ABCMeta):
             return match.group(1)
         else:
             return 'Date'
+
+
+def get_today():  # faciliate testing
+    return datetime.today()
 
 
 class ConvertBalancePipeline(Pipeline, metaclass=ABCMeta):

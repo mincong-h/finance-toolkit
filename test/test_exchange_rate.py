@@ -1,8 +1,9 @@
-
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from finance_toolkit.models import Summary
 from finance_toolkit.pipeline_factory import PipelineFactory
+from unittest.mock import patch
+import datetime
 
 
 def test_exchange_rate_pipeline_run(cfg):
@@ -23,19 +24,20 @@ Source :;BCE (Banque Centrale Européenne) (4F0);BCE (Banque Centrale Européenn
 02/01/2024;1,6147;1,9558;5,3562;1,4565;0,9305;7,8264;;24,687;7,4551;;0,86645;8,5609;;382,1;17007,66;3,9705;91,285;150,7;155,68;1438,78;;;;18,6887;5,0425;11,2815;1,7471;60,981;4,3708;4,9705;;11,1545;1,4533;;;37,563;32,5684;1,0956;20,3656
 """  # noqa
     )
+        with patch("finance_toolkit.exchange_rate.get_today", return_value=datetime.datetime(2024, 1, 6)):
+            pipeline = PipelineFactory(cfg).new_exchange_rate_pipeline()
+            summary = Summary(cfg)
 
-        pipeline = PipelineFactory(cfg).new_exchange_rate_pipeline()
-        summary = Summary(cfg)
+            # When
+            pipeline.run(csv, summary)
 
-        # When
-        pipeline.run(csv, summary)
-
-        # Then
-        assert (cfg.root_dir / "exchange-rate.csv").exists()
-        assert (cfg.root_dir / "exchange-rate.csv").read_text() == """\
+            # Then
+            assert (cfg.root_dir / "exchange-rate.csv").exists()
+            assert (cfg.root_dir / "exchange-rate.csv").read_text() == """\
 Date,USD,CNY
 2024-01-02,1.0956,7.8264
 2024-01-03,1.0919,7.8057
 2024-01-04,1.0953,7.833
 2024-01-05,1.0921,7.813
+2024-01-06,,
 """
