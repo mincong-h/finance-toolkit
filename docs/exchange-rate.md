@@ -60,6 +60,8 @@ Updating the exchange-rate table `${FINANCE_DATA}/exchange-rate.csv` is done in 
   1. Download the CSV file from the website of the Bank of France **manually**. For example, you can search ["taux de change quotidien site:banque-france.fr"](https://duckduckgo.com/?q=taux+de+change+quotidien+site%253Abanque-france.fr) on DuckDuckGo.
   2. Run the command `finance-toolkit move` which scans the download directory and adds the data into the finance database.
 
+Note that the exchange rates are usually delayed for a few days: as of day D, the latest available rate is the value of the day before (D-1) for Tuesday, Wednesday, Thursday, Friday, and Saturday; and the latest available rate is the value of the last Friday for Sunday (D-2) and Monday (D-3). Finance Toolkit temporarily relies on the latest exchange rate as the value for day D. Then, it will be corrected during the next run once the exchange rate of day D is available.
+
 ### Watch a New Currency
 
 Update the finance configuration `${FINANCE_DATA}/finance-tools.yml` under the `exchange-rate` section. Add a new currency code there.
