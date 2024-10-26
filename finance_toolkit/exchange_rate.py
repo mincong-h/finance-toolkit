@@ -36,7 +36,7 @@ class ExchangeRatePipeline(Pipeline, metaclass=ABCMeta):
 
         rate_df = pd.read_csv(
             csv,
-            date_parser=lambda s: datetime.strptime(s, "%Y-%d-%m"),
+            date_parser=lambda s: datetime.strptime(s, "%Y-%m-%d"),
             parse_dates=['Date'],
             decimal=",",
             delimiter=";",
