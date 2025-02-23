@@ -10,9 +10,7 @@
 #       remote registry. "local" means using the Docker image built locally,
 #       useful for testing.
 #
-REGISTRY_NAME="registry-intl.cn-hongkong.aliyuncs.com"
-IMAGE_NAMESPACE="jimidata-prod"
-image="${REGISTRY_NAME}/${IMAGE_NAMESPACE}/finance-toolkit:latest"
+image="mc144/finance-toolkit:latest"
 
 docker_mode=${FTK_DOCKER_MODE:-remote}
 
