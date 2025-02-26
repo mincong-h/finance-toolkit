@@ -247,7 +247,7 @@ def move(cfg: Configuration):
                 factory.new_transaction_pipeline(account).run(path, summary)
                 factory.new_balance_pipeline(account).run(path, summary)
 
-        if re.match(r'Webstat_Export_(\d+)\.csv', path.name):
+        if re.match(r'Webstat_Export_(.+)\.csv', path.name):
             factory.new_exchange_rate_pipeline().run(path, summary)
     print(summary)
 
