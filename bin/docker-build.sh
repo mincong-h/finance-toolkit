@@ -11,4 +11,5 @@ tag="v${pipeline_id}-${short_commit}"
 docker build \
   --tag "mc144/finance-toolkit:${tag}" \
   --tag "mc144/finance-toolkit:latest" \
+  --platform linux/amd64,linux/arm64 \
   "$project_dir"
