@@ -15,6 +15,7 @@ from .account import (
 )
 from .bnp import BnpAccount
 from .boursorama import BoursoramaAccount
+from .caisse_epargne import CaisseEpargneAccount
 from .fortuneo import FortuneoAccount
 from .models import Configuration, Summary, TxCompletion, TxType, ExchangeRateConfig
 from .pipeline import AccountParser
@@ -53,6 +54,19 @@ class Configurator:
                     )
                 accounts.append(
                     BoursoramaAccount(
+                        account_type=fields["type"],
+                        account_id=symbolic_name,
+                        account_num=fields["id"],
+                    )
+                )
+            elif company == "CaisseEpargne":
+                if "expr" in fields:
+                    print(
+                        "Caisse d'Epargne has its own naming convention for downloaded files,"
+                        f" you cannot overwrite it: expr={fields['expr']!r}"
+                    )
+                accounts.append(
+                    CaisseEpargneAccount(
                         account_type=fields["type"],
                         account_id=symbolic_name,
                         account_num=fields["id"],

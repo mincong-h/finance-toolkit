@@ -9,6 +9,11 @@ from .boursorama import (
     BoursoramaTransactionPipeline,
     BoursoramaBalancePipeline,
 )
+from .caisse_epargne import (
+    CaisseEpargneAccount,
+    CaisseEpargneTransactionPipeline,
+    CaisseEpargneBalancePipeline,
+)
 from .fortuneo import FortuneoAccount, FortuneoTransactionPipeline
 from .models import Configuration
 from .pipeline import (
@@ -31,6 +36,8 @@ class PipelineFactory:
             return BnpTransactionPipeline(account, self.cfg)
         if isinstance(account, BoursoramaAccount):
             return BoursoramaTransactionPipeline(account, self.cfg)
+        if isinstance(account, CaisseEpargneAccount):
+            return CaisseEpargneTransactionPipeline(account, self.cfg)
         if isinstance(account, FortuneoAccount):
             return FortuneoTransactionPipeline(account, self.cfg)
         if isinstance(account, RevolutAccount):
@@ -44,6 +51,8 @@ class PipelineFactory:
             return BnpBalancePipeline(account, self.cfg)
         if isinstance(account, BoursoramaAccount):
             return BoursoramaBalancePipeline(account, self.cfg)
+        if isinstance(account, CaisseEpargneAccount):
+            return CaisseEpargneBalancePipeline(account, self.cfg)
         if isinstance(account, RevolutAccount):
             if account.skip_integration:
                 return GeneralBalancePipeline(account, self.cfg)
