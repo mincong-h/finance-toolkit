@@ -23,8 +23,13 @@ class CaisseEpargneAccount(Account):
             account_id=account_id,
             account_num=account_num,
             currency=currency,
-            # e.g. "08062025_1234.csv" for a file downloaded on June 8, 2025, for account 1234
-            patterns=[r"(?P<date>\d{8})_(?P<account>\d+)\.csv"],
+            patterns=[
+                # e.g. "123_01112025_07122025.csv"
+                # format: {account}_{startDate}_{endDate}.csv
+                # where "123" stands for the account ID and dates are DDMMYYYY
+                # (start and end of operations period)
+                r"%s_\d{8}_\d{8}\.csv" % account_num
+            ],
         )
 
 
