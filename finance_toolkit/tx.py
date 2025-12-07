@@ -59,7 +59,7 @@ class Configurator:
                         account_num=fields["id"],
                     )
                 )
-            elif company == "CaisseEpargne":
+            elif company == "Caisse d'Epargne":
                 if "expr" in fields:
                     print(
                         "Caisse d'Epargne has its own naming convention for downloaded files,"
