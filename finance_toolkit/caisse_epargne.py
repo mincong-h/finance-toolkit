@@ -59,13 +59,13 @@ class CaisseEpargnePipeline(Pipeline, metaclass=ABCMeta):
         return pd.DataFrame(), df  # Placeholder for balance DataFrame
 
 
-class CaisseEpargneTransactionPipeline(TransactionPipeline):
+class CaisseEpargneTransactionPipeline(CaisseEpargnePipeline, TransactionPipeline):
     def read_new_transactions(self, csv: Path) -> DataFrame:
         _, tx = self.read_raw(csv)
         return tx
 
 
-class CaisseEpargneBalancePipeline(BalancePipeline):
+class CaisseEpargneBalancePipeline(CaisseEpargnePipeline, BalancePipeline):
     def read_new_balances(self, csv: Path) -> DataFrame:
         balances, _ = self.read_raw(csv)
         return balances
