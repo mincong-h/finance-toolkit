@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ```bash
 # Create and activate virtual environment
-python3 -m venv venv
+python3.10 -m venv venv
 source venv/bin/activate
 
 # Install the package and dependencies
