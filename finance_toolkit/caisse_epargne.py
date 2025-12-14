@@ -51,12 +51,18 @@ class CaisseEpargnePipeline(Pipeline, metaclass=ABCMeta):
             "skipinitialspace": True,
         }
         try:
-            df = pd.read_csv(csv, **kwargs)
+            tx_df = pd.read_csv(csv, **kwargs)
         except Exception as e:
             raise PipelineDataError(f"Failed to read CSV file {csv}: {e}")
 
+        tx_df.rename(
+            columns={
+                "Date operation": "Date",
+            }
+        )
+
         # Process the DataFrame as needed
-        return pd.DataFrame(), df  # Placeholder for balance DataFrame
+        return pd.DataFrame(), tx_df  # Placeholder for balance DataFrame
 
 
 class CaisseEpargneTransactionPipeline(CaisseEpargnePipeline, TransactionPipeline):
