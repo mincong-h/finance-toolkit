@@ -66,8 +66,10 @@ class CaisseEpargnePipeline(Pipeline, metaclass=ABCMeta):
             inplace=True,
         )
 
-        # Process the DataFrame as needed
-        return pd.DataFrame(), tx_df  # Placeholder for balance DataFrame
+        # Caisse d'Epargne only supports EUR
+        tx_df["Currency"] = "EUR"
+
+        return pd.DataFrame(), tx_df
 
 
 class CaisseEpargneTransactionPipeline(CaisseEpargnePipeline, TransactionPipeline):
