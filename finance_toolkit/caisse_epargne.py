@@ -1,4 +1,5 @@
 from abc import ABCMeta
+from datetime import datetime
 from pathlib import Path
 from typing import Tuple
 
@@ -39,19 +40,20 @@ class CaisseEpargnePipeline(Pipeline, metaclass=ABCMeta):
         self.account: CaisseEpargneAccount = account
 
     def read_raw(self, csv: Path) -> Tuple[DataFrame, DataFrame]:
-        kwargs = {
-            "decimal": ",",
-            "delimiter": ";",
-            "encoding": "UTF-8",
-            "parse_dates": [
-                "Date de comptabilisation",
-                "Date operation",
-                "Date de valeur",
-            ],
-            "skipinitialspace": True,
-        }
         try:
-            tx_df = pd.read_csv(csv, **kwargs)
+            tx_df = pd.read_csv(
+                csv,
+                date_format="%d/%m/%Y",
+                decimal=",",
+                delimiter=";",
+                encoding="UTF-8",
+                parse_dates=[
+                    "Date de comptabilisation",
+                    "Date operation",
+                    "Date de valeur",
+                ],
+                skipinitialspace=True,
+            )
         except Exception as e:
             raise PipelineDataError(f"Failed to read CSV file {csv}: {e}")
 
