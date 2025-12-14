@@ -58,7 +58,8 @@ class CaisseEpargnePipeline(Pipeline, metaclass=ABCMeta):
         tx_df.rename(
             columns={
                 "Date operation": "Date",
-            }
+            },
+            inplace=True,
         )
 
         # Process the DataFrame as needed
