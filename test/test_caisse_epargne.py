@@ -34,9 +34,24 @@ def test_caisse_epargne_transaction_pipeline_read_new_transactions(cfg):
             "Currency",
         ],
         data=[
-            (pd.Timestamp("2024-11-14"), "CB SUPERMARCHE CENTRAL FACT 141124", -45.50, "EUR"),
-            (pd.Timestamp("2024-11-13"), "CB RESTAURANT ABC FACT 131124", -28.90, "EUR"),
-            (pd.Timestamp("2024-11-11"), "CB PHARMACIE DURAND FACT 111124", -12.30, "EUR"),
+            (
+                pd.Timestamp("2024-11-14"),
+                "CB SUPERMARCHE CENTRAL FACT 141124",
+                -45.50,
+                "EUR",
+            ),
+            (
+                pd.Timestamp("2024-11-13"),
+                "CB RESTAURANT ABC FACT 131124",
+                -28.90,
+                "EUR",
+            ),
+            (
+                pd.Timestamp("2024-11-11"),
+                "CB PHARMACIE DURAND FACT 111124",
+                -12.30,
+                "EUR",
+            ),
             (pd.Timestamp("2024-11-09"), "VIR INST Employeur SA", None, "EUR"),
             (pd.Timestamp("2024-11-05"), "PRLV ASSURANCE HABITATION", -89.00, "EUR"),
         ],
@@ -51,7 +66,9 @@ def test_caisse_epargne_transaction_pipeline_guess_meta_account_type_chq(cfg):
     cfg.accounts.append(account)
     pipeline = CaisseEpargneTransactionPipeline(account=account, cfg=cfg)
     raw = pd.DataFrame(columns=cols, data=[("Some Label", "", "", "")])
-    expected = pd.DataFrame(columns=cols, data=[("Some Label", TxType.EXPENSE.value, "", "")])
+    expected = pd.DataFrame(
+        columns=cols, data=[("Some Label", TxType.EXPENSE.value, "", "")]
+    )
     actual = pipeline.guess_meta(raw)
     assert_frame_equal(actual, expected)
 

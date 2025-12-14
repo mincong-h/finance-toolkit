@@ -1,4 +1,5 @@
 """Finance Tools"""
+
 import os
 from pathlib import Path
 import re
@@ -105,9 +106,9 @@ class Configurator:
                         account_id=symbolic_name,
                         account_num=fields["id"],
                         currency=fields["currency"],
-                        extra_patterns=fields["expressions"]
-                        if "expressions" in fields
-                        else None,
+                        extra_patterns=(
+                            fields["expressions"] if "expressions" in fields else None
+                        ),
                     )
                 )
             elif company == "October":
@@ -261,7 +262,7 @@ def move(cfg: Configuration):
                 factory.new_transaction_pipeline(account).run(path, summary)
                 factory.new_balance_pipeline(account).run(path, summary)
 
-        if re.match(r'Webstat_Export_(.+)\.csv', path.name):
+        if re.match(r"Webstat_Export_(.+)\.csv", path.name):
             factory.new_exchange_rate_pipeline().run(path, summary)
     print(summary)
 
@@ -274,7 +275,9 @@ def convert(cfg: Configuration):
     for path in cfg.root_dir.glob("balance.*.csv"):
         result = parser.parse_path(path)
         if result and result.is_currency_conversion_needed:
-            factory.new_convert_balance_pipeline(result.account).run(result.path, summary)
+            factory.new_convert_balance_pipeline(result.account).run(
+                result.path, summary
+            )
     print(summary)
 
 

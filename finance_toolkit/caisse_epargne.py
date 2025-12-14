@@ -29,7 +29,8 @@ class CaisseEpargneAccount(Account):
                 # format: {account}_{startDate}_{endDate}.csv
                 # where "123" stands for the account ID and dates are DDMMYYYY
                 # (start and end of operations period)
-                "%s_\\d{8}_\\d{8}\\.csv" % account_num
+                "%s_\\d{8}_\\d{8}\\.csv"
+                % account_num
             ],
         )
 
