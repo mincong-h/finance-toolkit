@@ -7,7 +7,7 @@ import pandas as pd
 from pandas import DataFrame
 
 from .account import Account
-from .models import Configuration
+from .models import Configuration, TxType
 from .pipeline import Pipeline, TransactionPipeline, BalancePipeline, PipelineDataError
 
 
@@ -73,6 +73,19 @@ class CaisseEpargnePipeline(Pipeline, metaclass=ABCMeta):
 
 
 class CaisseEpargneTransactionPipeline(CaisseEpargnePipeline, TransactionPipeline):
+    def guess_meta(self, df: DataFrame) -> DataFrame:
+        if self.account.type == "CHQ":
+            df["Type"] = TxType.EXPENSE.value
+
+        for i, row in df.iterrows():
+            for c in self.cfg.autocomplete:
+                if c.match(row.Label):
+                    df.loc[i, "Type"] = c.tx_type
+                    df.loc[i, "MainCategory"] = c.main_category
+                    df.loc[i, "SubCategory"] = c.sub_category
+                    break
+        return df
+
     def read_new_transactions(self, csv: Path) -> DataFrame:
         _, tx = self.read_raw(csv)
         return tx
