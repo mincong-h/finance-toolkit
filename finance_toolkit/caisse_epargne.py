@@ -60,6 +60,8 @@ class CaisseEpargnePipeline(Pipeline, metaclass=ABCMeta):
         tx_df.rename(
             columns={
                 "Date operation": "Date",
+                "Libelle operation": "Label",
+                "Debit": "Amount",
             },
             inplace=True,
         )
