@@ -43,7 +43,7 @@ class CaisseEpargnePipeline(Pipeline, metaclass=ABCMeta):
         try:
             tx_df = pd.read_csv(
                 csv,
-                date_format="%d/%m/%Y",
+                date_parser=lambda s: datetime.strptime(s, "%d/%m/%Y"),
                 decimal=",",
                 delimiter=";",
                 encoding="UTF-8",
