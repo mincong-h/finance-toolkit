@@ -1,0 +1,6 @@
+Date de comptabilisation;Libelle simplifie;Libelle operation;Reference;Informations complementaires;Type operation;Categorie;Sous categorie;Debit;Credit;Date operation;Date de valeur;Pointage operation
+15/11/2024;SUPERMARCHE;CB SUPERMARCHE CENTRAL FACT 141124;;;Carte bancaire;Alimentation;Hyper/supermarche;-45,50;;14/11/2024;15/11/2024;0
+14/11/2024;RESTAURANT ABC;CB RESTAURANT ABC FACT 131124;;;Carte bancaire;Alimentation;Restaurant;-28,90;;13/11/2024;14/11/2024;0
+12/11/2024;PHARMACIE;CB PHARMACIE DURAND FACT 111124;;;Carte bancaire;Sante;Pharmacie;-12,30;;11/11/2024;12/11/2024;0
+10/11/2024;EMPLOYEUR SA;VIR INST Employeur SA;REF123456;Salaire Novembre-;Virement recu;Revenus;Salaires;;+3500,00;09/11/2024;09/11/2024;0
+05/11/2024;ASSURANCE;PRLV ASSURANCE HABITATION;REF789012;REF789012-;Prelevement;Logement;Assurance;-89,00;;05/11/2024;05/11/2024;0

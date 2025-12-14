@@ -1,4 +1,5 @@
 """Finance Tools"""
+
 import os
 from pathlib import Path
 import re
@@ -15,6 +16,7 @@ from .account import (
 )
 from .bnp import BnpAccount
 from .boursorama import BoursoramaAccount
+from .caisse_epargne import CaisseEpargneAccount
 from .fortuneo import FortuneoAccount
 from .models import Configuration, Summary, TxCompletion, TxType, ExchangeRateConfig
 from .pipeline import AccountParser
@@ -58,6 +60,19 @@ class Configurator:
                         account_num=fields["id"],
                     )
                 )
+            elif company == "Caisse d'Epargne":
+                if "expr" in fields:
+                    print(
+                        "Caisse d'Epargne has its own naming convention for downloaded files,"
+                        f" you cannot overwrite it: expr={fields['expr']!r}"
+                    )
+                accounts.append(
+                    CaisseEpargneAccount(
+                        account_type=fields["type"],
+                        account_id=symbolic_name,
+                        account_num=fields["id"],
+                    )
+                )
             elif company == "Degiro":
                 accounts.append(
                     DegiroAccount(
@@ -91,9 +106,9 @@ class Configurator:
                         account_id=symbolic_name,
                         account_num=fields["id"],
                         currency=fields["currency"],
-                        extra_patterns=fields["expressions"]
-                        if "expressions" in fields
-                        else None,
+                        extra_patterns=(
+                            fields["expressions"] if "expressions" in fields else None
+                        ),
                     )
                 )
             elif company == "October":
@@ -247,7 +262,7 @@ def move(cfg: Configuration):
                 factory.new_transaction_pipeline(account).run(path, summary)
                 factory.new_balance_pipeline(account).run(path, summary)
 
-        if re.match(r'Webstat_Export_(.+)\.csv', path.name):
+        if re.match(r"Webstat_Export_(.+)\.csv", path.name):
             factory.new_exchange_rate_pipeline().run(path, summary)
     print(summary)
 
@@ -260,7 +275,9 @@ def convert(cfg: Configuration):
     for path in cfg.root_dir.glob("balance.*.csv"):
         result = parser.parse_path(path)
         if result and result.is_currency_conversion_needed:
-            factory.new_convert_balance_pipeline(result.account).run(result.path, summary)
+            factory.new_convert_balance_pipeline(result.account).run(
+                result.path, summary
+            )
     print(summary)
 
 
