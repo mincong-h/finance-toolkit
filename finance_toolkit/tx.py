@@ -134,8 +134,36 @@ class Configurator:
                         currency=fields["currency"],
                     )
                 )
+
+        # Validate no duplicate Caisse d'Epargne account IDs (suffixes)
+        cls._validate_no_duplicate_caisse_epargne_accounts(accounts)
+
         accounts.sort(key=lambda a: a.id)
         return accounts
+
+    @classmethod
+    def _validate_no_duplicate_caisse_epargne_accounts(cls, accounts: List[Account]):
+        """
+        Validate that no two Caisse d'Epargne accounts have the same account number (suffix).
+        Since account numbers are suffixes, duplicates would cause ambiguous file matching.
+        """
+        ce_accounts = [a for a in accounts if isinstance(a, CaisseEpargneAccount)]
+        seen_nums: Dict[str, List[str]] = {}
+        for account in ce_accounts:
+            if account.num not in seen_nums:
+                seen_nums[account.num] = []
+            seen_nums[account.num].append(account.id)
+
+        dup_details = [
+            f"  - Account ID suffix '{num}' is used by: {', '.join(ids)}"
+            for num, ids in seen_nums.items()
+            if len(ids) > 1
+        ]
+        if dup_details:
+            raise ValueError(
+                "Duplicate Caisse d'Epargne account ID suffixes found. "
+                "This would cause ambiguous file matching.\n" + "\n".join(dup_details)
+            )
 
     @classmethod
     def load_categories(cls, raw: List[str]) -> List[str]:

@@ -19,6 +19,17 @@ def test_caisse_epargne_account_pattern():
     assert not account.match(Path("12345678.csv"))
 
 
+def test_caisse_epargne_account_pattern_suffix():
+    # Account number is a suffix of the full account number in the filename
+    account = CaisseEpargneAccount("CHQ", "test-CEP-CHQ", "5678")
+    # Should match files where the account number ends with the suffix
+    assert account.match(Path("12345678_01112024_30112024.csv"))
+    assert account.match(Path("99995678_01012025_31012025.csv"))
+    # Should not match files where the suffix doesn't match
+    assert not account.match(Path("12345679_01112024_30112024.csv"))
+    assert not account.match(Path("56781234_01112024_30112024.csv"))
+
+
 def test_caisse_epargne_transaction_pipeline_read_new_transactions(cfg):
     csv = cfg.download_dir / "12345678_01112024_30112024.csv"
 

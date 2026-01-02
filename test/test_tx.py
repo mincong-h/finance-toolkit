@@ -14,12 +14,14 @@ from finance_toolkit.models import (
 from finance_toolkit.tx import (
     BnpAccount,
     BoursoramaAccount,
+    CaisseEpargneAccount,
     Configurator,
     DegiroAccount,
     FortuneoAccount,
     OctoberAccount,
     RevolutAccount,
 )
+import pytest
 
 
 # ---------- Top Level Functions ----------
@@ -557,6 +559,56 @@ accounts:
             currency="EUR",
         )
     ]
+
+
+def test_configurator_load_accounts_caisse_epargne_ok():
+    # language=yml
+    cfg = yaml.safe_load(
+        """\
+accounts:
+  astark-CEP-CHQ:
+    company: "Caisse d'Epargne"
+    type: CHQ
+    id: '1234'
+    currency: EUR
+  astark-CEP-LVR:
+    company: "Caisse d'Epargne"
+    type: LVR
+    id: '5678'
+    currency: EUR
+"""
+    )
+    # Should succeed with different account IDs
+    accounts = Configurator.load_accounts(cfg["accounts"])
+    assert len(accounts) == 2
+    assert all(isinstance(a, CaisseEpargneAccount) for a in accounts)
+
+
+def test_configurator_load_accounts_caisse_epargne_duplicate_error():
+    # language=yml
+    cfg = yaml.safe_load(
+        """\
+accounts:
+  astark-CEP-CHQ:
+    company: "Caisse d'Epargne"
+    type: CHQ
+    id: '1234'
+    currency: EUR
+  bstark-CEP-LVR:
+    company: "Caisse d'Epargne"
+    type: LVR
+    id: '1234'
+    currency: EUR
+"""
+    )
+    # Should raise ValueError because both accounts have the same ID suffix
+    with pytest.raises(ValueError) as exc_info:
+        Configurator.load_accounts(cfg["accounts"])
+
+    assert "Duplicate Caisse d'Epargne account ID suffixes found" in str(exc_info.value)
+    assert "1234" in str(exc_info.value)
+    assert "astark-CEP-CHQ" in str(exc_info.value)
+    assert "bstark-CEP-LVR" in str(exc_info.value)
 
 
 def test_configurator_autocomplete_with_content():

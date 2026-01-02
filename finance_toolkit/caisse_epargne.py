@@ -1,3 +1,4 @@
+import re
 from abc import ABCMeta
 from datetime import datetime
 from pathlib import Path
@@ -25,12 +26,13 @@ class CaisseEpargneAccount(Account):
             account_num=account_num,
             currency=currency,
             patterns=[
-                # e.g. "123_01112025_07122025.csv"
+                # e.g. "123456789_01112025_07122025.csv"
                 # format: {account}_{startDate}_{endDate}.csv
-                # where "123" stands for the account ID and dates are DDMMYYYY
-                # (start and end of operations period)
-                "%s_\\d{8}_\\d{8}\\.csv"
-                % account_num
+                # where dates are DDMMYYYY (start and end of operations period)
+                # account_num is the suffix of the full account number, e.g. "6789"
+                # matches any digits before the suffix
+                "\\d*%s_\\d{8}_\\d{8}\\.csv"
+                % re.escape(account_num)
             ],
         )
 
