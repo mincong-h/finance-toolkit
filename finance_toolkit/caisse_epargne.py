@@ -43,22 +43,30 @@ class CaisseEpargnePipeline(Pipeline, metaclass=ABCMeta):
         self.account: CaisseEpargneAccount = account
 
     def read_raw(self, csv: Path) -> Tuple[DataFrame, DataFrame]:
+        kwargs = {
+            "date_parser": lambda s: datetime.strptime(s, "%d/%m/%Y"),
+            "decimal": ",",
+            "delimiter": ";",
+            "encoding": "ISO-8859-1",
+            "parse_dates": [
+                "Date de comptabilisation",
+                "Date operation",
+                "Date de valeur",
+            ],
+            "skipinitialspace": True,
+        }
         try:
-            tx_df = pd.read_csv(
-                csv,
-                date_parser=lambda s: datetime.strptime(s, "%d/%m/%Y"),
-                decimal=",",
-                delimiter=";",
-                encoding="UTF-8",
-                parse_dates=[
-                    "Date de comptabilisation",
-                    "Date operation",
-                    "Date de valeur",
-                ],
-                skipinitialspace=True,
+            tx_df = pd.read_csv(csv, **kwargs)
+        except ValueError as e:
+            with csv.open(encoding=kwargs["encoding"]) as f:
+                headers = next(f).strip()
+            raise PipelineDataError(
+                msg="Failed to read new Caisse d'Epargne data.",
+                path=csv,
+                headers=headers,
+                pandas_kwargs=kwargs,
+                pandas_error=e,
             )
-        except Exception as e:
-            raise PipelineDataError(f"Failed to read CSV file {csv}: {e}")
 
         tx_df.rename(
             columns={
