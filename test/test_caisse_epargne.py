@@ -63,7 +63,7 @@ def test_caisse_epargne_transaction_pipeline_read_new_transactions(cfg):
                 -12.30,
                 "EUR",
             ),
-            (pd.Timestamp("2024-11-09"), "VIR INST Employeur SA", None, "EUR"),
+            (pd.Timestamp("2024-11-09"), "VIR INST Employeur SA", 3500.00, "EUR"),
             (pd.Timestamp("2024-11-05"), "PRLV ASSURANCE HABITATION", -89.00, "EUR"),
         ],
     )

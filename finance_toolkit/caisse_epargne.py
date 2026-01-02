@@ -72,10 +72,13 @@ class CaisseEpargnePipeline(Pipeline, metaclass=ABCMeta):
             columns={
                 "Date operation": "Date",
                 "Libelle operation": "Label",
-                "Debit": "Amount",
             },
             inplace=True,
         )
+
+        # Combine Debit and Credit columns into Amount
+        # Debit contains negative values for expenses, Credit contains positive values for income
+        tx_df["Amount"] = tx_df["Debit"].fillna(tx_df["Credit"])
 
         # Caisse d'Epargne only supports EUR
         tx_df["Currency"] = "EUR"
