@@ -32,9 +32,9 @@ class TransactionPipeline(Pipeline, metaclass=ABCMeta):
 
         # add custom columns if needed
         if "MainCategory" not in tx.columns:
-            tx["MainCategory"] = ""
+            tx["MainCategory"] = "unknown"
         if "SubCategory" not in tx.columns:
-            tx["SubCategory"] = ""
+            tx["SubCategory"] = "unknown"
         if "Type" not in tx.columns:
             tx["Type"] = ""
 
