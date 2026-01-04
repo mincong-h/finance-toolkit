@@ -24,8 +24,8 @@ def test_fortuneo_transaction_pipeline_read_new_transactions(cfg):
             -6.4,
             "EUR",
             "",
-            "",
-            "",
+            "unknown",
+            "unknown",
         ),
         (
             pd.Timestamp("2019-12-13"),
@@ -33,8 +33,8 @@ def test_fortuneo_transaction_pipeline_read_new_transactions(cfg):
             -10.9,
             "EUR",
             "",
-            "",
-            "",
+            "unknown",
+            "unknown",
         ),
         (
             pd.Timestamp("2019-12-13"),
@@ -42,8 +42,8 @@ def test_fortuneo_transaction_pipeline_read_new_transactions(cfg):
             -45.59,
             "EUR",
             "",
-            "",
-            "",
+            "unknown",
+            "unknown",
         ),
         (
             pd.Timestamp("2019-12-12"),
@@ -51,8 +51,8 @@ def test_fortuneo_transaction_pipeline_read_new_transactions(cfg):
             -15.75,
             "EUR",
             "",
-            "",
-            "",
+            "unknown",
+            "unknown",
         ),
         (
             pd.Timestamp("2019-04-30"),
@@ -60,8 +60,8 @@ def test_fortuneo_transaction_pipeline_read_new_transactions(cfg):
             45.0,
             "EUR",
             "",
-            "",
-            "",
+            "unknown",
+            "unknown",
         ),
     ]
     expected = pd.DataFrame(
@@ -169,7 +169,7 @@ def test_run(cfg):
         tx201904.read_text()
         == """\
 Date,Label,Amount,Currency,Type,MainCategory,SubCategory
-2019-04-30,VIR MALAKOFF MEDERIC PREVOYANCE,45.0,EUR,,,
+2019-04-30,VIR MALAKOFF MEDERIC PREVOYANCE,45.0,EUR,,unknown,unknown
 """
     )
     tx201912 = cfg.root_dir / "2019-12" / "2019-12.astark-FTN-CHQ.csv"
@@ -177,10 +177,10 @@ Date,Label,Amount,Currency,Type,MainCategory,SubCategory
         tx201912.read_text()
         == """\
 Date,Label,Amount,Currency,Type,MainCategory,SubCategory
-2019-12-12,CARTE 11/12 LECLERC MARLY,-15.75,EUR,,,
-2019-12-13,CARTE 12/12 AMAZON EU SARL PAYLI2090401/,-45.59,EUR,,,
-2019-12-13,CARTE 12/12 BRIOCHE DOREE METZ,-10.9,EUR,,,
-2019-12-13,CARTE 12/12 FNAC METZ,-6.4,EUR,,,
+2019-12-12,CARTE 11/12 LECLERC MARLY,-15.75,EUR,,unknown,unknown
+2019-12-13,CARTE 12/12 AMAZON EU SARL PAYLI2090401/,-45.59,EUR,,unknown,unknown
+2019-12-13,CARTE 12/12 BRIOCHE DOREE METZ,-10.9,EUR,,unknown,unknown
+2019-12-13,CARTE 12/12 FNAC METZ,-6.4,EUR,,unknown,unknown
 """
     )
     assert (
@@ -261,8 +261,8 @@ def test_guess_meta(cfg):
                 -10.9,
                 "EUR",
                 "",
-                "",
-                "",
+                "unknown",
+                "unknown",
             ),
             (
                 pd.Timestamp("2019-12-13"),
@@ -288,8 +288,8 @@ def test_guess_meta(cfg):
                 45.0,
                 "EUR",
                 "",
-                "",
-                "",
+                "unknown",
+                "unknown",
             ),
         ],
     )

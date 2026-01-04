@@ -69,7 +69,7 @@ dateOp;dateVal;Label;category;categoryParent;Amount;accountNum;accountLabel;acco
         == """\
 Date,Label,Amount,Currency,Type,MainCategory,SubCategory
 2019-08-29,VIR Virement interne depuis BOURSORA,30.0,EUR,transfer,,
-2019-08-30,VIR Virement interne depuis BOURSORA,10.0,EUR,transfer,,
+2019-08-30,VIR Virement interne depuis BOURSORA,10.0,EUR,transfer,unknown,unknown
 """
     )
     assert (
@@ -77,7 +77,7 @@ Date,Label,Amount,Currency,Type,MainCategory,SubCategory
         == """\
 Date,Label,Amount,Currency,Type,MainCategory,SubCategory
 2019-09-01,VIR Virement interne depuis BOURSORA,40.0,EUR,transfer,,
-2019-09-02,VIR Virement interne depuis BOURSORA,11.0,EUR,transfer,,
+2019-09-02,VIR Virement interne depuis BOURSORA,11.0,EUR,transfer,unknown,unknown
 """
     )
 

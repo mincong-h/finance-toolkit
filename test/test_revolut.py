@@ -52,8 +52,8 @@ def test_read_raw_2022_05_27_euro(cfg):
                 10.00,
                 "EUR",
                 "TOPUP",
-                "",
-                "",
+                "unknown",
+                "unknown",
             ),
             (
                 pd.Timestamp("2021-11-19 08:35:35"),
@@ -61,8 +61,8 @@ def test_read_raw_2022_05_27_euro(cfg):
                 -100.00,
                 "EUR",
                 "TRANSFER",
-                "",
-                "",
+                "unknown",
+                "unknown",
             ),
         ],
     )
@@ -146,8 +146,8 @@ def test_read_raw_pending_transactions(cfg):
                 -55.34,
                 "EUR",
                 "CARD_PAYMENT",
-                "",
-                "",
+                "unknown",
+                "unknown",
             ),
         ],
     )
@@ -208,7 +208,7 @@ Date,Amount,Currency
         == """\
 Date,Label,Amount,Currency,Type,MainCategory,SubCategory
 2021-01-01,This is an existing transaction,10.0,EUR,transfer,,
-2021-01-05,Payment from M  Huang Mincong,10.0,EUR,income,,
+2021-01-05,Payment from M  Huang Mincong,10.0,EUR,income,unknown,unknown
 """
     )
 
@@ -269,7 +269,7 @@ Date,Amount,Currency
         == """\
 Date,Label,Amount,Currency,Type,MainCategory,SubCategory
 2021-01-01,This is an existing transaction,10.0,EUR,transfer,,
-2021-01-05,Payment from M  Huang Mincong,10.0,EUR,income,,
+2021-01-05,Payment from M  Huang Mincong,10.0,EUR,income,unknown,unknown
 """
     )
 
@@ -339,6 +339,6 @@ Date,Amount,Currency
         == """\
 Date,Label,Amount,Currency,Type,MainCategory,SubCategory
 2024-01-02,This is an existing transaction,10.0,USD,transfer,,
-2024-01-05,Payment from M  Huang Mincong,10.0,USD,income,,
+2024-01-05,Payment from M  Huang Mincong,10.0,USD,income,unknown,unknown
 """
     )

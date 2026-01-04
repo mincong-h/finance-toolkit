@@ -61,7 +61,7 @@ Date,Label,Amount,Type,MainCategory,SubCategory
         == """\
 Date,Label,Amount,Currency,Type,MainCategory,SubCategory
 2018-08-30,myLabel,-0.49,EUR,expense,main,sub
-2018-08-31,myLabel,-0.99,EUR,expense,,
+2018-08-31,myLabel,-0.99,EUR,expense,unknown,unknown
 """
     )
     assert (
@@ -69,7 +69,7 @@ Date,Label,Amount,Currency,Type,MainCategory,SubCategory
         == """\
 Date,Label,Amount,Currency,Type,MainCategory,SubCategory
 2018-09-01,myLabel,-1.49,EUR,expense,main,sub
-2018-09-02,myLabel,-2.49,EUR,expense,,
+2018-09-02,myLabel,-2.49,EUR,expense,unknown,unknown
 """
     )
 
