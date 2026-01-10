@@ -6,6 +6,7 @@ from pandas.testing import assert_frame_equal
 
 from finance_toolkit.caisse_epargne import (
     CaisseEpargneAccount,
+    CaisseEpargneBalancePipeline,
     CaisseEpargneTransactionPipeline,
 )
 from finance_toolkit.models import Summary, TxType
@@ -149,3 +150,27 @@ def test_caisse_epargne_transaction_pipeline_run(cfg):
     # And the summary is correct
     assert csv in summary.sources
     assert tx202411 in summary.targets
+
+
+def test_caisse_epargne_balance_pipeline_run_does_nothing(cfg):
+    """
+    Caisse d'Epargne CSV exports don't contain balance information,
+    so the balance pipeline should do nothing.
+    """
+    # Given a Caisse d'Epargne account and data file
+    account = CaisseEpargneAccount("CHQ", "test-CEP-CHQ", "12345678")
+    cfg.accounts.append(account)
+    csv = cfg.download_dir / "12345678_01112024_30112024.csv"
+    summary = Summary(cfg)
+    pipeline = CaisseEpargneBalancePipeline(account, cfg)
+
+    # When running the balance pipeline
+    pipeline.run(csv, summary)
+
+    # Then no balance file is created
+    balance_file = cfg.root_dir / account.balance_filename
+    assert not balance_file.exists()
+
+    # And the summary is not updated (no sources or targets added)
+    assert csv not in summary.sources
+    assert len(summary.targets) == 0

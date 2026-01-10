@@ -11,6 +11,11 @@ from finance_toolkit.boursorama import (
     BoursoramaBalancePipeline,
     BoursoramaTransactionPipeline,
 )
+from finance_toolkit.caisse_epargne import (
+    CaisseEpargneAccount,
+    CaisseEpargneBalancePipeline,
+    CaisseEpargneTransactionPipeline,
+)
 from finance_toolkit.fortuneo import FortuneoAccount, FortuneoTransactionPipeline
 from finance_toolkit.pipeline import GeneralBalancePipeline, NoopTransactionPipeline
 from finance_toolkit.revolut import (
@@ -43,6 +48,9 @@ def test_new_transaction_pipeline(cfg):
             patterns=["unknown"],
         )
     )
+    p5 = PipelineFactory(cfg).new_transaction_pipeline(
+        CaisseEpargneAccount("CHQ", "foo-CEP-CHQ", "12345678")
+    )
     p_r1 = PipelineFactory(cfg).new_transaction_pipeline(
         RevolutAccount(
             account_type=RevolutAccount.TYPE_CASH,
@@ -72,6 +80,7 @@ def test_new_transaction_pipeline(cfg):
     assert isinstance(p2, BoursoramaTransactionPipeline)
     assert isinstance(p3, FortuneoTransactionPipeline)
     assert isinstance(p4, NoopTransactionPipeline)
+    assert isinstance(p5, CaisseEpargneTransactionPipeline)
     assert isinstance(p_r1, RevolutTransactionPipeline)
     assert isinstance(p_r2, RevolutTransactionPipeline)
     assert isinstance(p_r3, NoopTransactionPipeline)
@@ -92,6 +101,9 @@ def test_new_balance_pipeline(cfg):
             currency="EUR",
             patterns=["unknown"],
         )
+    )
+    p4 = PipelineFactory(cfg).new_balance_pipeline(
+        CaisseEpargneAccount("CHQ", "foo-CEP-CHQ", "12345678")
     )
     p_r1 = PipelineFactory(cfg).new_balance_pipeline(
         RevolutAccount(
@@ -121,6 +133,7 @@ def test_new_balance_pipeline(cfg):
     assert isinstance(p1, BnpBalancePipeline)
     assert isinstance(p2, BoursoramaBalancePipeline)
     assert isinstance(p3, GeneralBalancePipeline)
+    assert isinstance(p4, CaisseEpargneBalancePipeline)
     assert isinstance(p_r1, RevolutBalancePipeline)
     assert isinstance(p_r2, RevolutBalancePipeline)
     assert isinstance(p_r3, GeneralBalancePipeline)

@@ -8,7 +8,7 @@ import pandas as pd
 from pandas import DataFrame
 
 from .account import Account
-from .models import Configuration, TxType
+from .models import Configuration, Summary, TxType
 from .pipeline import Pipeline, TransactionPipeline, BalancePipeline, PipelineDataError
 
 
@@ -106,6 +106,11 @@ class CaisseEpargneTransactionPipeline(CaisseEpargnePipeline, TransactionPipelin
 
 
 class CaisseEpargneBalancePipeline(CaisseEpargnePipeline, BalancePipeline):
+    def run(self, path: Path, summary: Summary) -> None:
+        # Caisse d'Epargne CSV exports don't contain balance information,
+        # so this pipeline does nothing.
+        pass
+
     def read_new_balances(self, csv: Path) -> DataFrame:
         balances, _ = self.read_raw(csv)
         return balances
